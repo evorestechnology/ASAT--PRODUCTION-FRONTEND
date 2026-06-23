@@ -384,7 +384,8 @@ function SkeletonCard() {
 function Products() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { currency, rates, formatPrice } = useCurrency();
+  const { currency, rates, formatPrice, globalCurrencies, applyMarkup } = useCurrency();
+  const curSymbol = ((globalCurrencies && globalCurrencies[currency]) || SUPPORTED_CURRENCIES[currency] || SUPPORTED_CURRENCIES['INR'] || { symbol: '₹' }).symbol?.trim() || '₹';
 
   /* ── Supabase Data ── */
   const [allProducts, setAllProducts] = useState([]);
@@ -396,6 +397,7 @@ function Products() {
   /* ── Filter State ── */
   const initialCategory = searchParams.get('category') || '';
   const initialDesigner = searchParams.get('designer') || '';
+  const initialSearch = searchParams.get('search') || '';
 
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeCollection, setActiveCollection] = useState('All');
@@ -403,8 +405,14 @@ function Products() {
   const [sortBy, setSortBy] = useState('latest');
   const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [launched, setLaunched] = useState(false);
   const gridRef = useRef(null);
+
+  // Sync URL search params to local search term state
+  useEffect(() => {
+    setSearchTerm(searchParams.get('search') || '');
+  }, [searchParams]);
 
   /* ── Fetch products from Supabase ── */
   useEffect(() => {
@@ -458,6 +466,11 @@ function Products() {
                 }
               }
               return desc || '';
+            })(),
+            category: (() => {
+              const catVal = d.products?.category || d.catalogue?.category || d.category || '';
+              const match = (categoriesData || []).find(c => c.slug === catVal || c.name === catVal);
+              return match ? match.name : (catVal || 'Other');
             })(),
             name: d.title || 'Designer Creation',
             price: d.price || 0,
@@ -558,6 +571,18 @@ function Products() {
   const filtered = useMemo(() => {
     let items = [...allProducts];
 
+    // Search filter
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      items = items.filter(
+        (p) =>
+          (p.name || '').toLowerCase().includes(q) ||
+          (p.description || '').toLowerCase().includes(q) ||
+          (p.brand || '').toLowerCase().includes(q) ||
+          (p.collection || '').toLowerCase().includes(q)
+      );
+    }
+
     // Designer filter from URL param
     if (initialDesigner) {
       items = items.filter(
@@ -584,14 +609,14 @@ function Products() {
       );
     }
 
-    // Price range
+    // Price range — compare against selling price (markup-applied)
     const minVal = priceMin !== '' ? parseFloat(priceMin) : null;
     const maxVal = priceMax !== '' ? parseFloat(priceMax) : null;
     const rate = rates[currency] || 1;
     const min = minVal !== null ? (minVal / rate) : null;
     const max = maxVal !== null ? (maxVal / rate) : null;
-    if (min !== null) items = items.filter((p) => (p.price ?? 0) >= min);
-    if (max !== null) items = items.filter((p) => (p.price ?? 0) <= max);
+    if (min !== null) items = items.filter((p) => applyMarkup(p.price ?? 0) >= min);
+    if (max !== null) items = items.filter((p) => applyMarkup(p.price ?? 0) <= max);
 
     // Sort
     switch (sortBy) {
@@ -605,10 +630,10 @@ function Products() {
         items.sort((a, b) => (a.ranking ?? 9999) - (b.ranking ?? 9999));
         break;
       case 'price-asc':
-        items.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+        items.sort((a, b) => applyMarkup(a.price ?? 0) - applyMarkup(b.price ?? 0));
         break;
       case 'price-desc':
-        items.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+        items.sort((a, b) => applyMarkup(b.price ?? 0) - applyMarkup(a.price ?? 0));
         break;
       case 'name-asc':
         items.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
@@ -618,7 +643,7 @@ function Products() {
     }
 
     return items;
-  }, [allProducts, activeCategory, activeCollection, activeGender, sortBy, priceMin, priceMax, initialDesigner, currency, rates]);
+  }, [allProducts, activeCategory, activeCollection, activeGender, sortBy, priceMin, priceMax, initialDesigner, searchTerm, currency, rates]);
 
   /* ── Set of IDs for the 15 most recently added products (for NEW badge) ── */
   const latestIds = useMemo(() => {
@@ -648,6 +673,7 @@ function Products() {
     setSortBy('latest');
     setPriceMin('');
     setPriceMax('');
+    setSearchTerm('');
   }, []);
 
   const hasFilters =
@@ -656,6 +682,7 @@ function Products() {
     activeGender !== 'All' ||
     priceMin !== '' ||
     priceMax !== '' ||
+    searchTerm !== '' ||
     sortBy !== 'latest';
 
   /* ── Navigate to product ── */
@@ -695,7 +722,7 @@ function Products() {
         <div className="pcard--standard__panel">
           <span className="pcard--standard__brand">{product.brand || 'ASAT'}</span>
           <h4 className="pcard--standard__name">{product.name || product.title}</h4>
-          <span className="pcard--standard__price">{formatPrice(product.price || 0)}</span>
+          <span className="pcard--standard__price">{formatPrice(applyMarkup(product.price || 0))}</span>
         </div>
       </div>
     );
@@ -722,7 +749,7 @@ function Products() {
           {product.designer ? ` by ${product.designer}` : ''}.
         </p>
         <div className="pcard--wide__bottom">
-          <span className="pcard--wide__price">{formatPrice(product.price || 0)}</span>
+          <span className="pcard--wide__price">{formatPrice(applyMarkup(product.price || 0))}</span>
           <span className="pcard--wide__cta">VIEW DETAILS <i className="fas fa-long-arrow-alt-right" /></span>
         </div>
       </div>
@@ -743,37 +770,24 @@ function Products() {
       <div className={`products-page ${launched ? 'products-page--launched' : ''}`}>
         <BackButton />
 
-        {/* Collection Tabs */}
-        <div className="pcol-tabs">
-          {collections.map((col) => (
-            <button
-              key={col}
-              className={`pcol-tab ${activeCollection === col ? 'active' : ''}`}
-              onClick={() => setActiveCollection(col)}
-            >
-              {col}
-            </button>
-          ))}
-        </div>
-
         {/* ── Sticky Filter Bar ── */}
         <div className="pcol-filter-bar">
           <div className="pcol-filter-bar__inner">
 
-            {/* Category Pills */}
+            {/* Category Dropdown */}
             <div className="pcol-filter-section">
               <span className="pcol-filter-label">Category</span>
-              <div className="pcol-pills">
-                {(loading ? ['All'] : categories).map((cat) => (
-                  <button
-                    key={cat}
-                    className={`pcol-pill ${activeCategory === cat ? 'active' : ''}`}
-                    onClick={() => setActiveCategory(cat)}
-                  >
-                    {cat}
-                  </button>
+              <select
+                className="pcol-sort-select"
+                value={activeCategory}
+                onChange={(e) => setActiveCategory(e.target.value)}
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === 'All' ? 'All Categories' : cat}
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
 
             {/* Gender Pills */}
@@ -799,7 +813,7 @@ function Products() {
                 <input
                   type="number"
                   className="pcol-price-input"
-                  placeholder={`Min ${SUPPORTED_CURRENCIES[currency].symbol.trim()}`}
+                  placeholder={`Min ${curSymbol}`}
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
                   min="0"
@@ -808,7 +822,7 @@ function Products() {
                 <input
                   type="number"
                   className="pcol-price-input"
-                  placeholder={`Max ${SUPPORTED_CURRENCIES[currency].symbol.trim()}`}
+                  placeholder={`Max ${curSymbol}`}
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
                   min="0"
@@ -828,6 +842,41 @@ function Products() {
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Search Input Filter */}
+            <div className="pcol-filter-section" style={{ borderRight: 'none', marginLeft: 'auto', paddingRight: 0 }}>
+              <span className="pcol-filter-label" style={{ marginRight: 6 }}>Search</span>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder="Type to filter..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '100px',
+                    color: 'white',
+                    padding: '6px 30px 6px 14px',
+                    fontSize: '0.72rem',
+                    fontFamily: "'Montserrat', sans-serif",
+                    outline: 'none',
+                    width: '180px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--gold)'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                />
+                {searchTerm && (
+                  <i 
+                    className="fas fa-times" 
+                    onClick={() => setSearchTerm('')} 
+                    style={{ position: 'absolute', right: 28, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.75rem' }}
+                  ></i>
+                )}
+                <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}></i>
+              </div>
             </div>
 
           </div>
@@ -869,7 +918,7 @@ function Products() {
                 )}
                 {(priceMin || priceMax) && (
                   <span className="pcol-chip" onClick={() => { setPriceMin(''); setPriceMax(''); }}>
-                    {SUPPORTED_CURRENCIES[currency].symbol.trim()}{priceMin || '0'} – {SUPPORTED_CURRENCIES[currency].symbol.trim()}{priceMax || '∞'} ✕
+                    {curSymbol}{priceMin || '0'} – {curSymbol}{priceMax || '∞'} ✕
                   </span>
                 )}
                 {sortBy !== 'latest' && (

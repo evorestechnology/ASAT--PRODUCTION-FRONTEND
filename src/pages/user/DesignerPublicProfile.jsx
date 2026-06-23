@@ -597,7 +597,8 @@ function SkeletonCard() {
 function DesignerPublicProfile() {
   const { designerId } = useParams();
   const navigate = useNavigate();
-  const { currency, rates, formatPrice } = useCurrency();
+  const { currency, rates, formatPrice, globalCurrencies, applyMarkup } = useCurrency();
+  const curSymbol = ((globalCurrencies && globalCurrencies[currency]) || SUPPORTED_CURRENCIES[currency] || SUPPORTED_CURRENCIES['INR'] || { symbol: '₹' }).symbol?.trim() || '₹';
 
   /* ── State ── */
   const [designer, setDesigner] = useState(null);
@@ -657,10 +658,13 @@ function DesignerPublicProfile() {
     setLoadingProducts(true);
     const fetchApprovedDesigns = async () => {
       try {
-        const data = await apiFetch(`/api/designs?designerId=${designerId}`);
+        const [designsData, categoriesData] = await Promise.all([
+          apiFetch(`/api/designs?designerId=${designerId}`),
+          apiFetch('/api/categories')
+        ]);
 
-        if (data) {
-          const mapped = data.map((d) => ({
+        if (designsData) {
+          const mapped = designsData.map((d) => ({
             id: d.id,
             title: d.title || '',
             name: d.title || '',
@@ -674,6 +678,11 @@ function DesignerPublicProfile() {
                 }
               }
               return desc || '';
+            })(),
+            category: (() => {
+              const catVal = d.products?.category || d.catalogue?.category || d.category || '';
+              const match = (categoriesData || []).find(c => c.slug === catVal || c.name === catVal);
+              return match ? match.name : (catVal || 'Other');
             })(),
             price: Number(d.price) || 0,
             catalogueItemId: d.catalogue_item_id,
@@ -858,20 +867,20 @@ function DesignerPublicProfile() {
         <div className="dpp-filters">
           <div className="dpp-filters__inner">
 
-            {/* Category pills */}
+            {/* Category Dropdown */}
             <div className="dpp-filters__section">
               <span className="dpp-filters__label">Category</span>
-              <div className="dpp-pills">
-                {(loadingProducts ? ['All'] : categories).map((cat) => (
-                  <button
-                    key={cat}
-                    className={`dpp-pill ${activeCategory === cat ? 'active' : ''}`}
-                    onClick={() => setActiveCategory(cat)}
-                  >
-                    {cat}
-                  </button>
+              <select
+                className="dpp-sort-select"
+                value={activeCategory}
+                onChange={(e) => setActiveCategory(e.target.value)}
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === 'All' ? 'All Categories' : cat}
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
 
             {/* Price range */}
@@ -881,7 +890,7 @@ function DesignerPublicProfile() {
                 <input
                   type="number"
                   className="dpp-price-input"
-                  placeholder={`Min ${SUPPORTED_CURRENCIES[currency].symbol.trim()}`}
+                  placeholder={`Min ${curSymbol}`}
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
                   min="0"
@@ -890,7 +899,7 @@ function DesignerPublicProfile() {
                 <input
                   type="number"
                   className="dpp-price-input"
-                  placeholder={`Max ${SUPPORTED_CURRENCIES[currency].symbol.trim()}`}
+                  placeholder={`Max ${curSymbol}`}
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
                   min="0"
@@ -932,7 +941,7 @@ function DesignerPublicProfile() {
                 )}
                 {(priceMin || priceMax) && (
                   <span className="dpp-filter-chip" onClick={() => { setPriceMin(''); setPriceMax(''); }}>
-                    {SUPPORTED_CURRENCIES[currency].symbol.trim()}{priceMin || '0'} – {SUPPORTED_CURRENCIES[currency].symbol.trim()}{priceMax || '∞'} ✕
+                    {curSymbol}{priceMin || '0'} – {curSymbol}{priceMax || '∞'} ✕
                   </span>
                 )}
                 {sortBy !== 'latest' && (
@@ -997,7 +1006,7 @@ function DesignerPublicProfile() {
                       </p>
                       <div className="dpp-card__footer">
                         <span className="dpp-card__price">
-                          {formatPrice(product.price || 0)}
+                          {formatPrice(applyMarkup(product.price || 0))}
                         </span>
                         <span className="dpp-card__sales">
                           {product.ordersCount ? `${product.ordersCount} sold` : 'New'}

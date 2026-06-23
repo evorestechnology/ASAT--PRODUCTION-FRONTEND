@@ -4,6 +4,7 @@ import { apiFetch } from '../../api';
 import BackButton from '../../components/BackButton';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
+import { useAuth } from '../../context/AuthContext';
 
 
 /* ── Sample product data ── */
@@ -739,7 +740,25 @@ function ProductDetail() {
     const location = useLocation();
     const { toasts, showToast } = useToast();
     const { formatPrice } = useCurrency();
+    const { applyMarkup } = useCurrency();
     
+    const { user, profile } = useAuth();
+    const [financeRules, setFinanceRules] = useState(null);
+
+    // Fetch settings/finance on mount
+    useEffect(() => {
+        apiFetch('/api/settings')
+            .then(data => setFinanceRules(data))
+            .catch(() => {});
+    }, []);
+
+    const isRestricted = React.useMemo(() => {
+        if (!user || !profile || !profile.country) return false;
+        const dr = financeRules?.delivery_restrictions;
+        if (!dr || !dr.restricted_countries) return false;
+        return dr.restricted_countries.includes(profile.country);
+    }, [user, profile, financeRules]);
+
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState(null);
@@ -1176,7 +1195,7 @@ function ProductDetail() {
             ? (product.colors[selectedColor]?.colorName || '') 
             : (product.colors[selectedColor] || '');
 
-        const finalPrice = product.price + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0);
+        const finalPrice = applyMarkup(product.price + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0));
 
         const cartItem = {
             id: product.id,
@@ -1312,7 +1331,8 @@ function ProductDetail() {
                         <h1 className="pdp-product-name">{product.name}</h1>
                         <p className="pdp-designer">By {product.designer}</p>
                         <div className="pdp-price">
-                            {formatPrice((product.price) + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0))}
+                            {formatPrice(applyMarkup((product.price) + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0)))}
+                            <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Montserrat', sans-serif", letterSpacing: '1.5px', color: '#888', fontWeight: 400, marginTop: '4px' }}>excl. GST &amp; shipping</span>
                         </div>
 
                         <div className="pdp-divider" />

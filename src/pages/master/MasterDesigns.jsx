@@ -11,6 +11,7 @@ function MasterDesigns() {
     const [error, setError] = useState(null);
     const [rejectComment, setRejectComment] = useState({});
     const [actionLoading, setActionLoading] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
     const { toasts, showToast } = useToast();
 
     const fetchDesigns = async () => {
@@ -125,9 +126,20 @@ function MasterDesigns() {
     };
 
     const designs = allDesigns.filter(d => {
-        if (tab === 'pending') return d.status === 'pending';
-        if (tab === 'restricted') return d.status === 'restricted';
-        return d.status === 'approved';
+        if (tab === 'pending' && d.status !== 'pending') return false;
+        if (tab === 'restricted' && d.status !== 'restricted') return false;
+        if (tab === 'approved' && d.status !== 'approved') return false;
+
+        if (searchTerm.trim() !== '') {
+            const q = searchTerm.toLowerCase();
+            return (
+                (d.id || '').toLowerCase().includes(q) ||
+                (d.title || '').toLowerCase().includes(q) ||
+                (d.designer_username || '').toLowerCase().includes(q) ||
+                (d.designer_id || '').toLowerCase().includes(q)
+            );
+        }
+        return true;
     });
 
     return (
@@ -138,25 +150,51 @@ function MasterDesigns() {
             <h1 className="adm-page__title">DESIGNS</h1>
             <p className="adm-page__subtitle">Approve, reject, or restrict designer submissions</p>
 
-            <div className="adm-page__filters">
-                <button
-                    className={`adm-page__filter-btn ${tab === 'pending' ? 'adm-page__filter-btn--active' : ''}`}
-                    onClick={() => setTab('pending')}
-                >
-                    Pending Approvals
-                </button>
-                <button
-                    className={`adm-page__filter-btn ${tab === 'approved' ? 'adm-page__filter-btn--active' : ''}`}
-                    onClick={() => setTab('approved')}
-                >
-                    Published Designs
-                </button>
-                <button
-                    className={`adm-page__filter-btn ${tab === 'restricted' ? 'adm-page__filter-btn--active' : ''}`}
-                    onClick={() => setTab('restricted')}
-                >
-                    Restricted
-                </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+                <div className="adm-page__filters" style={{ margin: 0 }}>
+                    <button
+                        className={`adm-page__filter-btn ${tab === 'pending' ? 'adm-page__filter-btn--active' : ''}`}
+                        onClick={() => setTab('pending')}
+                    >
+                        Pending Approvals
+                    </button>
+                    <button
+                        className={`adm-page__filter-btn ${tab === 'approved' ? 'adm-page__filter-btn--active' : ''}`}
+                        onClick={() => setTab('approved')}
+                    >
+                        Published Designs
+                    </button>
+                    <button
+                        className={`adm-page__filter-btn ${tab === 'restricted' ? 'adm-page__filter-btn--active' : ''}`}
+                        onClick={() => setTab('restricted')}
+                    >
+                        Restricted
+                    </button>
+                </div>
+
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Search designs..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{
+                            padding: '10px 35px 10px 15px',
+                            background: '#1c1c1c',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '4px',
+                            color: 'white',
+                            fontFamily: "'Montserrat', sans-serif",
+                            fontSize: '0.82rem',
+                            width: '280px',
+                            outline: 'none',
+                            transition: 'border-color 0.2s'
+                        }}
+                        onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                    />
+                    <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                </div>
             </div>
 
             {loading ? (

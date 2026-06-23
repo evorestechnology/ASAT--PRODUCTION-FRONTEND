@@ -16,6 +16,8 @@ function MfgOrders() {
     const [designCache, setDesignCache] = useState({});
     const [fetchingDesigns, setFetchingDesigns] = useState({});
     const [expandedTechPack, setExpandedTechPack] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     const handleDownloadFile = async (url, filename) => {
         try {
@@ -178,6 +180,25 @@ function MfgOrders() {
         return date.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
     };
 
+    const filteredOrders = orders.filter(o => {
+        if (statusFilter !== 'all' && (o.status || 'pending').toLowerCase() !== statusFilter) return false;
+
+        if (searchTerm.trim() !== '') {
+            const q = searchTerm.toLowerCase();
+            const orderIdStr = (o.orderId || o.id || '').toLowerCase();
+            const customerStr = (o.customerName || '').toLowerCase();
+            const addressStr = (o.address || '').toLowerCase();
+            const itemsStr = (o.items || []).map(item => item.name || '').join(' ').toLowerCase();
+            return (
+                orderIdStr.includes(q) ||
+                customerStr.includes(q) ||
+                addressStr.includes(q) ||
+                itemsStr.includes(q)
+            );
+        }
+        return true;
+    });
+
     return (
         <main className="adm-page">
             <style>{TOAST_CSS}</style>
@@ -186,6 +207,46 @@ function MfgOrders() {
             <BackButton />
             <h1 className="adm-page__title">LIVE ORDERS</h1>
             <p className="adm-page__subtitle">Active orders currently in production queue</p>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+                <div className="adm-page__filters" style={{ margin: 0 }}>
+                    {['all', 'pending', 'manufacturing', 'shipping'].map(s => (
+                        <button 
+                            key={s} 
+                            className={`adm-page__filter-btn ${statusFilter === s ? 'adm-page__filter-btn--active' : ''}`} 
+                            onClick={() => setStatusFilter(s)}
+                        >
+                            {s.toUpperCase()}
+                        </button>
+                    ))}
+                </div>
+
+                {orders.length > 0 && (
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            placeholder="Search active orders..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            style={{
+                                padding: '10px 35px 10px 15px',
+                                background: '#1c1c1c',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '4px',
+                                color: 'white',
+                                fontFamily: "'Montserrat', sans-serif",
+                                fontSize: '0.82rem',
+                                width: '280px',
+                                outline: 'none',
+                                transition: 'border-color 0.2s'
+                            }}
+                            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                        />
+                        <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                    </div>
+                )}
+            </div>
 
             <div className="adm-table-wrap">
                 <table className="adm-table">
@@ -205,8 +266,10 @@ function MfgOrders() {
                             <tr><td colSpan="7" className="adm-table__empty"><i className="fas fa-spinner fa-spin"></i> Loading live orders...</td></tr>
                         ) : orders.length === 0 ? (
                             <tr><td colSpan="7" className="adm-table__empty"><i className="fas fa-bolt"></i> No active orders at the moment.</td></tr>
+                        ) : filteredOrders.length === 0 ? (
+                            <tr><td colSpan="7" className="adm-table__empty"><i className="fas fa-search"></i> No matching orders found.</td></tr>
                         ) : (
-                            orders.map(o => (
+                            filteredOrders.map(o => (
                                 <tr key={o.id}>
                                     <td style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{o.id.substring(0, 8)}...</td>
                                     <td style={{ fontSize: '0.75rem' }}>{formatOrderDate(o)}</td>

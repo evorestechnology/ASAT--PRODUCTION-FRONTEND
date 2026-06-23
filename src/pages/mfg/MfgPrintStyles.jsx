@@ -275,6 +275,9 @@ function StyleSummaryCard({ ps, idx, onEdit, onRemove }) {
                     <span style={{ fontFamily: "'Cinzel',serif", fontSize: '1rem', fontWeight: 700, color: 'var(--admin-dark)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {ps.name}
                     </span>
+                    <span style={{ flexShrink: 0, padding: '3px 8px', background: '#f5f5f7', border: '1px solid #ddd', borderRadius: 4, fontFamily: "'Montserrat',sans-serif", fontSize: '0.62rem', fontWeight: 700, color: '#666', textTransform: 'uppercase' }}>
+                        {ps.category || 'DTF'}
+                    </span>
                     <span style={{ flexShrink: 0, padding: '4px 12px', background: '#f9f3e6', border: '1px solid var(--admin-gold)', borderRadius: 20, fontFamily: "'Montserrat',sans-serif", fontSize: '0.78rem', fontWeight: 700, color: '#8a6a1b' }}>
                         +₹{ps.cost}
                     </span>
@@ -351,12 +354,25 @@ function StyleEditCard({ ps, idx, uploadingId, onUpdate, onRemove, onImageClick,
 
             {/* Fields */}
             <div style={{ padding: '20px 18px' }}>
-                {/* Name + Cost */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 14, marginBottom: 16 }}>
+                {/* Category + Name + Cost */}
+                <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 160px', gap: 14, marginBottom: 16 }}>
+                    <div>
+                        <label style={LABEL_ST}>Category *</label>
+                        <select value={ps.category || 'DTF'} onChange={e => onUpdate(ps.id, 'category', e.target.value)}
+                            style={{ ...INPUT_ST, cursor: 'pointer' }}>
+                            <option value="DTF">DTF (Direct to Film)</option>
+                            <option value="DTG">DTG (Direct to Garment)</option>
+                            <option value="Screen Printing">Screen Printing</option>
+                            <option value="Embroidery">Embroidery</option>
+                            <option value="Sublimation">Sublimation</option>
+                            <option value="Vinyl">Vinyl</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
                     <div>
                         <label style={LABEL_ST}>Style / Method Name *</label>
                         <input type="text" value={ps.name} onChange={e => onUpdate(ps.id, 'name', e.target.value)}
-                            placeholder="e.g. DTF, DTG, Embroidery…" style={INPUT_ST}
+                            placeholder="e.g. DTF Front, DTG Chest, Sleeve Embroidery…" style={INPUT_ST}
                             onFocus={e => e.target.style.borderColor = 'var(--admin-gold)'}
                             onBlur={e => e.target.style.borderColor = 'var(--admin-border)'} />
                     </div>
@@ -456,6 +472,7 @@ export default function MfgPrintStyles() {
                 return {
                     id: row.id,
                     name: row.name,
+                    category: row.category || 'DTF',
                     cost: costVal,
                     imageUrl: row.image || '',
                     description: descVal,
@@ -480,7 +497,7 @@ export default function MfgPrintStyles() {
     /* ── Style CRUD ── */
     const addStyle = () => {
         const id = Date.now().toString();
-        setStyles(prev => [...prev, { id, name: '', cost: '', imageUrl: '', placements: [], customPlacements: [] }]);
+        setStyles(prev => [...prev, { id, name: '', category: 'DTF', cost: '', imageUrl: '', placements: [], customPlacements: [] }]);
         setEditingIds(prev => ({ ...prev, [id]: true }));
     };
 
@@ -570,6 +587,7 @@ export default function MfgPrintStyles() {
             const isNew = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ps.id);
             const payload = {
                 name: ps.name.trim(),
+                category: ps.category || 'DTF',
                 cost: parseFloat(ps.cost) || 0,
                 placements: ps.placements || [],
                 customPlacements: ps.customPlacements || [],

@@ -97,7 +97,7 @@ function useHorizontalScroll() {
    PRODUCT CARD
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, applyMarkup } = useCurrency();
   const [wishlisted, setWishlisted] = useState(false);
   const img = product.images?.[0] || 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=500&q=80';
 
@@ -177,7 +177,7 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
       )}
       <div className="ui-product-card__overlay">
         <h4 className="ui-product-card__name">{product.title}</h4>
-        <span className="ui-product-card__price">{formatPrice(product.price)}</span>
+        <span className="ui-product-card__price">{formatPrice(applyMarkup(product.price))}</span>
       </div>
       <button
         className="ui-product-card__quick-add"

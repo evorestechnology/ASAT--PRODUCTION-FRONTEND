@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 import { useCurrency } from '../../context/CurrencyContext';
+import { COUNTRIES, getShippingZone } from '../../constants/countries';
 
 const isValidUUID = (uuid) => {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
@@ -453,9 +454,75 @@ const styles = `
         text-transform: uppercase;
     }
 
-    .addr-btn-secondary:hover {
-        background: #ddd;
+    /* ── Price Breakdown in Address Modal ── */
+    .addr-breakdown {
+        background: linear-gradient(135deg, #0f1117, #1a1a2e);
+        border-radius: 10px;
+        padding: 16px 18px;
+        border: 1px solid rgba(197,160,89,0.3);
+        margin-top: 4px;
     }
+    .addr-breakdown__title {
+        font-family: 'Cinzel', serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #C5A059;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+    }
+    .addr-breakdown__row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.8rem;
+        color: #bbb;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .addr-breakdown__row span:last-child { font-weight: 600; color: #ddd; }
+    .addr-breakdown__row--discount span { color: #4ade80 !important; }
+    .addr-breakdown__total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        padding: 10px 0 0;
+        font-family: 'Cinzel', serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #C5A059;
+    }
+    .addr-breakdown__note {
+        margin-top: 10px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.72rem;
+        color: #f59e0b;
+        background: rgba(245,158,11,0.08);
+        border: 1px solid rgba(245,158,11,0.2);
+        border-radius: 6px;
+        padding: 8px 10px;
+        line-height: 1.5;
+    }
+
+    /* ── Finance note in cart summary ── */
+    .cart-summary-row--muted span:first-child { color: #888; font-size: 0.8rem; }
+    .cart-summary-row--muted span:last-child  { color: #555; font-weight: 500; font-size: 0.8rem; }
+    .cart-finance-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 10px 0 0;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.7rem;
+        color: #888;
+        background: #f8f8fa;
+        border-radius: 6px;
+        padding: 8px 10px;
+        border-left: 3px solid #C5A059;
+        line-height: 1.5;
+    }
+    .cart-finance-note i { color: #C5A059; margin-top: 2px; flex-shrink: 0; }
 
     @keyframes slideUp {
         from { transform: translateY(30px); opacity: 0; }
@@ -491,6 +558,46 @@ const styles = `
     }
 `;
 
+
+const INDIAN_STATES = [
+    "Andaman and Nicobar Islands",
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chandigarh",
+    "Chhattisgarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jammu and Kashmir",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Ladakh",
+    "Lakshadweep",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Puducherry",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal"
+];
+
 function Cart() {
     const navigate = useNavigate();
     const { user, profile } = useAuth();
@@ -499,24 +606,233 @@ function Cart() {
     const [cart, setCart] = useState([]);
     const [promo, setPromo] = useState('');
     const [promoApplied, setPromoApplied] = useState(false);
-    
+
+    // Finance rules from backend
+    const [financeRules, setFinanceRules] = useState(null);
+
+    // User saved addresses states
+    const [userAddresses, setUserAddresses] = useState([]);
+    const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const [showAddressEditModal, setShowAddressEditModal] = useState(false);
+    const [editingAddress, setEditingAddress] = useState(null);
+
     // Address Modal states
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [placing, setPlacing] = useState(false);
     const [addrName, setAddrName] = useState('');
     const [addrPhone, setAddrPhone] = useState('');
     const [addrLine, setAddrLine] = useState('');
+    const [addrLandmark, setAddrLandmark] = useState(''); // line2 (landmarks)
     const [addrCity, setAddrCity] = useState('');
     const [addrState, setAddrState] = useState('');
     const [addrPin, setAddrPin] = useState('');
     const [addrCountry, setAddrCountry] = useState('India');
-    
+
+    // Form inputs for address creation/edit
+    const [formLabel, setFormLabel] = useState('Home');
+    const [formFullName, setFormFullName] = useState('');
+    const [formPhone, setFormPhone] = useState('');
+    const [formCountry, setFormCountry] = useState('India');
+    const [formState, setFormState] = useState('');
+    const [formCity, setFormCity] = useState('');
+    const [formPincode, setFormPincode] = useState('');
+    const [formLine1, setFormLine1] = useState('');
+    const [formLine2, setFormLine2] = useState('');
+
     const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
 
     useEffect(() => {
         const stored = JSON.parse(localStorage.getItem('asat_cart') || '[]');
         setCart(stored);
     }, []);
+
+    // Load finance settings
+    useEffect(() => {
+        apiFetch('/api/settings')
+            .then(data => setFinanceRules(data))
+            .catch(() => {}); // silently fallback to defaults
+    }, []);
+
+    const allowedCountries = useMemo(() => {
+        const dr = financeRules?.delivery_restrictions;
+        if (!dr || !dr.restricted_countries) return COUNTRIES;
+        return COUNTRIES.filter(c => !dr.restricted_countries.includes(c.name));
+    }, [financeRules]);
+
+    const selectAddress = useCallback((addr) => {
+        setSelectedAddressId(addr.id);
+        setAddrName(addr.full_name || '');
+        setAddrPhone(addr.phone || '');
+        setAddrLine(addr.line1 || '');
+        setAddrLandmark(addr.line2 || '');
+        setAddrCity(addr.city || '');
+        setAddrState(addr.state || '');
+        setAddrPin(addr.pincode || '');
+        setAddrCountry(addr.country || 'India');
+    }, []);
+
+    const fetchUserAddresses = useCallback(async () => {
+        if (!user) return;
+        try {
+            const data = await apiFetch('/api/users/addresses');
+            const normalized = (data || []).map(addr => {
+                let normLabel = 'Home';
+                if (addr.label) {
+                    const l = addr.label.toUpperCase();
+                    if (l === 'WORK') normLabel = 'Work';
+                    else if (l === 'OTHER') normLabel = 'Other';
+                }
+                return {
+                    ...addr,
+                    label: normLabel
+                };
+            });
+            setUserAddresses(normalized || []);
+            // Set default address if available and nothing is selected yet
+            if (normalized && normalized.length > 0) {
+                const def = normalized.find(a => a.is_default) || normalized[0];
+                if (def && !selectedAddressId) {
+                    selectAddress(def);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to load user addresses:", err);
+        }
+    }, [user, selectedAddressId, selectAddress]);
+
+    useEffect(() => {
+        if (user) {
+            fetchUserAddresses();
+        } else {
+            setUserAddresses([]);
+            setSelectedAddressId(null);
+        }
+    }, [user, fetchUserAddresses]);
+
+    const handleAddOrEditAddressSubmit = async (e) => {
+        if (e) e.preventDefault();
+        if (!formFullName || !formPhone || !formLine1 || !formCity || !formPincode || !formCountry) {
+            showToast("Please fill in all required fields.", 'warning');
+            return;
+        }
+        if (formCountry === 'India' && !formState) {
+            showToast("Please select a state.", 'warning');
+            return;
+        }
+
+        const payload = {
+            label: formLabel,
+            full_name: formFullName,
+            phone: formPhone,
+            line1: formLine1,
+            line2: formLine2, // landmark
+            city: formCity,
+            state: formCountry === 'India' ? formState : '',
+            pincode: formPincode,
+            country: formCountry,
+            is_default: editingAddress ? editingAddress.is_default : userAddresses.length === 0
+        };
+
+        try {
+            let res;
+            if (editingAddress) {
+                res = await apiFetch(`/api/users/addresses/${editingAddress.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                showToast("Address updated successfully!", 'success');
+            } else {
+                res = await apiFetch('/api/users/addresses', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                showToast("Address added successfully!", 'success');
+            }
+            setShowAddressEditModal(false);
+            
+            // Reload addresses
+            const freshAddresses = await apiFetch('/api/users/addresses');
+            setUserAddresses(freshAddresses || []);
+            
+            // Auto-select the saved address
+            const savedAddr = res?.address || freshAddresses?.find(a => a.line1 === formLine1 && a.pincode === formPincode) || freshAddresses?.[0];
+            if (savedAddr) {
+                selectAddress(savedAddr);
+            }
+        } catch (err) {
+            console.error("Error saving address:", err);
+            showToast("Failed to save address. Please try again.", 'error');
+        }
+    };
+
+    const handleDeleteAddress = async (addrId, e) => {
+        if (e) e.stopPropagation(); // prevent selecting it when clicking delete
+        if (!window.confirm("Are you sure you want to delete this address?")) return;
+        try {
+            await apiFetch(`/api/users/addresses/${addrId}`, {
+                method: 'DELETE'
+            });
+            showToast("Address deleted.", 'success');
+            
+            // Reload
+            const freshAddresses = await apiFetch('/api/users/addresses');
+            setUserAddresses(freshAddresses || []);
+            
+            if (selectedAddressId === addrId) {
+                setSelectedAddressId(null);
+                if (freshAddresses && freshAddresses.length > 0) {
+                    selectAddress(freshAddresses[0]);
+                } else {
+                    setAddrName('');
+                    setAddrPhone('');
+                    setAddrLine('');
+                    setAddrLandmark('');
+                    setAddrCity('');
+                    setAddrState('');
+                    setAddrPin('');
+                    setAddrCountry('India');
+                }
+            }
+        } catch (err) {
+            console.error("Failed to delete address:", err);
+            showToast("Failed to delete address.", 'error');
+        }
+    };
+
+    const openAddAddressModal = () => {
+        setEditingAddress(null);
+        setFormLabel('Home');
+        setFormFullName(profile?.fullName || user?.displayName || '');
+        setFormPhone(profile?.phone || user?.phone || '');
+        setFormCountry('India');
+        setFormState('');
+        setFormCity('');
+        setFormPincode('');
+        setFormLine1('');
+        setFormLine2('');
+        setShowAddressEditModal(true);
+    };
+
+    const openEditAddressModal = (addr, e) => {
+        if (e) e.stopPropagation(); // prevent selection trigger
+        setEditingAddress(addr);
+        let normLabel = 'Home';
+        if (addr.label) {
+            const l = addr.label.toUpperCase();
+            if (l === 'WORK') normLabel = 'Work';
+            else if (l === 'OTHER') normLabel = 'Other';
+        }
+        setFormLabel(normLabel);
+        setFormFullName(addr.full_name || '');
+        setFormPhone(addr.phone || '');
+        setFormCountry(addr.country || 'India');
+        setFormState(addr.state || '');
+        setFormCity(addr.city || '');
+        setFormPincode(addr.pincode || '');
+        setFormLine1(addr.line1 || '');
+        setFormLine2(addr.line2 || '');
+        setShowAddressEditModal(true);
+    };
 
     const updateCart = (newCart) => {
         setCart(newCart);
@@ -536,10 +852,100 @@ function Cart() {
         updateCart(c);
     };
 
-    const subtotal = cart.reduce((s, item) => s + item.price * item.qty, 0);
-    const shipping = subtotal >= 2000 ? 0 : 199;
-    const discount = promoApplied ? Math.round(subtotal * 0.15) : 0;
-    const total = subtotal - discount + shipping;
+    const isRestricted = useMemo(() => {
+        const dr = financeRules?.delivery_restrictions;
+        if (!dr || !dr.restricted_countries) return false;
+        return dr.restricted_countries.includes(addrCountry);
+    }, [financeRules, addrCountry]);
+
+    const isProfileRestricted = useMemo(() => {
+        if (!user || !profile || !profile.country) return false;
+        const dr = financeRules?.delivery_restrictions;
+        if (!dr || !dr.restricted_countries) return false;
+        return dr.restricted_countries.includes(profile.country);
+    }, [user, profile, financeRules]);
+
+    // ── Price calculation using finance rules ──────────────────────────────
+    const priceBreakdown = useMemo(() => {
+        const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 1), 0);
+        const discount = promoApplied ? Math.round(subtotal * 0.15) : 0;
+        const afterDiscount = subtotal - discount;
+
+        // Cost rules
+        const costRules   = financeRules?.finance_cost_rules;
+        const taxRules    = financeRules?.finance_tax_rules;
+        const shipRules   = financeRules?.finance_shipping_rules;
+
+        // Packing & operating are charged per piece
+        const packingPerPiece   = Number(costRules?.packing_cost   ?? 50);
+        const operatingPerPiece = Number(costRules?.operating_cost  ?? 100);
+        const packingTotal   = packingPerPiece   * totalQty;
+        const operatingTotal = operatingPerPiece * totalQty;
+
+        // Base for tax = items after discount (packing and operating are already included in marked-up selling prices)
+        const taxableAmount = afterDiscount;
+
+        const pricePerPiece = totalQty > 0 ? taxableAmount / totalQty : 0;
+
+        let taxRate = 0, taxLabel = 'Tax', taxAmount = 0;
+        let shippingAmt = 0, shippingLabel = 'Shipping';
+        let zone = '';
+
+        if (selectedAddressId) {
+            const zoneVal = getShippingZone(addrCountry, addrCity);
+            zone = zoneVal;
+
+            if (addrCountry === 'India') {
+                const threshold = Number(taxRules?.india?.high_threshold ?? 2500);
+                const highRate  = Number(taxRules?.india?.high_rate ?? 18);
+                const lowRate   = Number(taxRules?.india?.low_rate ?? 5);
+                taxRate  = pricePerPiece > threshold ? highRate : lowRate;
+                taxLabel = `GST ${taxRate}%`;
+            } else if (addrCountry === 'United States') {
+                taxRate  = Number(taxRules?.usa_rate ?? 25);
+                taxLabel = `Import Duty ${taxRate}%`;
+            } else {
+                const ovr = (taxRules?.country_overrides || []).find(o => o.country === addrCountry);
+                taxRate  = ovr ? Number(ovr.rate) : Number(taxRules?.row_rate ?? 0);
+                taxLabel = taxRate === 0 ? 'Tax (None)' : `Tax ${taxRate}%`;
+            }
+            taxAmount = Math.round((taxableAmount * taxRate) / 100);
+
+            // Shipping
+            if (zone === 'mumbai') {
+                shippingAmt  = Number(shipRules?.mumbai ?? 100);
+                shippingLabel = 'Mumbai Local Delivery';
+            } else if (zone === 'india') {
+                shippingAmt  = Number(shipRules?.india ?? 200);
+                shippingLabel = 'India Delivery';
+            } else if (addrCountry === 'United States') {
+                const ovr = (shipRules?.country_overrides || []).find(o => o.country === 'United States');
+                shippingAmt  = ovr ? Number(ovr.shipping) : Number(shipRules?.row ?? 5000);
+                shippingLabel = 'USA Shipping';
+            } else {
+                const ovr = (shipRules?.country_overrides || []).find(o => o.country === addrCountry);
+                shippingAmt  = ovr ? Number(ovr.shipping) : Number(shipRules?.row ?? 5000);
+                shippingLabel = 'International Shipping';
+            }
+        } else {
+            shippingLabel = 'Shipping';
+            taxLabel = 'GST / Tax';
+        }
+
+        const total = taxableAmount + taxAmount + shippingAmt;
+
+        return {
+            subtotal, discount, afterDiscount,
+            packingTotal, operatingTotal, taxableAmount,
+            taxRate, taxLabel, taxAmount,
+            shippingAmt, shippingLabel,
+            total, zone, totalQty,
+            packingPerPiece, operatingPerPiece
+        };
+    }, [cart, promoApplied, financeRules, addrCountry, addrCity, selectedAddressId]);
+
+    const { subtotal, discount, afterDiscount, packingTotal, operatingTotal, taxableAmount, taxRate, taxLabel, taxAmount, shippingAmt, shippingLabel, total } = priceBreakdown;
 
     const applyPromo = () => {
         if (promo.trim().toUpperCase() === 'ASAT15') {
@@ -562,27 +968,23 @@ function Cart() {
             return;
         }
 
-        // Pre-fill address details from profile/user
-        setAddrName(profile?.fullName || user?.displayName || (localStorage.getItem('asat_user') ? JSON.parse(localStorage.getItem('asat_user')).fullName : ''));
-        setAddrPhone(profile?.phone || user?.phone || '');
-        setAddrLine(profile?.address || '');
-        setAddrCountry(profile?.country || 'India');
-        setAddrCity('');
-        setAddrState('');
-        setAddrPin('');
+        if (!selectedAddressId) {
+            showToast('Please select a shipping address to checkout.', 'warning');
+            return;
+        }
 
-        setShowAddressModal(true);
+        handlePlaceOrder();
     };
 
     const handlePlaceOrder = async (e) => {
         if (e) e.preventDefault();
 
-        if (!addrName.trim()) { showToast('Please enter your name.', 'error'); return; }
-        if (!addrPhone.trim()) { showToast('Please enter your phone number.', 'error'); return; }
-        if (!addrLine.trim()) { showToast('Please enter your address.', 'error'); return; }
-        if (!addrCity.trim()) { showToast('Please enter your city.', 'error'); return; }
-        if (!addrState.trim()) { showToast('Please enter your state.', 'error'); return; }
-        if (!addrPin.trim()) { showToast('Please enter your ZIP/PIN code.', 'error'); return; }
+        if (!addrName.trim()) { showToast('Please select a shipping address.', 'error'); return; }
+        if (!addrPhone.trim()) { showToast('Please select an address with phone number.', 'error'); return; }
+        if (!addrLine.trim()) { showToast('Please select an address with street details.', 'error'); return; }
+        if (!addrCity.trim()) { showToast('Please select an address with city details.', 'error'); return; }
+        if (addrCountry === 'India' && !addrState.trim()) { showToast('Please select an address with state details.', 'error'); return; }
+        if (!addrPin.trim()) { showToast('Please select an address with ZIP/PIN code.', 'error'); return; }
 
         setPlacing(true);
 
@@ -640,14 +1042,16 @@ function Cart() {
             const mfgItem = formattedItems.find(i => i.mfgId);
             const mfgId = mfgItem && isValidUUID(mfgItem.mfgId) ? mfgItem.mfgId : null;
 
-            const fullAddress = `${addrLine}, ${addrCity}, ${addrState} - ${addrPin}`;
+            const fullAddress = `${addrLine}${addrLandmark ? ` (Landmark: ${addrLandmark})` : ''}, ${addrCity}, ${addrState ? `${addrState}, ` : ''}${addrCountry} - ${addrPin}`;
 
             const orderData = {
                 order_id: oId,
                 user_id: user?.id && isValidUUID(user.id) ? user.id : null,
                 customer_name: addrName,
                 items: formattedItems,
-                total_amount: Number(total) || 0,
+                total_amount: Number(priceBreakdown.total) || 0,
+            tax_amount: Number(priceBreakdown.taxAmount) || 0,
+            shipping_amount: Number(priceBreakdown.shippingAmt) || 0,
                 designer_earnings: dEarnings,
                 mfg_earnings: mEarnings,
                 designer_id: desId,
@@ -682,7 +1086,7 @@ function Cart() {
                 return itemText;
             }).join('\n');
 
-            const fullMsg = `Hi! I'd like to place an order (Order ID: ${oId}):\n\n${msg}\n\nDelivery Details:\nName: ${addrName}\nPhone: ${addrPhone}\nAddress: ${fullAddress}, ${addrCountry}\n\nTotal: ${formatPrice(total)}`;
+            const fullMsg = `Hi! I'd like to place an order (Order ID: ${oId}):\n\n${msg}\n\nDelivery Details:\nName: ${addrName}\nPhone: ${addrPhone}\nAddress: ${fullAddress}, ${addrCountry}\n\nSubtotal: ${formatPrice(priceBreakdown.subtotal)}\n${priceBreakdown.taxRate > 0 ? `${priceBreakdown.taxLabel}: ${formatPrice(priceBreakdown.taxAmount)}\n` : ''}Shipping: ${formatPrice(priceBreakdown.shippingAmt)}\nTotal: ${formatPrice(priceBreakdown.total)}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank');
 
             // Clear cart
@@ -703,104 +1107,153 @@ function Cart() {
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />
             
-            {showAddressModal && (
-                <div className="addr-backdrop" onClick={() => setShowAddressModal(false)}>
-                    <div className="addr-modal" onClick={e => e.stopPropagation()}>
-                        <h3>Delivery Address</h3>
-                        <form onSubmit={handlePlaceOrder} className="addr-form">
+            {showAddressEditModal && (
+                <div className="addr-backdrop" onClick={() => setShowAddressEditModal(false)}>
+                    <div className="addr-modal" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+                        <h3>{editingAddress ? '✏️ Edit Shipping Address' : '➕ Add Shipping Address'}</h3>
+                        <form onSubmit={handleAddOrEditAddressSubmit} className="addr-form">
                             <div className="addr-row">
+                                <div className="addr-field">
+                                    <label>Address Label (e.g. Home, Work)</label>
+                                    <select
+                                        className="addr-input"
+                                        value={formLabel}
+                                        onChange={e => setFormLabel(e.target.value)}
+                                        required
+                                    >
+                                        <option value="Home">Home</option>
+                                        <option value="Work">Work</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
                                 <div className="addr-field">
                                     <label>Recipient Name</label>
                                     <input 
                                         type="text" 
                                         className="addr-input" 
-                                        value={addrName} 
-                                        onChange={e => setAddrName(e.target.value)} 
+                                        value={formFullName} 
+                                        onChange={e => setFormFullName(e.target.value)} 
                                         placeholder="Full Name"
-                                        required 
-                                    />
-                                </div>
-                                <div className="addr-field">
-                                    <label>Phone Number</label>
-                                    <input 
-                                        type="tel" 
-                                        className="addr-input" 
-                                        value={addrPhone} 
-                                        onChange={e => setAddrPhone(e.target.value)} 
-                                        placeholder="Contact Number"
                                         required 
                                     />
                                 </div>
                             </div>
                             
-                            <div className="addr-field">
-                                <label>Street Address</label>
-                                <input 
-                                    type="text" 
-                                    className="addr-input" 
-                                    value={addrLine} 
-                                    onChange={e => setAddrLine(e.target.value)} 
-                                    placeholder="Flat, House no., Building, Company, Apartment, Street"
-                                    required 
-                                />
-                            </div>
-
                             <div className="addr-row">
                                 <div className="addr-field">
-                                    <label>City</label>
+                                    <label>Mobile Number (For Delivery)</label>
                                     <input 
-                                        type="text" 
+                                        type="tel" 
                                         className="addr-input" 
-                                        value={addrCity} 
-                                        onChange={e => setAddrCity(e.target.value)} 
-                                        placeholder="City"
-                                        required 
-                                    />
-                                </div>
-                                <div className="addr-field">
-                                    <label>State</label>
-                                    <input 
-                                        type="text" 
-                                        className="addr-input" 
-                                        value={addrState} 
-                                        onChange={e => setAddrState(e.target.value)} 
-                                        placeholder="State"
-                                        required 
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="addr-row">
-                                <div className="addr-field">
-                                    <label>ZIP / PIN Code</label>
-                                    <input 
-                                        type="text" 
-                                        className="addr-input" 
-                                        value={addrPin} 
-                                        onChange={e => setAddrPin(e.target.value)} 
-                                        placeholder="6 Digit PIN"
+                                        value={formPhone} 
+                                        onChange={e => setFormPhone(e.target.value)} 
+                                        placeholder="Mobile Number"
                                         required 
                                     />
                                 </div>
                                 <div className="addr-field">
                                     <label>Country</label>
+                                    <select
+                                        className="addr-input"
+                                        value={formCountry}
+                                        onChange={e => {
+                                            setFormCountry(e.target.value);
+                                            if (e.target.value !== 'India') setFormState('');
+                                        }}
+                                        required
+                                    >
+                                        {allowedCountries.map(c => (
+                                            <option key={c.code} value={c.name}>{c.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="addr-row">
+                                {formCountry === 'India' ? (
+                                    <div className="addr-field">
+                                        <label>State</label>
+                                        <select
+                                            className="addr-input"
+                                            value={formState}
+                                            onChange={e => setFormState(e.target.value)}
+                                            required
+                                        >
+                                            <option value="">Select State</option>
+                                            {INDIAN_STATES.map(s => (
+                                                <option key={s} value={s}>{s}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                ) : (
+                                    <div className="addr-field">
+                                        <label>City</label>
+                                        <input 
+                                            type="text" 
+                                            className="addr-input" 
+                                            value={formCity} 
+                                            onChange={e => setFormCity(e.target.value)} 
+                                            placeholder="City"
+                                            required 
+                                        />
+                                    </div>
+                                )}
+                                <div className="addr-field">
+                                    <label>ZIP / PIN Code</label>
                                     <input 
                                         type="text" 
                                         className="addr-input" 
-                                        value={addrCountry} 
-                                        onChange={e => setAddrCountry(e.target.value)} 
-                                        placeholder="Country"
+                                        value={formPincode} 
+                                        onChange={e => setFormPincode(e.target.value)} 
+                                        placeholder="ZIP/PIN Code"
                                         required 
                                     />
                                 </div>
                             </div>
 
+                            {formCountry === 'India' && (
+                                <div className="addr-field">
+                                    <label>City</label>
+                                    <input 
+                                        type="text" 
+                                        className="addr-input" 
+                                        value={formCity} 
+                                        onChange={e => setFormCity(e.target.value)} 
+                                        placeholder="City"
+                                        required 
+                                    />
+                                </div>
+                            )}
+
+                            <div className="addr-field">
+                                <label>Street Address</label>
+                                <input 
+                                    type="text" 
+                                    className="addr-input" 
+                                    value={formLine1} 
+                                    onChange={e => setFormLine1(e.target.value)} 
+                                    placeholder="Flat, House no., Building, Street"
+                                    required 
+                                />
+                            </div>
+
+                            <div className="addr-field">
+                                <label>Nearby Landmarks (Optional)</label>
+                                <input 
+                                    type="text" 
+                                    className="addr-input" 
+                                    value={formLine2} 
+                                    onChange={e => setFormLine2(e.target.value)} 
+                                    placeholder="e.g. Near Metro Station"
+                                />
+                            </div>
+
                             <div className="addr-actions">
-                                <button type="button" className="addr-btn-secondary" onClick={() => setShowAddressModal(false)} disabled={placing}>
+                                <button type="button" className="addr-btn-secondary" onClick={() => setShowAddressEditModal(false)}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="addr-btn-primary" disabled={placing}>
-                                    {placing ? 'Placing Order...' : 'Confirm & Place Order'}
+                                <button type="submit" className="addr-btn-primary">
+                                    Save Address
                                 </button>
                             </div>
                         </form>
@@ -825,6 +1278,8 @@ function Cart() {
                         </div>
                     ) : (
                         <>
+                            {/* ── Cart Items ── */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                             {/* ── Cart Items ── */}
                             <div className="cart-items">
                                 {!isMobile && (
@@ -873,60 +1328,182 @@ function Cart() {
                                 ))}
                             </div>
 
+                            {/* ── Shipping Address Management Section ── */}
+                            <div className="cart-address-section" style={{ background: 'white', border: '1px solid #eee', borderRadius: '8px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '12px' }}>
+                                    <h3 style={{ fontFamily: "'Cinzel', serif", fontSize: '1.1rem', letterSpacing: '2px', margin: 0, color: 'var(--dark)' }}>📍 Shipping Address</h3>
+                                    {user && (
+                                        <button 
+                                            type="button"
+                                            className="fin-btn fin-btn--save" 
+                                            style={{ margin: 0, padding: '8px 16px', fontSize: '0.75rem', fontFamily: "'Montserrat', sans-serif", border: '1px solid var(--gold)', borderRadius: '4px', background: 'transparent', color: 'var(--gold)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }} 
+                                            onClick={openAddAddressModal}
+                                        >
+                                            ➕ Add New Address
+                                        </button>
+                                    )}
+                                </div>
+                                
+                                {!user ? (
+                                    <div style={{ padding: '20px 0', textAlign: 'center', color: '#888', fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem' }}>
+                                        <i className="fas fa-lock" style={{ fontSize: '1.5rem', color: 'var(--gold)', marginBottom: '10px', display: 'block' }}></i>
+                                        Please <span style={{ color: 'var(--gold)', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }} onClick={() => navigate('/login?redirect=/cart')}>log in</span> to add and select shipping address.
+                                    </div>
+                                ) : userAddresses.length === 0 ? (
+                                    <div style={{ padding: '20px 0', textAlign: 'center', color: '#888', fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem' }}>
+                                        <i className="fas fa-map-marker-alt" style={{ fontSize: '1.5rem', color: '#ccc', marginBottom: '10px', display: 'block' }}></i>
+                                        You have no saved addresses. Please add a shipping address to calculate tax/shipping and checkout.
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {userAddresses.map(addr => {
+                                            const isSelected = selectedAddressId === addr.id;
+                                            return (
+                                                <div 
+                                                    key={addr.id} 
+                                                    onClick={() => selectAddress(addr)}
+                                                    style={{ 
+                                                        display: 'flex', 
+                                                        gap: '14px', 
+                                                        padding: '16px', 
+                                                        border: isSelected ? '2px solid var(--gold)' : '1px solid #eee', 
+                                                        borderRadius: '8px', 
+                                                        cursor: 'pointer',
+                                                        background: isSelected ? 'rgba(197, 160, 89, 0.02)' : 'white',
+                                                        transition: 'all 0.2s',
+                                                        position: 'relative'
+                                                    }}
+                                                >
+                                                    <input 
+                                                        type="radio" 
+                                                        name="shipping_address" 
+                                                        checked={isSelected}
+                                                        onChange={() => selectAddress(addr)}
+                                                        style={{ marginTop: '3px', accentColor: 'var(--gold)', cursor: 'pointer' }}
+                                                    />
+                                                    <div style={{ flex: 1, fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', color: '#444', lineHeight: '1.5', paddingRight: '60px' }}>
+                                                        <div style={{ fontWeight: 700, color: 'var(--dark)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                                            <span>{addr.full_name}</span>
+                                                            <span style={{ fontSize: '0.65rem', background: '#eee', padding: '2px 6px', borderRadius: '3px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>{addr.label || 'Home'}</span>
+                                                            {addr.is_default && <span style={{ fontSize: '0.65rem', background: 'var(--gold)', padding: '2px 6px', borderRadius: '3px', color: 'white', fontWeight: 600 }}>Default</span>}
+                                                        </div>
+                                                        <div>{addr.line1}</div>
+                                                        {addr.line2 && <div style={{ color: '#666', fontStyle: 'italic' }}>Landmark: {addr.line2}</div>}
+                                                        <div>{addr.city}, {addr.state ? `${addr.state}, ` : ''}{addr.country} - <span style={{ fontWeight: 600 }}>{addr.pincode}</span></div>
+                                                        <div style={{ marginTop: '4px', fontWeight: 600, color: '#666' }}>📞 Alt Mobile: {addr.phone}</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '12px', position: 'absolute', top: '16px', right: '16px' }}>
+                                                        <button 
+                                                            type="button"
+                                                            onClick={(e) => openEditAddressModal(addr, e)}
+                                                            style={{ border: 'none', background: 'transparent', color: '#666', cursor: 'pointer', fontSize: '0.9rem', padding: '4px' }}
+                                                            title="Edit Address"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <button 
+                                                            type="button"
+                                                            onClick={(e) => handleDeleteAddress(addr.id, e)}
+                                                            style={{ border: 'none', background: 'transparent', color: '#d9534f', cursor: 'pointer', fontSize: '0.9rem', padding: '4px' }}
+                                                            title="Delete Address"
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                             {/* ── Order Summary ── */}
                             <div className="cart-summary">
                                 <h3>ORDER SUMMARY</h3>
                                 <div className="cart-summary-row">
-                                    <span>Subtotal</span>
+                                    <span>Selling Price</span>
                                     <span>{formatPrice(subtotal)}</span>
                                 </div>
-                                <div className="cart-summary-row">
-                                    <span>Shipping</span>
-                                    <span>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
-                                </div>
-                                {promoApplied && (
+                                {discount > 0 && (
                                     <div className="cart-summary-row" style={{ color: '#2e7d32' }}>
                                         <span>Discount (ASAT15)</span>
-                                        <span style={{ color: '#2e7d32' }}>-{formatPrice(discount)}</span>
+                                        <span style={{ color: '#2e7d32' }}>−{formatPrice(discount)}</span>
                                     </div>
                                 )}
+
+                                <div className="cart-summary-row" style={{ color: '#C5A059', fontWeight: 600 }}>
+                                    <span>{taxLabel} <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#888' }}>(applied at billing)</span></span>
+                                    <span>{selectedAddressId ? (taxRate === 0 ? 'None' : `+ ${formatPrice(taxAmount)}`) : '—'}</span>
+                                </div>
+                                <div className="cart-summary-row cart-summary-row--muted">
+                                    <span>Shipping</span>
+                                    <span>{selectedAddressId ? `+ ${formatPrice(priceBreakdown.shippingAmt)}` : '—'}</span>
+                                </div>
+
+                                <div className="cart-finance-note">
+                                    <i className="fas fa-info-circle"></i>
+                                    Prices shown include selling markup. GST is calculated based on your delivery address and applied at billing.
+                                </div>
+
                                 <div className="cart-promo">
-                                    <input 
-                                        type="text" 
-                                        placeholder="Promo code" 
-                                        value={promo} 
-                                        onChange={e => setPromo(e.target.value)} 
-                                        onKeyDown={e => { if (e.key === 'Enter') applyPromo(); }} 
+                                    <input
+                                        type="text"
+                                        placeholder="Promo code"
+                                        value={promo}
+                                        onChange={e => setPromo(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') applyPromo(); }}
                                     />
                                     <button onClick={applyPromo}>Apply</button>
                                 </div>
                                 <div className="cart-summary-divider" />
                                 <div className="cart-summary-total">
-                                    <span>Total</span>
+                                    <span>{selectedAddressId ? 'Grand Total' : 'Subtotal'}</span>
                                     <span>{formatPrice(total)}</span>
                                 </div>
                                 {currency !== 'INR' && (
-                                     <div style={{
-                                         fontSize: '0.72rem',
-                                         color: 'var(--gold)',
-                                         letterSpacing: '1px',
-                                         fontFamily: "'Montserrat', sans-serif",
-                                         textTransform: 'uppercase',
-                                         marginTop: '10px',
-                                         marginBottom: '20px',
-                                         textAlign: 'center',
-                                         background: 'rgba(197, 160, 89, 0.05)',
-                                         padding: '8px 12px',
-                                         border: '1px solid rgba(197, 160, 89, 0.2)',
-                                         borderRadius: '2px'
-                                     }}>
-                                         <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
-                                         Payment will be safely processed in base INR (₹{total.toLocaleString('en-IN')})
-                                     </div>
-                                 )}
-                                 <button className="cart-checkout-btn" onClick={handleCheckoutClick}>
-                                     CHECKOUT VIA WHATSAPP
-                                 </button>
+                                    <div style={{
+                                        fontSize: '0.72rem', color: 'var(--gold)', letterSpacing: '1px',
+                                        fontFamily: "'Montserrat', sans-serif", textTransform: 'uppercase',
+                                        marginTop: '10px', marginBottom: '20px', textAlign: 'center',
+                                        background: 'rgba(197, 160, 89, 0.05)', padding: '8px 12px',
+                                        border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '2px'
+                                    }}>
+                                        <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
+                                        Payment processed in INR (₹{total.toLocaleString('en-IN')})
+                                    </div>
+                                )}
+                                  {isRestricted && (
+                                      <div style={{
+                                          margin: '14px 0',
+                                          padding: '12px 14px',
+                                          background: '#fef2f2',
+                                          border: '1.5px solid #fee2e2',
+                                          borderRadius: '8px',
+                                          color: '#991b1b',
+                                          fontFamily: "'Montserrat', sans-serif",
+                                          fontSize: '0.78rem',
+                                          fontWeight: '500',
+                                          display: 'flex',
+                                          alignItems: 'flex-start',
+                                          gap: '8px',
+                                          lineHeight: '1.4',
+                                          textAlign: 'left'
+                                      }}>
+                                          <i className="fas fa-exclamation-circle" style={{ marginTop: '2px', flexShrink: 0 }}></i>
+                                          <div>
+                                              <strong style={{ display: 'block', marginBottom: '3px' }}>Delivery Restricted to {addrCountry}</strong>
+                                              {financeRules?.delivery_restrictions?.message || "We currently do not deliver to this country. Please select a different country or contact support."}
+                                          </div>
+                                      </div>
+                                  )}
+                                  <button 
+                                      className="cart-checkout-btn" 
+                                      onClick={handleCheckoutClick}
+                                      disabled={!selectedAddressId || isRestricted || placing}
+                                      style={(!selectedAddressId || isRestricted || placing) ? { background: '#888', cursor: 'not-allowed', opacity: 0.6 } : {}}
+                                  >
+                                      {isRestricted ? 'DELIVERY RESTRICTED' : (placing ? 'PLACING ORDER...' : (selectedAddressId ? 'CHECKOUT VIA WHATSAPP' : 'SELECT ADDRESS TO CHECKOUT'))}
+                                  </button>
                                 <a className="cart-continue" onClick={() => navigate('/products')}>← Continue Shopping</a>
                                 <div className="cart-secure">
                                     <i className="fas fa-lock"></i>

@@ -64,6 +64,9 @@ import MasterSettings     from './pages/master/MasterSettings';
 import MasterActivity     from './pages/master/MasterActivity';
 import MasterTickets      from './pages/master/MasterTickets';
 import MasterCategories   from './pages/master/MasterCategories';
+import MasterFinance      from './pages/master/MasterFinance';
+import MasterDelivery     from './pages/master/MasterDelivery';
+import MasterWithdrawals  from './pages/master/MasterWithdrawals';
 
 // Mfg pages
 import MfgIndex        from './pages/mfg/MfgIndex';
@@ -145,10 +148,13 @@ function App() {
           <Route path="designs"   element={<MasterDesigns />} />
           <Route path="catalogue" element={<MasterCatalogue />} />
           <Route path="products"  element={<MasterProducts />} />
-          <Route path="tickets"   element={<MasterTickets />} />
+           <Route path="tickets"   element={<MasterTickets />} />
           <Route path="settings"  element={<MasterSettings />} />
           <Route path="activity"  element={<MasterActivity />} />
           <Route path="categories" element={<MasterCategories />} />
+          <Route path="finance"   element={<MasterFinance />} />
+          <Route path="delivery"  element={<MasterDelivery />} />
+          <Route path="withdrawals" element={<MasterWithdrawals />} />
         </Route>
 
         {/* ─── Mfg Auth (standalone — no header) ─── */}

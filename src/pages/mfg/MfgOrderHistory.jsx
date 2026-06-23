@@ -9,6 +9,7 @@ function MfgOrderHistory() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const fetchHistory = async () => {
         if (!user) return;
@@ -56,11 +57,57 @@ function MfgOrderHistory() {
         return items.reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
     };
 
+    const filteredOrders = orders.filter(o => {
+        if (searchTerm.trim() !== '') {
+            const q = searchTerm.toLowerCase();
+            const orderIdStr = (o.orderId || o.id || '').toLowerCase();
+            const customerStr = (o.customerName || '').toLowerCase();
+            const itemsStr = (o.items || []).map(item => item.name || '').join(' ').toLowerCase();
+            const statusStr = (o.status || '').toLowerCase();
+            return (
+                orderIdStr.includes(q) ||
+                customerStr.includes(q) ||
+                itemsStr.includes(q) ||
+                statusStr.includes(q)
+            );
+        }
+        return true;
+    });
+
     return (
         <main className="adm-page">
             <BackButton />
             <h1 className="adm-page__title">ORDER HISTORY</h1>
             <p className="adm-page__subtitle">Completed and cancelled orders archive</p>
+
+            {/* Search Input Bar */}
+            {orders.length > 0 && (
+                <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            placeholder="Search archived orders..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            style={{
+                                padding: '10px 35px 10px 15px',
+                                background: '#1c1c1c',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '4px',
+                                color: 'white',
+                                fontFamily: "'Montserrat', sans-serif",
+                                fontSize: '0.82rem',
+                                width: '280px',
+                                outline: 'none',
+                                transition: 'border-color 0.2s'
+                            }}
+                            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                        />
+                        <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                    </div>
+                </div>
+            )}
 
             <div className="adm-table-wrap">
                 <table className="adm-table">
@@ -81,8 +128,10 @@ function MfgOrderHistory() {
                             <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-spinner fa-spin"></i> Loading order history...</td></tr>
                         ) : orders.length === 0 ? (
                             <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-history"></i> No order history yet.</td></tr>
+                        ) : filteredOrders.length === 0 ? (
+                            <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-search"></i> No matching orders found.</td></tr>
                         ) : (
-                            orders.map(o => (
+                            filteredOrders.map(o => (
                                 <tr key={o.id}>
                                     <td style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{o.id.substring(0, 8)}...</td>
                                     <td style={{ fontSize: '0.75rem' }}>{formatOrderDate(o)}</td>

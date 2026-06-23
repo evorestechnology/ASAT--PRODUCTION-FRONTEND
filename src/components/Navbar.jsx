@@ -108,6 +108,17 @@ function Navbar() {
         return () => { document.body.style.overflow = ''; };
     }, [bubbleOpen]);
 
+    const [navSearchTerm, setNavSearchTerm] = useState('');
+    const [searchFocused, setSearchFocused] = useState(false);
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (navSearchTerm.trim()) {
+            navigate(`/products?search=${encodeURIComponent(navSearchTerm.trim())}`);
+            setNavSearchTerm('');
+        }
+    };
+
     return (
         <>
             <header style={{ padding: '16px 5% 12px' }}>
@@ -238,6 +249,7 @@ function Navbar() {
                 <div className="nav-desktop-links" style={{
                     display: 'flex',
                     justifyContent: 'center',
+                    alignItems: 'center',
                     gap: '40px',
                     fontFamily: "'Montserrat', sans-serif",
                     fontSize: '0.72rem',
@@ -252,6 +264,39 @@ function Navbar() {
                     <Link to="/rankings" style={{ color: 'var(--dark)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }} className="nav-link-item">
                         <i className="fas fa-trophy" style={{ color: 'var(--gold)', fontSize: '0.8rem', margin: 0 }}></i> Rankings
                     </Link>
+                    
+                    <form onSubmit={handleSearchSubmit} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginLeft: '20px',
+                        borderBottom: '1px solid rgba(0,0,0,0.15)',
+                        paddingBottom: '2px',
+                        position: 'relative'
+                    }}>
+                        <input
+                            type="text"
+                            placeholder="SEARCH..."
+                            value={navSearchTerm}
+                            onChange={e => setNavSearchTerm(e.target.value)}
+                            style={{
+                                border: 'none',
+                                background: 'transparent',
+                                outline: 'none',
+                                fontSize: '0.68rem',
+                                color: 'var(--dark)',
+                                fontFamily: "'Montserrat', sans-serif",
+                                letterSpacing: '1.5px',
+                                width: searchFocused ? '160px' : '90px',
+                                transition: 'width 0.3s ease',
+                                textTransform: 'uppercase'
+                            }}
+                            onFocus={() => setSearchFocused(true)}
+                            onBlur={() => setSearchFocused(false)}
+                        />
+                        <button type="submit" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--dark)' }}>
+                            <i className="fas fa-search" style={{ fontSize: '0.75rem' }}></i>
+                        </button>
+                    </form>
                 </div>
             </header>
 

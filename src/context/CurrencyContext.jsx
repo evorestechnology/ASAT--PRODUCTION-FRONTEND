@@ -38,6 +38,10 @@ export function CurrencyProvider({ children }) {
   const [globalCurrencies, setGlobalCurrencies] = useState(SUPPORTED_CURRENCIES);
   const [activeCurrencies, setActiveCurrencies] = useState(['INR', 'USD', 'EUR', 'GBP', 'AED', 'SAR', 'CAD', 'AUD', 'JPY', 'SGD']);
   const [loading, setLoading] = useState(true);
+  // Markup %, packing cost, and operating cost from master finance settings (defaults: packing 50, operating 100)
+  const [markupPct, setMarkupPct] = useState(0);
+  const [packingCost, setPackingCost] = useState(50);
+  const [operatingCost, setOperatingCost] = useState(100);
 
   // Set selected currency & persist in localStorage
   const setCurrency = (code) => {
@@ -94,6 +98,14 @@ export function CurrencyProvider({ children }) {
           // Load active currencies
           if (dbSettings.supported_currencies) {
             setActiveCurrencies(dbSettings.supported_currencies);
+          }
+          if (dbSettings.finance_cost_rules) {
+            const cr = dbSettings.finance_cost_rules;
+            if (cr.markup_pct !== undefined) {
+              setMarkupPct(Number(cr.markup_pct) || 0);
+            }
+            setPackingCost(cr.packing_cost !== undefined ? Number(cr.packing_cost) : 50);
+            setOperatingCost(cr.operating_cost !== undefined ? Number(cr.operating_cost) : 100);
           }
           // Handle force refresh
           if (dbSettings.force_rates_refresh_timestamp) {
@@ -221,6 +233,23 @@ export function CurrencyProvider({ children }) {
     return amount * rate;
   };
 
+  /**
+   * Apply the master markup % to a raw cost price (INR) to get the customer-facing selling price.
+   * Formula: selling_price = raw_cost / (1 - markup_pct / 100)
+   * Example: raw ₹500, markup 60% → selling = 500 / 0.4 = ₹1250
+   */
+  const applyMarkup = (rawPriceInINR) => {
+    const raw = Number(rawPriceInINR) || 0;
+    if (raw <= 0) return 0;
+    const pct = Math.min(99, Math.max(0, markupPct));
+    
+    // Add packing & operating cost rules before applying markup
+    const totalRaw = raw + packingCost + operatingCost;
+    
+    if (pct <= 0) return totalRaw;
+    return totalRaw / (1 - pct / 100);
+  };
+
   // Format INR price with correct symbols and side-by-side display for non-INR users
   const formatPrice = (priceInINR, showOnlyConverted = false) => {
     const amount = Number(priceInINR) || 0;
@@ -260,7 +289,11 @@ export function CurrencyProvider({ children }) {
     globalCurrencies,
     loading,
     convertPrice,
-    formatPrice
+    formatPrice,
+    markupPct,
+    packingCost,
+    operatingCost,
+    applyMarkup,
   };
 
   return (

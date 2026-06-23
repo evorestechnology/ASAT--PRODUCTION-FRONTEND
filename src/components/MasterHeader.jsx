@@ -12,6 +12,7 @@ function MasterHeader() {
         { to: '/master', label: 'Dashboard', icon: 'fas fa-th-large', end: true },
         { to: '/master/orders', label: 'Orders', icon: 'fas fa-receipt' },
         { to: '/master/wallet', label: 'Wallet', icon: 'fas fa-wallet' },
+        { to: '/master/withdrawals', label: 'Withdrawals', icon: 'fas fa-hand-holding-usd' },
         { to: '/master/designers', label: 'Designers', icon: 'fas fa-users' },
         { to: '/master/manufacturers', label: 'Manufacturers', icon: 'fas fa-industry' },
         { to: '/master/designs', label: 'Designs', icon: 'fas fa-palette' },
@@ -19,8 +20,11 @@ function MasterHeader() {
         { to: '/master/categories', label: 'Categories', icon: 'fas fa-tags' },
         { to: '/master/activity', label: 'Activity', icon: 'fas fa-chart-line' },
         { to: '/master/tickets', label: 'Tickets', icon: 'fas fa-headset' },
+        { to: '/master/finance', label: 'Finance', icon: 'fas fa-calculator' },
+        { to: '/master/delivery', label: 'Delivery', icon: 'fas fa-truck' },
         { to: '/master/settings', label: 'Settings', icon: 'fas fa-cog' },
     ];
+
 
 
     return (

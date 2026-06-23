@@ -269,7 +269,7 @@ const styles = `
 function Wishlist() {
     const navigate = useNavigate();
     const { toasts, showToast } = useToast();
-    const { formatPrice } = useCurrency();
+    const { formatPrice, applyMarkup } = useCurrency();
     const [wishlist, setWishlist] = useState([]);
     
     // Size selection modal states
@@ -409,7 +409,7 @@ function Wishlist() {
                                 <div className="wishlist-details">
                                     <span className="wishlist-collection">{item.collection}</span>
                                     <h4 className="wishlist-name" onClick={() => navigate(`/products/${item.id}`)}>{item.name}</h4>
-                                    <div className="wishlist-price">{formatPrice(item.price)}</div>
+                                    <div className="wishlist-price">{formatPrice(applyMarkup(item.price))}</div>
                                     <div className="wishlist-sizes-list">
                                         <span className="wishlist-sizes-label">SIZES:</span>
                                         <span className="wishlist-sizes-values">

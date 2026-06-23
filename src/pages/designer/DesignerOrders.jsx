@@ -14,6 +14,7 @@ function DesignerOrders() {
     const [country, setCountry] = useState('All');
     const [expanded, setExpanded] = useState(null);
     const [page, setPage] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const fetchOrders = async () => {
         if (!user) return;
@@ -70,6 +71,15 @@ function DesignerOrders() {
         if (country !== 'All' && o.country !== country) return false;
         if (dateFrom && o.dateStr < dateFrom) return false;
         if (dateTo && o.dateStr > dateTo) return false;
+        if (searchTerm.trim() !== '') {
+            const q = searchTerm.toLowerCase();
+            return (
+                o.orderId.toLowerCase().includes(q) ||
+                o.product.toLowerCase().includes(q) ||
+                o.color.toLowerCase().includes(q) ||
+                o.size.toLowerCase().includes(q)
+            );
+        }
         return true;
     });
 
@@ -99,8 +109,18 @@ function DesignerOrders() {
                         {countries.map(c => <option key={c}>{c}</option>)}
                     </select>
                 </div>
-                {(dateFrom || dateTo || country !== 'All') && (
-                    <button className="dsn-orders__clear" onClick={() => { setDateFrom(''); setDateTo(''); setCountry('All'); setPage(1); }}>
+                <div className="dsn-orders__filter-group" style={{ flexGrow: 1 }}>
+                    <label>Search</label>
+                    <input 
+                        type="text" 
+                        placeholder="Search by order ID, product name..." 
+                        value={searchTerm} 
+                        onChange={e => { setSearchTerm(e.target.value); setPage(1); }} 
+                        style={{ width: '100%', minWidth: '180px' }}
+                    />
+                </div>
+                {(dateFrom || dateTo || country !== 'All' || searchTerm) && (
+                    <button className="dsn-orders__clear" onClick={() => { setDateFrom(''); setDateTo(''); setCountry('All'); setSearchTerm(''); setPage(1); }}>
                         <i className="fas fa-times"></i> Clear
                     </button>
                 )}

@@ -4,6 +4,7 @@ import BackButton from '../../components/BackButton';
 import { apiFetch, uploadFile } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
+import { useCurrency } from '../../context/CurrencyContext';
 
 
 const COLOR_PALETTE = [
@@ -56,6 +57,7 @@ function DesignerUpload() {
     const navigate = useNavigate();
     const { user, profile } = useAuth();
     const { toasts, showToast } = useToast();
+    const { applyMarkup } = useCurrency();
     const [step, setStep] = useState(1);
 
     // Step 1
@@ -331,7 +333,7 @@ function DesignerUpload() {
                 const list = customerImages[color] || [];
                 return list.length > 0;
             });
-            return designTitle.trim() && price && parseInt(price) > 0 && description.trim() && hasStorefrontImages;
+            return designTitle.trim() && designerCost !== '' && parseFloat(designerCost) >= 0 && description.trim() && hasStorefrontImages;
         }
         return true;
     };
@@ -977,50 +979,51 @@ function DesignerUpload() {
                                 <input type="number" placeholder="e.g. 200" value={designerCost} onChange={e => setDesignerCost(e.target.value)} min="0" style={{ border: 'none', background: 'transparent' }} />
                             </div>
                             
-                            <div style={{ marginTop: '15px', background: '#f5f5f5', padding: '15px', borderRadius: '6px', fontSize: '0.85rem' }}>
-                                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#333' }}>Pricing Breakdown</h4>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                                    <span>Base Product Cost:</span>
-                                    <span>₹{Number(selectedProductObj?.cost || 0).toLocaleString()}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                                    <span>Max Printing Cost:</span>
-                                    <span>₹{
-                                        selectedColors.reduce((max, color) => {
+                            {/* Live Pricing Breakdown for Designer */}
+                            {selectedProductObj && (
+                                <div style={{ marginTop: '15px', background: 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)', padding: '18px', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid rgba(197,160,89,0.25)' }}>
+                                    <h4 style={{ margin: '0 0 14px 0', fontSize: '0.88rem', color: '#C5A059', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: "'Montserrat', sans-serif" }}>💰 Price Preview</h4>
+                                    {(() => {
+                                        const baseCost = Number(selectedProductObj?.cost || 0);
+                                        const maxPrint = selectedColors.reduce((max, color) => {
                                             const list = colorPlacements[color] || [];
                                             const colorCost = list.reduce((sum, placement) => {
                                                 const ps = selectedProductObj?.printingStyles?.find(x => x.style === placement.style);
                                                 return sum + (ps ? Number(ps.cost) || 0 : 0);
                                             }, 0);
                                             return Math.max(max, colorCost);
-                                        }, 0).toLocaleString()
-                                    }</span>
+                                        }, 0);
+                                        const dCost = Number(designerCost) || 0;
+                                        const rawTotal = baseCost + maxPrint + dCost;
+                                        return (
+                                            <>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#aaa' }}>
+                                                    <span>Base Product:</span>
+                                                    <span>₹{baseCost.toLocaleString()}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#aaa' }}>
+                                                    <span>Max Printing Cost:</span>
+                                                    <span>₹{maxPrint.toLocaleString()}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#C5A059' }}>
+                                                    <span>Your Royalty:</span>
+                                                    <span>₹{dCost.toLocaleString()}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#666', fontSize: '0.75rem' }}>
+                                                    <span>Raw Sub-total:</span>
+                                                    <span>₹{rawTotal.toLocaleString()}</span>
+                                                </div>
+                                                <hr style={{ border: 'none', borderTop: '1px solid rgba(197,160,89,0.2)', margin: '8px 0' }} />
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1rem', color: '#fff' }}>
+                                                    <span>Customer Selling Price <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 400 }}>(excl. GST)</span></span>
+                                                    <span style={{ color: '#C5A059' }}>₹{Math.round(applyMarkup(rawTotal)).toLocaleString()}</span>
+                                                </div>
+                                                <p style={{ margin: '8px 0 0', color: '#666', fontSize: '0.72rem', fontFamily: "'Montserrat', sans-serif" }}>Master markup & GST are applied at checkout by ASAT. Your royalty is guaranteed regardless.</p>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: 'var(--gold)', fontWeight: 'bold' }}>
-                                    <span>Your Designer Cost:</span>
-                                    <span>₹{(Number(designerCost) || 0).toLocaleString()}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: '#888' }}>
-                                    <span>Markup (0%):</span>
-                                    <span>₹0</span>
-                                </div>
-                                <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '8px 0' }} />
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1rem', color: '#111' }}>
-                                    <span>Final Retail Price:</span>
-                                    <span>₹{(
-                                        (Number(selectedProductObj?.cost) || 0) + 
-                                        selectedColors.reduce((max, color) => {
-                                            const list = colorPlacements[color] || [];
-                                            const colorCost = list.reduce((sum, placement) => {
-                                                const ps = selectedProductObj?.printingStyles?.find(x => x.style === placement.style);
-                                                return sum + (ps ? Number(ps.cost) || 0 : 0);
-                                            }, 0);
-                                            return Math.max(max, colorCost);
-                                        }, 0) + 
-                                        (Number(designerCost) || 0)
-                                    ).toLocaleString()}</span>
-                                </div>
-                            </div>
+                            )}
                         </div>
                         <div className="dsn-profile__group dsn-profile__group--full">
                             <label>Design Description *</label>

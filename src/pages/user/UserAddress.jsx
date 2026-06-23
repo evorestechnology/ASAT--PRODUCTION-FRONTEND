@@ -1,8 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
+import { COUNTRIES } from '../../constants/countries';
+
+const INDIAN_STATES = [
+    "Andaman and Nicobar Islands",
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chandigarh",
+    "Chhattisgarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jammu and Kashmir",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Ladakh",
+    "Lakshadweep",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Puducherry",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal"
+];
 
 const styles = `
     body { display: flex; flex-direction: column; min-height: 100vh; }
@@ -38,7 +78,7 @@ const styles = `
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .form-group { display: flex; flex-direction: column; }
     .form-group label { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: bold; margin-bottom: 6px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; box-sizing: border-box; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; box-sizing: border-box; }
     .form-group input:focus, .form-group select:focus { border-color: var(--gold); outline: none; }
     .full-width { grid-column: span 2; }
 `;
@@ -49,36 +89,60 @@ function UserAddress() {
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
+    const [financeRules, setFinanceRules] = useState(null);
     
     // Modal states
     const [showModal, setShowModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState(null);
-    const [label, setLabel] = useState('HOME');
+    const [label, setLabel] = useState('Home');
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
     const [addressLine1, setAddressLine1] = useState('');
+    const [addressLine2, setAddressLine2] = useState('');
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
     const [pincode, setPincode] = useState('');
-    const [country, setCountry] = useState('');
+    const [country, setCountry] = useState('India');
+
+    // Load settings for allowed countries
+    useEffect(() => {
+        apiFetch('/api/settings')
+            .then(data => setFinanceRules(data))
+            .catch(() => {});
+    }, []);
+
+    const allowedCountries = useMemo(() => {
+        const dr = financeRules?.delivery_restrictions;
+        if (!dr || !dr.restricted_countries) return COUNTRIES;
+        return COUNTRIES.filter(c => !dr.restricted_countries.includes(c.name));
+    }, [financeRules]);
 
     const fetchAddresses = async () => {
         if (!user) return;
         try {
             const data = await apiFetch('/api/users/addresses');
             
-            const list = (data || []).map(addr => ({
-                id: addr.id,
-                label: addr.label,
-                fullName: addr.full_name,
-                phone: addr.phone,
-                addressLine1: addr.line1,
-                city: addr.city,
-                state: addr.state,
-                pincode: addr.pincode,
-                country: addr.country,
-                isDefault: addr.is_default
-            }));
+            const list = (data || []).map(addr => {
+                let normLabel = 'Home';
+                if (addr.label) {
+                    const l = addr.label.toUpperCase();
+                    if (l === 'WORK') normLabel = 'Work';
+                    else if (l === 'OTHER') normLabel = 'Other';
+                }
+                return {
+                    id: addr.id,
+                    label: normLabel,
+                    fullName: addr.full_name,
+                    phone: addr.phone,
+                    addressLine1: addr.line1,
+                    addressLine2: addr.line2,
+                    city: addr.city,
+                    state: addr.state,
+                    pincode: addr.pincode,
+                    country: addr.country,
+                    isDefault: addr.is_default
+                };
+            });
             setAddresses(list);
         } catch (err) {
             console.error('Error fetching addresses:', err);
@@ -95,27 +159,36 @@ function UserAddress() {
 
     const openAddModal = () => {
         setEditingAddress(null);
-        setLabel('HOME');
+        setLabel('Home');
         setFullName(user?.user_metadata?.full_name || '');
         setPhone('');
         setAddressLine1('');
+        setAddressLine2('');
         setCity('');
         setState('');
         setPincode('');
-        setCountry('');
+        const defaultCountry = allowedCountries.find(c => c.name === 'India') ? 'India' : (allowedCountries[0]?.name || '');
+        setCountry(defaultCountry);
         setShowModal(true);
     };
 
     const openEditModal = (addr) => {
         setEditingAddress(addr);
-        setLabel(addr.label || 'HOME');
+        let normLabel = 'Home';
+        if (addr.label) {
+            const l = addr.label.toUpperCase();
+            if (l === 'WORK') normLabel = 'Work';
+            else if (l === 'OTHER') normLabel = 'Other';
+        }
+        setLabel(normLabel);
         setFullName(addr.fullName || '');
         setPhone(addr.phone || '');
         setAddressLine1(addr.addressLine1 || '');
+        setAddressLine2(addr.addressLine2 || '');
         setCity(addr.city || '');
         setState(addr.state || '');
         setPincode(addr.pincode || '');
-        setCountry(addr.country || '');
+        setCountry(addr.country || 'India');
         setShowModal(true);
     };
 
@@ -124,13 +197,23 @@ function UserAddress() {
         if (!user) return;
         setToast(null);
 
+        if (!fullName || !phone || !addressLine1 || !city || !pincode || !country) {
+            setToast({ type: 'error', msg: 'Please fill in all required fields.' });
+            return;
+        }
+        if (country === 'India' && !state) {
+            setToast({ type: 'error', msg: 'Please select a state.' });
+            return;
+        }
+
         const payload = {
             label,
             full_name: fullName,
             phone,
             line1: addressLine1,
+            line2: addressLine2,
             city,
-            state,
+            state: country === 'India' ? state : '',
             pincode,
             country,
         };
@@ -229,9 +312,10 @@ function UserAddress() {
                                     </h4>
                                     <p style={{ fontWeight: '600', color: '#111' }}>{addr.fullName}</p>
                                     <p>{addr.addressLine1}</p>
-                                    <p>{addr.city}, {addr.state} - {addr.pincode}</p>
+                                    {addr.addressLine2 && <p style={{ color: '#666', fontStyle: 'italic' }}>Landmark: {addr.addressLine2}</p>}
+                                    <p>{addr.city}{addr.state ? `, ${addr.state}` : ''} - {addr.pincode}</p>
                                     <p>{addr.country}</p>
-                                    <p className="phone"><i className="fas fa-phone-alt"></i> {addr.phone}</p>
+                                    <p className="phone" style={{ fontWeight: 600, color: '#666', marginTop: '4px' }}>📞 Alt Mobile: {addr.phone}</p>
                                 </div>
                                 <div className="address-actions">
                                     <button className="address-btn" onClick={() => openEditModal(addr)}>Edit</button>
@@ -260,38 +344,75 @@ function UserAddress() {
                                 <div className="form-group">
                                     <label>Label</label>
                                     <select value={label} onChange={e => setLabel(e.target.value)}>
-                                        <option value="HOME">HOME</option>
-                                        <option value="WORK">WORK</option>
-                                        <option value="OTHER">OTHER</option>
+                                        <option value="Home">Home</option>
+                                        <option value="Work">Work</option>
+                                        <option value="Other">Other</option>
                                     </select>
                                 </div>
                                 <div className="form-group">
                                     <label>Full Name</label>
                                     <input type="text" required placeholder="Recipient Name" value={fullName} onChange={e => setFullName(e.target.value)} />
                                 </div>
-                                <div className="form-group full-width">
-                                    <label>Address Line 1</label>
-                                    <input type="text" required placeholder="Street address, P.O. box, company name" value={addressLine1} onChange={e => setAddressLine1(e.target.value)} />
-                                </div>
                                 <div className="form-group">
-                                    <label>City</label>
-                                    <input type="text" required placeholder="City" value={city} onChange={e => setCity(e.target.value)} />
-                                </div>
-                                <div className="form-group">
-                                    <label>State / Province</label>
-                                    <input type="text" required placeholder="State" value={state} onChange={e => setState(e.target.value)} />
-                                </div>
-                                <div className="form-group">
-                                    <label>Pincode / ZIP Code</label>
-                                    <input type="text" required placeholder="ZIP Code" value={pincode} onChange={e => setPincode(e.target.value)} />
+                                    <label>Mobile Number (For Delivery)</label>
+                                    <input type="tel" required placeholder="Mobile Number" value={phone} onChange={e => setPhone(e.target.value)} />
                                 </div>
                                 <div className="form-group">
                                     <label>Country</label>
-                                    <input type="text" required placeholder="Country Name" value={country} onChange={e => setCountry(e.target.value)} />
+                                    <select 
+                                        required 
+                                        value={country} 
+                                        onChange={e => {
+                                            setCountry(e.target.value);
+                                            if (e.target.value !== 'India') setState('');
+                                        }}
+                                    >
+                                        {allowedCountries.map(c => (
+                                            <option key={c.code} value={c.name}>{c.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {country === 'India' ? (
+                                    <>
+                                        <div className="form-group">
+                                            <label>State</label>
+                                            <select required value={state} onChange={e => setState(e.target.value)}>
+                                                <option value="">Select State</option>
+                                                {INDIAN_STATES.map(s => (
+                                                    <option key={s} value={s}>{s}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>City</label>
+                                            <input type="text" required placeholder="City" value={city} onChange={e => setCity(e.target.value)} />
+                                        </div>
+                                        <div className="form-group full-width">
+                                            <label>Pincode / ZIP Code</label>
+                                            <input type="text" required placeholder="Pincode" value={pincode} onChange={e => setPincode(e.target.value)} />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="form-group">
+                                            <label>City</label>
+                                            <input type="text" required placeholder="City" value={city} onChange={e => setCity(e.target.value)} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Pincode / ZIP Code</label>
+                                            <input type="text" required placeholder="ZIP Code" value={pincode} onChange={e => setPincode(e.target.value)} />
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="form-group full-width">
+                                    <label>Street Address</label>
+                                    <input type="text" required placeholder="Flat, House no., Building, Street" value={addressLine1} onChange={e => setAddressLine1(e.target.value)} />
                                 </div>
                                 <div className="form-group full-width">
-                                    <label>Phone Number</label>
-                                    <input type="text" required placeholder="Contact Number" value={phone} onChange={e => setPhone(e.target.value)} />
+                                    <label>Nearby Landmarks (Optional)</label>
+                                    <input type="text" placeholder="e.g. Near Metro Station" value={addressLine2} onChange={e => setAddressLine2(e.target.value)} />
                                 </div>
                                 <div className="full-width" style={{ display: 'flex', gap: '10px', marginTop: '10px', justifyContent: 'flex-end' }}>
                                     <button type="button" className="address-btn" style={{ padding: '10px 20px' }} onClick={() => setShowModal(false)}>Cancel</button>

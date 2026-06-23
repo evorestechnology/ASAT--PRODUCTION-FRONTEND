@@ -12,6 +12,12 @@ function MasterDesigners() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Detailed stats drawer states
+    const [selectedDesignerId, setSelectedDesignerId] = useState(null);
+    const [selectedDesignerDetails, setSelectedDesignerDetails] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+
     // Delete confirmation state
     const [pendingDeleteDesigner, setPendingDeleteDesigner] = useState(null);
 
@@ -83,6 +89,27 @@ function MasterDesigners() {
         fetchDesigners();
     }, []);
 
+    useEffect(() => {
+        if (!selectedDesignerId) {
+            setSelectedDesignerDetails(null);
+            return;
+        }
+        const fetchDetails = async () => {
+            setDetailsLoading(true);
+            try {
+                const data = await apiFetch(`/api/designers/${selectedDesignerId}/admin-details`);
+                setSelectedDesignerDetails(data);
+            } catch (err) {
+                console.error("Error fetching designer details:", err);
+                showToast("Failed to fetch detailed info.", "error");
+                setSelectedDesignerId(null);
+            } finally {
+                setDetailsLoading(false);
+            }
+        };
+        fetchDetails();
+    }, [selectedDesignerId]);
+
     const handleStatusChange = async (designerId, newStatus) => {
         try {
             await apiFetch(`/api/designers/${designerId}`, {
@@ -152,7 +179,24 @@ function MasterDesigners() {
         return 'info';
     };
 
+    const filteredDesigners = designers.filter(d => {
+        const q = searchTerm.toLowerCase();
+        return (
+            (d.fullName || '').toLowerCase().includes(q) ||
+            (d.username || '').toLowerCase().includes(q) ||
+            (d.email || '').toLowerCase().includes(q) ||
+            (d.id || '').toLowerCase().includes(q)
+        );
+    });
+
+    const formatDate = (createdAt) => {
+        if (!createdAt) return '—';
+        const d = new Date(createdAt);
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    };
+
     return (
+        <br /> ||
         <main className="adm-page">
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />
@@ -170,6 +214,33 @@ function MasterDesigners() {
                 >
                     <i className="fas fa-plus" style={{ marginRight: 6 }}></i> Create Designer
                 </button>
+            </div>
+
+            {/* Search Input Bar */}
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Search designers by name or username..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{
+                            padding: '10px 35px 10px 15px',
+                            background: '#1c1c1c',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '4px',
+                            color: 'white',
+                            fontFamily: "'Montserrat', sans-serif",
+                            fontSize: '0.82rem',
+                            width: '280px',
+                            outline: 'none',
+                            transition: 'border-color 0.2s'
+                        }}
+                        onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                    />
+                    <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                </div>
             </div>
 
             {loading ? (
@@ -192,13 +263,21 @@ function MasterDesigners() {
                             </tr>
                         </thead>
                         <tbody>
-                            {designers.length === 0 ? (
-                                <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-users"></i>No designers registered yet.</td></tr>
+                            {filteredDesigners.length === 0 ? (
+                                <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-users"></i>No designers found.</td></tr>
                             ) : (
-                                designers.map(d => (
+                                filteredDesigners.map(d => (
                                     <tr key={d.id}>
                                         <td>{d.id.substring(0, 8)}...</td>
-                                        <td>{d.fullName || '—'}</td>
+                                        <td>
+                                            <span 
+                                                onClick={() => setSelectedDesignerId(d.id)} 
+                                                style={{ color: 'var(--gold)', cursor: 'pointer', fontWeight: 600, borderBottom: '1px dotted var(--gold)' }}
+                                                title="View detailed statistics"
+                                            >
+                                                {d.fullName || '—'}
+                                            </span>
+                                        </td>
                                         <td>@{d.username || '—'}</td>
                                         <td>{d.designsCount || 0}</td>
                                         <td>₹{(d.totalEarnings || d.earnings || 0).toLocaleString()}</td>
@@ -323,6 +402,211 @@ function MasterDesigners() {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* Detailed Info Drawer Overlay */}
+            {selectedDesignerId && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        onClick={() => setSelectedDesignerId(null)}
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'rgba(0, 0, 0, 0.4)',
+                            backdropFilter: 'blur(6px)',
+                            zIndex: 1999
+                        }}
+                    ></div>
+
+                    {/* Drawer Panel */}
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        right: 0,
+                        width: '520px',
+                        maxWidth: '90%',
+                        height: '100%',
+                        background: 'rgba(18, 18, 18, 0.96)',
+                        borderLeft: '1px solid var(--gold)',
+                        boxShadow: '-10px 0 45px rgba(0, 0, 0, 0.6)',
+                        zIndex: 2000,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        fontFamily: "'Montserrat', sans-serif",
+                        color: 'white',
+                        overflowY: 'auto'
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            padding: '24px 20px',
+                            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <div>
+                                <h3 style={{ fontFamily: "'Cinzel', serif", margin: 0, color: 'var(--gold)', fontSize: '1.2rem', letterSpacing: 1 }}>
+                                    DESIGNER PROFILE
+                                </h3>
+                                <div style={{ fontSize: '0.75rem', color: '#aaa', marginTop: 4 }}>
+                                    UID: {selectedDesignerId}
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedDesignerId(null)}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#aaa',
+                                    fontSize: '1.2rem',
+                                    cursor: 'pointer',
+                                    transition: 'color 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'var(--gold)'}
+                                onMouseLeave={(e) => e.target.style.color = '#aaa'}
+                            >
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        {detailsLoading ? (
+                            <div style={{ margin: 'auto', textAlign: 'center', color: '#aaa', fontSize: '0.9rem' }}>
+                                <div className="adm-spinner" style={{ marginBottom: 15 }}></div>
+                                Loading details...
+                            </div>
+                        ) : selectedDesignerDetails ? (
+                            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                                
+                                {/* Info Section */}
+                                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '8px' }}>
+                                    {selectedDesignerDetails.designer.avatar_url ? (
+                                        <img 
+                                            src={selectedDesignerDetails.designer.avatar_url} 
+                                            alt="avatar" 
+                                            style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--gold)' }} 
+                                        />
+                                    ) : (
+                                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--gold)', color: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 'bold', fontFamily: "'Cinzel'" }}>
+                                            {(selectedDesignerDetails.designer.full_name || 'D')[0].toUpperCase()}
+                                        </div>
+                                    )}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{selectedDesignerDetails.designer.full_name}</h4>
+                                        <span style={{ color: 'var(--gold)', fontSize: '0.8rem' }}>@{selectedDesignerDetails.designer.username}</span>
+                                        <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="far fa-envelope" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.email}</span>
+                                        {selectedDesignerDetails.designer.contact && (
+                                            <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="fas fa-phone-alt" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.contact}</span>
+                                        )}
+                                        {selectedDesignerDetails.designer.address && (
+                                            <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="fas fa-map-marker-alt" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.address}, {selectedDesignerDetails.designer.country}</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Ledger / Financial Grid */}
+                                <div>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                        FINANCIAL LEDGER
+                                    </h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Total Income</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981' }}>₹{Number(selectedDesignerDetails.wallet.total_earnings || 0).toLocaleString()}</div>
+                                        </div>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Payouts</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#f59e0b' }}>₹{Number(selectedDesignerDetails.wallet.total_withdrawn || 0).toLocaleString()}</div>
+                                        </div>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Balance</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--gold)' }}>₹{Number(selectedDesignerDetails.wallet.balance || 0).toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Activity / Metrics Grid */}
+                                <div>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                        PLATFORM ACTIVITY
+                                    </h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Designs Uploaded</div>
+                                            <div style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>{selectedDesignerDetails.designs.length}</div>
+                                        </div>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Sales Orders</div>
+                                            <div style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>{selectedDesignerDetails.orders.length}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Designs list */}
+                                <div>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                        DESIGNS ({selectedDesignerDetails.designs.length})
+                                    </h4>
+                                    {selectedDesignerDetails.designs.length === 0 ? (
+                                        <div style={{ color: '#666', fontSize: '0.8rem', padding: '10px 0' }}>No designs uploaded yet.</div>
+                                    ) : (
+                                        <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {selectedDesignerDetails.designs.map(d => (
+                                                <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{d.title}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: '#888' }}>ID: {d.id.substring(0,8)}...</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        <span style={{ fontSize: '0.85rem', color: 'var(--gold)', fontWeight: 600 }}>₹{d.price.toLocaleString()}</span>
+                                                        <span className={`adm-badge adm-badge--${d.status === 'approved' ? 'active' : d.status === 'pending' ? 'pending' : 'danger'}`} style={{ fontSize: '0.62rem' }}>
+                                                            {d.status || 'pending'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Orders list */}
+                                <div>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                        SALES ORDERS ({selectedDesignerDetails.orders.length})
+                                    </h4>
+                                    {selectedDesignerDetails.orders.length === 0 ? (
+                                        <div style={{ color: '#666', fontSize: '0.8rem', padding: '10px 0' }}>No sales recorded.</div>
+                                    ) : (
+                                        <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {selectedDesignerDetails.orders.map(o => (
+                                                <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Order #{o.order_id || o.id.substring(0,8).toUpperCase()}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: '#888' }}>{formatDate(o.created_at)}</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                                            <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>₹{Number(o.total_amount || 0).toLocaleString()}</span>
+                                                            <span style={{ fontSize: '0.65rem', color: '#10b981' }}>Earned: ₹{Number(o.designer_earnings || 0).toLocaleString()}</span>
+                                                        </div>
+                                                        <span className={`adm-badge adm-badge--${o.status === 'completed' ? 'active' : o.status === 'cancelled' ? 'danger' : 'info'}`} style={{ fontSize: '0.62rem' }}>
+                                                            {o.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ margin: 'auto', color: '#666' }}>No details found.</div>
+                        )}
+                    </div>
+                </>
             )}
         </main>
     );

@@ -172,6 +172,7 @@ function UserOrders() {
     const { formatPrice } = useCurrency();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         if (!user) {
@@ -199,6 +200,21 @@ function UserOrders() {
         return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
+    const filteredOrders = orders.filter(o => {
+        const q = searchTerm.toLowerCase();
+        const orderIdStr = (o.order_id || o.id || '').toLowerCase();
+        if (orderIdStr.includes(q)) return true;
+        if ((o.status || 'pending').toLowerCase().includes(q)) return true;
+        if (Array.isArray(o.items)) {
+            return o.items.some(item => 
+                (item.name || '').toLowerCase().includes(q) ||
+                (item.color || '').toLowerCase().includes(q) ||
+                (item.colorName || '').toLowerCase().includes(q)
+            );
+        }
+        return false;
+    });
+
     return (
         <>
             <style>{styles}</style>
@@ -209,6 +225,35 @@ function UserOrders() {
                     <BackButton />
                     <h1 className="orders-title">YOUR ORDERS</h1>
                     <p className="orders-subtitle">Track your purchases and view historical details in real-time</p>
+
+                    {/* Search Bar */}
+                    {orders.length > 0 && (
+                        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Search by Order ID, Product Name, Status..."
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                    style={{
+                                        padding: '10px 35px 10px 15px',
+                                        background: 'rgba(0,0,0,0.02)',
+                                        border: '1px solid rgba(0,0,0,0.1)',
+                                        borderRadius: '4px',
+                                        color: 'var(--dark)',
+                                        fontFamily: "'Montserrat', sans-serif",
+                                        fontSize: '0.82rem',
+                                        width: '320px',
+                                        outline: 'none',
+                                        transition: 'border-color 0.2s'
+                                    }}
+                                    onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                                    onBlur={e => e.target.style.borderColor = 'rgba(0,0,0,0.1)'}
+                                />
+                                <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(0,0,0,0.4)', fontSize: '0.85rem' }}></i>
+                            </div>
+                        </div>
+                    )}
 
                     {loading ? (
                         <div className="glass-card loader">
@@ -224,76 +269,83 @@ function UserOrders() {
                         </div>
                     ) : (
                         <div className="glass-card" style={{ padding: '10px 20px', overflowX: 'auto' }}>
-                            <table className="orders-table">
-                                <thead>
-                                    <tr>
-                                        <th>Order ID</th>
-                                        <th>Date</th>
-                                        <th>Items</th>
-                                        <th>Total Amount</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {orders.map(o => (
-                                        <tr key={o.id}>
-                                            <td style={{ fontWeight: '600', color: 'var(--dark)' }}>
-                                                {o.order_id || o.id.slice(0, 10).toUpperCase()}
-                                            </td>
-                                            <td>{formatDate(o.created_at)}</td>
-                                            <td>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                    {Array.isArray(o.items)
-                                                        ? o.items.map((item, idx) => (
-                                                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.02)', padding: '6px', borderRadius: '6px' }}>
-                                                                {item.image && (
-                                                                    <img src={item.image} alt={item.name} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #eee' }} />
-                                                                )}
-                                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                    <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--dark)' }}>{item.name}</span>
-                                                                    <span style={{ fontSize: '0.75rem', color: '#666' }}>Size: {item.size} | Color: {item.colorName || item.color || 'Standard'}</span>
-                                                                </div>
-                                                            </div>
-                                                        ))
-                                                        : 'Garment'}
-                                                </div>
-                                            </td>
-                                            <td style={{ fontWeight: '600', color: 'var(--gold)' }}>
-                                                {formatPrice(o.total_amount || 0)}
-                                            </td>
-                                            <td>
-                                                <span className={`status-badge ${o.status || 'pending'}`}>
-                                                    {o.status || 'pending'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: '8px' }}>
-                                                    <button className="track-btn" onClick={() => navigate(`/tracking?id=${o.order_id || o.id}`)}>
-                                                        Track
-                                                    </button>
-                                                    <button 
-                                                        className="track-btn" 
-                                                        style={{ background: '#25D366', border: 'none', color: '#fff' }} 
-                                                        onClick={() => {
-                                                            const trackUrl = `${window.location.origin}/tracking?id=${o.order_id || o.id}`;
-                                                            const message = `Check out my order ${o.order_id || ''} on ASAT! Status: ${o.status || 'pending'}. Track delivery here: ${trackUrl}`;
-                                                            
-                                                            navigator.clipboard.writeText(message)
-                                                                .then(() => showToast('Order tracking link copied to clipboard!', 'success'))
-                                                                .catch(err => console.error('Failed to copy tracking link:', err));
-                                                            
-                                                            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-                                                        }}
-                                                    >
-                                                        <i className="fab fa-whatsapp" style={{ marginRight: '4px' }}></i> Share
-                                                    </button>
-                                                </div>
-                                            </td>
+                            {filteredOrders.length === 0 ? (
+                                <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+                                    <i className="fas fa-search" style={{ fontSize: '2rem', marginBottom: '10px', color: '#ccc' }}></i>
+                                    <p style={{ fontSize: '0.9rem' }}>No orders matching your search query.</p>
+                                </div>
+                            ) : (
+                                <table className="orders-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Date</th>
+                                            <th>Items</th>
+                                            <th>Total Amount</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {filteredOrders.map(o => (
+                                            <tr key={o.id}>
+                                                <td style={{ fontWeight: '600', color: 'var(--dark)' }}>
+                                                    {o.order_id || o.id.slice(0, 10).toUpperCase()}
+                                                </td>
+                                                <td>{formatDate(o.created_at)}</td>
+                                                <td>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                        {Array.isArray(o.items)
+                                                            ? o.items.map((item, idx) => (
+                                                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.02)', padding: '6px', borderRadius: '6px' }}>
+                                                                    {item.image && (
+                                                                        <img src={item.image} alt={item.name} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #eee' }} />
+                                                                    )}
+                                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                        <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--dark)' }}>{item.name}</span>
+                                                                        <span style={{ fontSize: '0.75rem', color: '#666' }}>Size: {item.size} | Color: {item.colorName || item.color || 'Standard'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ))
+                                                            : 'Garment'}
+                                                    </div>
+                                                </td>
+                                                <td style={{ fontWeight: '600', color: 'var(--gold)' }}>
+                                                    {formatPrice(o.total_amount || 0)}
+                                                </td>
+                                                <td>
+                                                    <span className={`status-badge ${o.status || 'pending'}`}>
+                                                        {o.status || 'pending'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button className="track-btn" onClick={() => navigate(`/tracking?id=${o.order_id || o.id}`)}>
+                                                            Track
+                                                        </button>
+                                                        <button 
+                                                            className="track-btn" 
+                                                            style={{ background: '#25D366', border: 'none', color: '#fff' }} 
+                                                            onClick={() => {
+                                                                const trackUrl = `${window.location.origin}/tracking?id=${o.order_id || o.id}`;
+                                                                const message = `Check out my order ${o.order_id || ''} on ASAT! Status: ${o.status || 'pending'}. Track delivery here: ${trackUrl}`;
+                                                                
+                                                                navigator.clipboard.writeText(message)
+                                                                    .then(() => showToast('Order tracking link copied to clipboard!', 'success'))
+                                                                    .catch(err => console.error('Failed to copy tracking link:', err));
+                                                                
+                                                                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+                                                            }}
+                                                        >
+                                                            <i className="fab fa-whatsapp" style={{ marginRight: '4px' }}></i> Share
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
                     )}
                 </div>

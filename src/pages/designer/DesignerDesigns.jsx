@@ -14,6 +14,7 @@ function DesignerDesigns() {
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [editModalData, setEditModalData] = useState(null);
     const [editSaving, setEditSaving] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const fetchDesigns = async () => {
         if (!user) return;
@@ -158,17 +159,59 @@ function DesignerDesigns() {
         }
     };
 
+    const filteredDesigns = designs.filter(d => {
+        if (searchTerm.trim() !== '') {
+            const q = searchTerm.toLowerCase();
+            return (
+                (d.name || '').toLowerCase().includes(q) ||
+                (d.product || '').toLowerCase().includes(q) ||
+                (d.id || '').toLowerCase().includes(q) ||
+                (d.status || '').toLowerCase().includes(q)
+            );
+        }
+        return true;
+    });
+
     return (
         <main className="dsn-designs">
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />
             <BackButton />
-            <div className="dsn-page-head">
+            <div className="dsn-page-head" style={{ marginBottom: '20px' }}>
                 <h2 className="dsn-page-title">Your Designs</h2>
                 <button className="dsn-auth__btn" onClick={() => navigate('/designer/designs/upload')}>
                     <i className="fas fa-plus"></i><span>Upload New Design</span>
                 </button>
             </div>
+
+            {/* Search Bar */}
+            {designs.length > 0 && (
+                <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            placeholder="Search portfolio..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            style={{
+                                padding: '10px 35px 10px 15px',
+                                background: '#1c1c1c',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '4px',
+                                color: 'white',
+                                fontFamily: "'Montserrat', sans-serif",
+                                fontSize: '0.82rem',
+                                width: '280px',
+                                outline: 'none',
+                                transition: 'border-color 0.2s'
+                            }}
+                            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                        />
+                        <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                    </div>
+                </div>
+            )}
 
             {loading ? (
                 <div style={{ textAlign: 'center', padding: '60px 0' }}>
@@ -181,9 +224,14 @@ function DesignerDesigns() {
                     <p style={{ fontFamily: "'Cinzel', serif", fontSize: '1.1rem', color: '#999', marginBottom: 8 }}>No designs yet</p>
                     <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem' }}>Upload your first design to start earning royalties</p>
                 </div>
+            ) : filteredDesigns.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#bbb' }}>
+                    <i className="fas fa-search" style={{ fontSize: '2rem', marginBottom: 12, display: 'block', color: '#666' }}></i>
+                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem' }}>No designs matched your search.</p>
+                </div>
             ) : (
                 <div className="dsn-designs__grid">
-                    {designs.map(d => (
+                    {filteredDesigns.map(d => (
                         <div className="dsn-design-card" key={d.id}>
                             <div 
                                 className="dsn-design-card__img" 

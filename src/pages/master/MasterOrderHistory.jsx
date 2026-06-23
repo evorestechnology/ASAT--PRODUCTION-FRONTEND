@@ -8,6 +8,8 @@ function MasterOrderHistory() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     const fetchOrders = async () => {
         try {
@@ -86,8 +88,29 @@ function MasterOrderHistory() {
     };
 
     const filteredOrders = orders.filter(o => {
-        if (filter === 'domestic') return o.country?.toLowerCase() === 'india';
-        if (filter === 'global') return o.country && o.country.toLowerCase() !== 'india';
+        if (filter === 'domestic' && o.country?.toLowerCase() !== 'india') return false;
+        if (filter === 'global' && o.country?.toLowerCase() === 'india') return false;
+        
+        if (statusFilter !== 'all' && (o.status || 'pending').toLowerCase() !== statusFilter) return false;
+        
+        if (searchTerm.trim() !== '') {
+            const q = searchTerm.toLowerCase();
+            const orderIdStr = (o.orderId || o.id || '').toLowerCase();
+            const itemsStr = formatItems(o.items).toLowerCase();
+            const designerStr = (o.designerUsername || '').toLowerCase();
+            const statusStr = (o.status || '').toLowerCase();
+            const customerStr = (o.userId || '').toLowerCase();
+            const trackingStr = (o.trackId || o.trackingId || '').toLowerCase();
+            
+            return (
+                orderIdStr.includes(q) ||
+                itemsStr.includes(q) ||
+                designerStr.includes(q) ||
+                statusStr.includes(q) ||
+                customerStr.includes(q) ||
+                trackingStr.includes(q)
+            );
+        }
         return true;
     });
 
@@ -97,12 +120,54 @@ function MasterOrderHistory() {
             <h1 className="adm-page__title">ORDER HISTORY</h1>
             <p className="adm-page__subtitle">Complete order records with revenue breakdown</p>
 
-            <div className="adm-page__filters">
-                {['all', 'domestic', 'global'].map(f => (
-                    <button key={f} className={`adm-page__filter-btn ${filter === f ? 'adm-page__filter-btn--active' : ''}`} onClick={() => setFilter(f)}>
-                        {f.charAt(0).toUpperCase() + f.slice(1)}
-                    </button>
-                ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Region:</span>
+                        <div className="adm-page__filters" style={{ margin: 0 }}>
+                            {['all', 'domestic', 'global'].map(f => (
+                                <button key={f} className={`adm-page__filter-btn ${filter === f ? 'adm-page__filter-btn--active' : ''}`} onClick={() => setFilter(f)}>
+                                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            placeholder="Search orders..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            style={{
+                                padding: '10px 35px 10px 15px',
+                                background: '#1c1c1c',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '4px',
+                                color: 'white',
+                                fontFamily: "'Montserrat', sans-serif",
+                                fontSize: '0.82rem',
+                                width: '280px',
+                                outline: 'none',
+                                transition: 'border-color 0.2s'
+                            }}
+                            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                        />
+                        <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Status:</span>
+                    <div className="adm-page__filters" style={{ margin: 0 }}>
+                        {['all', 'pending', 'confirmed', 'manufacturing', 'shipping', 'completed', 'cancelled'].map(s => (
+                            <button key={s} className={`adm-page__filter-btn ${statusFilter === s ? 'adm-page__filter-btn--active' : ''}`} onClick={() => setStatusFilter(s)}>
+                                {s.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {loading ? (

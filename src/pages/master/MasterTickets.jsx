@@ -11,6 +11,7 @@ function MasterTickets() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [saveStatus, setSaveStatus] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Selected ticket for chat
     const [selectedTicket, setSelectedTicket] = useState(null);
@@ -27,16 +28,17 @@ function MasterTickets() {
                 userId: t.user_id,
                 subject: t.subject,
                 category: t.category,
-                description: t.description,
+                description: t.description || t.subject,
                 status: t.status,
                 orderId: t.order_id,
                 lastReply: t.last_reply,
                 assignedTo: t.assigned_to,
                 createdAt: t.created_at,
                 updatedAt: t.updated_at,
-                role: t.category,
-                raisedBy: t.category,
-                username: t.user_id,
+                role: t.user_profile?.role || 'user',
+                raisedBy: t.user_profile?.role || 'user',
+                username: t.user_profile?.username || t.user_id,
+                email: t.user_profile?.email || '',
             }));
 
             setTickets(list);
@@ -143,9 +145,30 @@ function MasterTickets() {
     };
 
     const filteredTickets = tickets.filter(t => {
-        if (filter === 'all') return true;
-        const role = t.role || t.raisedBy || t.category || '';
-        return role.toLowerCase() === filter.toLowerCase();
+        if (filter !== 'all') {
+            const role = t.role || t.raisedBy || t.category || '';
+            if (role.toLowerCase() !== filter.toLowerCase()) return false;
+        }
+
+        if (searchTerm.trim() !== '') {
+            const q = searchTerm.toLowerCase();
+            const idStr = (t.id || '').toLowerCase();
+            const subjectStr = (t.subject || '').toLowerCase();
+            const descriptionStr = (t.description || '').toLowerCase();
+            const statusStr = (t.status || '').toLowerCase();
+            const nameStr = (t.raised_by_name || t.fullName || t.name || '').toLowerCase();
+            const emailStr = (t.raised_by_email || t.email || '').toLowerCase();
+
+            return (
+                idStr.includes(q) ||
+                subjectStr.includes(q) ||
+                descriptionStr.includes(q) ||
+                statusStr.includes(q) ||
+                nameStr.includes(q) ||
+                emailStr.includes(q)
+            );
+        }
+        return true;
     });
 
     return (
@@ -160,12 +183,38 @@ function MasterTickets() {
                 </div>
             )}
 
-            <div className="adm-page__filters">
-                {['all', 'designer', 'user', 'mfg'].map(f => (
-                    <button key={f} className={`adm-page__filter-btn ${filter === f ? 'adm-page__filter-btn--active' : ''}`} onClick={() => setFilter(f)}>
-                        {f === 'mfg' ? 'Manufacturer' : f.charAt(0).toUpperCase() + f.slice(1)}
-                    </button>
-                ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+                <div className="adm-page__filters" style={{ margin: 0 }}>
+                    {['all', 'designer', 'user', 'mfg'].map(f => (
+                        <button key={f} className={`adm-page__filter-btn ${filter === f ? 'adm-page__filter-btn--active' : ''}`} onClick={() => setFilter(f)}>
+                            {f === 'mfg' ? 'Manufacturer' : f.charAt(0).toUpperCase() + f.slice(1)}
+                        </button>
+                    ))}
+                </div>
+
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Search tickets..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{
+                            padding: '10px 35px 10px 15px',
+                            background: '#1c1c1c',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '4px',
+                            color: 'white',
+                            fontFamily: "'Montserrat', sans-serif",
+                            fontSize: '0.82rem',
+                            width: '280px',
+                            outline: 'none',
+                            transition: 'border-color 0.2s'
+                        }}
+                        onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                    />
+                    <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                </div>
             </div>
 
             {loading ? (

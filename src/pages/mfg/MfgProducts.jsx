@@ -64,6 +64,7 @@ function MfgProducts() {
     });
     const [error, setError] = useState(null);
     const [pendingDeleteProduct, setPendingDeleteProduct] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -216,6 +217,7 @@ function MfgProducts() {
                     return {
                         id: row.id,
                         name: row.name,
+                        category: row.category || 'DTF',
                         cost: costVal,
                         imageUrl: row.image || '',
                         placements: placementsVal,
@@ -229,6 +231,18 @@ function MfgProducts() {
         };
         loadPrintStyles();
     }, [user]);
+
+    const groupedPrintStyles = useMemo(() => {
+        const groups = {};
+        globalPrintStyles.forEach(ps => {
+            const cat = ps.category || 'DTF';
+            if (!groups[cat]) {
+                groups[cat] = [];
+            }
+            groups[cat].push(ps);
+        });
+        return groups;
+    }, [globalPrintStyles]);
 
     const handleAddClick = () => {
         setEditProduct(null);
@@ -534,16 +548,57 @@ function MfgProducts() {
         }
     };
 
+    const filteredProducts = products.filter(p => {
+        if (searchTerm.trim() !== '') {
+            const q = searchTerm.toLowerCase();
+            const titleStr = (p.title || '').toLowerCase();
+            const categoryStr = (p.category || '').toLowerCase();
+            const colorsStr = (p.colors || []).map(c => c.colorName || '').join(' ').toLowerCase();
+            return (
+                titleStr.includes(q) ||
+                categoryStr.includes(q) ||
+                colorsStr.includes(q)
+            );
+        }
+        return true;
+    });
+
     return (
         <main className="adm-page">
             <BackButton />
             <h1 className="adm-page__title">PRODUCTS CATALOGUE</h1>
             <p className="adm-page__subtitle">Manage base products, colors, front/back images, and printing costs</p>
 
-            <div style={{ marginBottom: 20, display: 'flex', gap: 12, alignItems: 'center' }}>
-                <button className="adm-settings__btn" style={{ marginTop: 0 }} onClick={handleAddClick}>
-                    <i className="fas fa-plus" style={{ marginRight: 6 }}></i> Add Base Product
-                </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <button className="adm-settings__btn" style={{ marginTop: 0 }} onClick={handleAddClick}>
+                        <i className="fas fa-plus" style={{ marginRight: 6 }}></i> Add Base Product
+                    </button>
+                </div>
+
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Search base products..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{
+                            padding: '10px 35px 10px 15px',
+                            background: '#1c1c1c',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '4px',
+                            color: 'white',
+                            fontFamily: "'Montserrat', sans-serif",
+                            fontSize: '0.82rem',
+                            width: '280px',
+                            outline: 'none',
+                            transition: 'border-color 0.2s'
+                        }}
+                        onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                    />
+                    <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                </div>
             </div>
 
             {loading ? (
@@ -562,6 +617,13 @@ function MfgProducts() {
                         No products created yet. Click "Add Base Product" to start.
                     </div>
                 </div>
+            ) : filteredProducts.length === 0 ? (
+                <div className="adm-table-wrap">
+                    <div className="adm-table__empty" style={{ padding: '60px 20px' }}>
+                        <i className="fas fa-search"></i>
+                        No matching products found.
+                    </div>
+                </div>
             ) : (
                 <div className="adm-table-wrap">
                     <table className="adm-table">
@@ -578,7 +640,7 @@ function MfgProducts() {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.map(p => (
+                            {filteredProducts.map(p => (
                                 <tr key={p.id}>
                                     <td>
                                         <div style={{
@@ -981,88 +1043,109 @@ function MfgProducts() {
                                         </span>
                                     </div>
                                 ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                        {globalPrintStyles.map(ps => {
-                                            const selectedObj = printingStyles.find(p => p.style === ps.name);
-                                            const isSelected = !!selectedObj;
-                                            return (
-                                                <div
-                                                    key={ps.id}
-                                                    style={{
-                                                        display: 'flex', flexDirection: 'column',
-                                                        padding: '10px 14px',
-                                                        background: isSelected ? 'rgba(197,160,89,0.08)' : 'rgba(255,255,255,0.02)',
-                                                        border: `1px solid ${isSelected ? 'var(--admin-gold)' : '#333'}`,
-                                                        borderRadius: 4, transition: 'all 0.15s',
-                                                        marginBottom: 8
-                                                    }}
-                                                >
-                                                    <div 
-                                                        onClick={() => togglePrintingStyle(ps.name)}
-                                                        style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', width: '100%' }}
-                                                    >
-                                                        {/* Custom checkbox */}
-                                                        <span style={{
-                                                            width: 16, height: 16, flexShrink: 0,
-                                                            border: `2px solid ${isSelected ? 'var(--admin-gold)' : '#555'}`,
-                                                            background: isSelected ? 'var(--admin-gold)' : 'transparent',
-                                                            borderRadius: 3,
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            transition: 'all 0.15s',
-                                                        }}>
-                                                            {isSelected && (
-                                                                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                                                                    <path d="M1 3.5L3.5 6L8 1" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                                                </svg>
-                                                            )}
-                                                        </span>
-                                                        {/* Reference thumbnail */}
-                                                        {ps.imageUrl && (
-                                                            <img
-                                                                src={ps.imageUrl}
-                                                                alt={ps.name}
-                                                                onClick={e => { e.stopPropagation(); window.open(ps.imageUrl, '_blank'); }}
-                                                                style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 3, border: '1px solid #444', flexShrink: 0, cursor: 'zoom-in' }}
-                                                                title="Click to view reference image"
-                                                            />
-                                                        )}
-                                                        <span style={{ flex: 1, fontFamily: "'Montserrat', sans-serif", fontSize: '0.8rem', color: isSelected ? '#fff' : '#ccc', fontWeight: 600 }}>
-                                                            {ps.name}
-                                                        </span>
-                                                        <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.75rem', color: isSelected ? 'var(--admin-gold)' : '#666', fontWeight: 600 }}>
-                                                            +₹{ps.cost}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Placements for this style */}
-                                                    {isSelected && ps.placements && ps.placements.length > 0 && (
-                                                        <div style={{ marginTop: 12, borderTop: '1px solid #444', paddingTop: 8 }}>
-                                                            <div style={{ fontSize: '0.7rem', color: '#aaa', fontWeight: 600, marginBottom: 6 }}>Allowed Placements:</div>
-                                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
-                                                                {ps.placements.map(pid => {
-                                                                    const label = getPlacementLabel(ps, pid);
-                                                                    const isPlSel = selectedObj.placements.some(p => p.id === pid);
-                                                                    return (
-                                                                        <label 
-                                                                            key={pid} 
-                                                                            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.7rem', color: isPlSel ? '#fff' : '#aaa', cursor: 'pointer', userSelect: 'none' }}
-                                                                        >
-                                                                            <input 
-                                                                                type="checkbox"
-                                                                                checked={isPlSel}
-                                                                                onChange={() => togglePlacementForStyle(ps.name, pid, label)}
-                                                                                style={{ accentColor: 'var(--admin-gold)' }}
-                                                                            />
-                                                                            {label}
-                                                                        </label>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                        {Object.entries(groupedPrintStyles).map(([categoryName, styles]) => (
+                                            <div key={categoryName} style={{ marginBottom: 8 }}>
+                                                <div style={{
+                                                    fontSize: '0.72rem',
+                                                    fontWeight: 700,
+                                                    color: 'var(--admin-gold)',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: 0.8,
+                                                    marginBottom: 8,
+                                                    paddingBottom: 4,
+                                                    borderBottom: '1px solid rgba(197,160,89,0.2)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 6
+                                                }}>
+                                                    <i className="fas fa-print" style={{ fontSize: '0.65rem' }} />
+                                                    {categoryName}
                                                 </div>
-                                            );
-                                        })}
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                    {styles.map(ps => {
+                                                        const selectedObj = printingStyles.find(p => p.style === ps.name);
+                                                        const isSelected = !!selectedObj;
+                                                        return (
+                                                            <div
+                                                                key={ps.id}
+                                                                style={{
+                                                                    display: 'flex', flexDirection: 'column',
+                                                                    padding: '10px 14px',
+                                                                    background: isSelected ? 'rgba(197,160,89,0.08)' : 'rgba(255,255,255,0.02)',
+                                                                    border: `1px solid ${isSelected ? 'var(--admin-gold)' : '#333'}`,
+                                                                    borderRadius: 4, transition: 'all 0.15s',
+                                                                }}
+                                                            >
+                                                                <div 
+                                                                    onClick={() => togglePrintingStyle(ps.name)}
+                                                                    style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', width: '100%' }}
+                                                                >
+                                                                    {/* Custom checkbox */}
+                                                                    <span style={{
+                                                                        width: 16, height: 16, flexShrink: 0,
+                                                                        border: `2px solid ${isSelected ? 'var(--admin-gold)' : '#555'}`,
+                                                                        background: isSelected ? 'var(--admin-gold)' : 'transparent',
+                                                                        borderRadius: 3,
+                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                        transition: 'all 0.15s',
+                                                                    }}>
+                                                                        {isSelected && (
+                                                                            <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                                                                                <path d="M1 3.5L3.5 6L8 1" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                                                            </svg>
+                                                                        )}
+                                                                    </span>
+                                                                    {/* Reference thumbnail */}
+                                                                    {ps.imageUrl && (
+                                                                        <img
+                                                                            src={ps.imageUrl}
+                                                                            alt={ps.name}
+                                                                            onClick={e => { e.stopPropagation(); window.open(ps.imageUrl, '_blank'); }}
+                                                                            style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 3, border: '1px solid #444', flexShrink: 0, cursor: 'zoom-in' }}
+                                                                            title="Click to view reference image"
+                                                                        />
+                                                                    )}
+                                                                    <span style={{ flex: 1, fontFamily: "'Montserrat', sans-serif", fontSize: '0.8rem', color: isSelected ? '#fff' : '#ccc', fontWeight: 600 }}>
+                                                                        {ps.name}
+                                                                    </span>
+                                                                    <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.75rem', color: isSelected ? 'var(--admin-gold)' : '#666', fontWeight: 600 }}>
+                                                                        +₹{ps.cost}
+                                                                    </span>
+                                                                </div>
+
+                                                                {/* Placements for this style */}
+                                                                {isSelected && ps.placements && ps.placements.length > 0 && (
+                                                                    <div style={{ marginTop: 12, borderTop: '1px solid #444', paddingTop: 8 }}>
+                                                                        <div style={{ fontSize: '0.7rem', color: '#aaa', fontWeight: 600, marginBottom: 6 }}>Allowed Placements:</div>
+                                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
+                                                                            {ps.placements.map(pid => {
+                                                                                const label = getPlacementLabel(ps, pid);
+                                                                                const isPlSel = selectedObj.placements.some(p => p.id === pid);
+                                                                                return (
+                                                                                    <label 
+                                                                                        key={pid} 
+                                                                                        style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.7rem', color: isPlSel ? '#fff' : '#aaa', cursor: 'pointer', userSelect: 'none' }}
+                                                                                    >
+                                                                                        <input 
+                                                                                            type="checkbox"
+                                                                                            checked={isPlSel}
+                                                                                            onChange={() => togglePlacementForStyle(ps.name, pid, label)}
+                                                                                            style={{ accentColor: 'var(--admin-gold)' }}
+                                                                                        />
+                                                                                        {label}
+                                                                                    </label>
+                                                                                );
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>

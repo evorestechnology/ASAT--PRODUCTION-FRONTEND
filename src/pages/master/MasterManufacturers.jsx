@@ -13,6 +13,10 @@ function MasterManufacturers() {
 
     // Modal and form states
     const [showModal, setShowModal] = useState(false);
+    const [selectedMfgId, setSelectedMfgId] = useState(null);
+    const [selectedMfgDetails, setSelectedMfgDetails] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const [companyName, setCompanyName] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -68,6 +72,27 @@ function MasterManufacturers() {
     useEffect(() => {
         fetchManufacturers();
     }, []);
+
+    useEffect(() => {
+        if (!selectedMfgId) {
+            setSelectedMfgDetails(null);
+            return;
+        }
+        const fetchDetails = async () => {
+            setDetailsLoading(true);
+            try {
+                const data = await apiFetch(`/api/manufacturers/${selectedMfgId}/admin-details`);
+                setSelectedMfgDetails(data);
+            } catch (err) {
+                console.error("Error fetching manufacturer details:", err);
+                showToast("Failed to fetch detailed info.", "error");
+                setSelectedMfgId(null);
+            } finally {
+                setDetailsLoading(false);
+            }
+        };
+        fetchDetails();
+    }, [selectedMfgId]);
 
     // Handle manufacturer status toggle
     const handleStatusChange = async (mfgId, newStatus) => {
@@ -156,9 +181,20 @@ function MasterManufacturers() {
     };
 
     const formatDate = (mfg) => {
-        if (!mfg.created_at) return '—';
-        return new Date(mfg.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const dateStr = (typeof mfg === 'string') ? mfg : (mfg?.created_at);
+        if (!dateStr) return '—';
+        return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     };
+
+    const filteredManufacturers = manufacturers.filter(m => {
+        const q = searchTerm.toLowerCase();
+        return (
+            (m.business_name || m.companyName || '').toLowerCase().includes(q) ||
+            (m.username || '').toLowerCase().includes(q) ||
+            (m.email || '').toLowerCase().includes(q) ||
+            (m.id || '').toLowerCase().includes(q)
+        );
+    });
 
     return (
         <main className="adm-page">
@@ -167,7 +203,7 @@ function MasterManufacturers() {
 
             <BackButton />
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifySelf: 'stretch', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', width: '100%' }}>
                 <div>
                     <h1 className="adm-page__title">MANUFACTURERS</h1>
                     <p className="adm-page__subtitle">Manage and provision fabricators, printers, and suppliers</p>
@@ -179,6 +215,33 @@ function MasterManufacturers() {
                 >
                     <i className="fas fa-plus" style={{ marginRight: '6px' }}></i> Create Manufacturer
                 </button>
+            </div>
+
+            {/* Search Input Bar */}
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Search manufacturers by business name or username..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{
+                            padding: '10px 35px 10px 15px',
+                            background: '#1c1c1c',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '4px',
+                            color: 'white',
+                            fontFamily: "'Montserrat', sans-serif",
+                            fontSize: '0.82rem',
+                            width: '320px',
+                            outline: 'none',
+                            transition: 'border-color 0.2s'
+                        }}
+                        onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                    />
+                    <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                </div>
             </div>
 
             {loading ? (
@@ -205,17 +268,25 @@ function MasterManufacturers() {
                             </tr>
                         </thead>
                         <tbody>
-                            {manufacturers.length === 0 ? (
+                            {filteredManufacturers.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="adm-table__empty">
-                                        <i className="fas fa-industry"></i>No manufacturers registered yet.
+                                        <i className="fas fa-industry"></i>No manufacturers found.
                                     </td>
                                 </tr>
                             ) : (
-                                manufacturers.map(m => (
+                                filteredManufacturers.map(m => (
                                     <tr key={m.id}>
                                         <td style={{ fontWeight: '600' }}>{m.id.substring(0, 8)}...</td>
-                                        <td>{m.business_name || m.companyName || '—'}</td>
+                                        <td>
+                                            <span 
+                                                onClick={() => setSelectedMfgId(m.id)} 
+                                                style={{ color: 'var(--gold)', cursor: 'pointer', fontWeight: 600, borderBottom: '1px dotted var(--gold)' }}
+                                                title="View detailed statistics"
+                                            >
+                                                {m.business_name || m.companyName || '—'}
+                                            </span>
+                                        </td>
                                         <td>@{m.username || '—'}</td>
                                         <td>{m.email || '—'}</td>
                                         <td>{formatDate(m)}</td>
@@ -546,6 +617,206 @@ function MasterManufacturers() {
                         </form>
                     </div>
                 </div>
+            )}
+            {/* Detailed Info Drawer Overlay */}
+            {selectedMfgId && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        onClick={() => setSelectedMfgId(null)}
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'rgba(0, 0, 0, 0.4)',
+                            backdropFilter: 'blur(6px)',
+                            zIndex: 1999
+                        }}
+                    ></div>
+
+                    {/* Drawer Panel */}
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        right: 0,
+                        width: '520px',
+                        maxWidth: '95%',
+                        height: '100%',
+                        background: 'rgba(18, 18, 18, 0.96)',
+                        borderLeft: '1px solid var(--gold)',
+                        boxShadow: '-10px 0 45px rgba(0, 0, 0, 0.6)',
+                        zIndex: 2000,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        fontFamily: "'Montserrat', sans-serif",
+                        color: 'white',
+                        overflowY: 'auto'
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            padding: '24px 20px',
+                            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <div>
+                                <h3 style={{ fontFamily: "'Cinzel', serif", margin: 0, color: 'var(--gold)', fontSize: '1.2rem', letterSpacing: 1 }}>
+                                    MANUFACTURER PROFILE
+                                </h3>
+                                <div style={{ fontSize: '0.75rem', color: '#aaa', marginTop: 4 }}>
+                                    UID: {selectedMfgId}
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedMfgId(null)}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#aaa',
+                                    fontSize: '1.2rem',
+                                    cursor: 'pointer',
+                                    transition: 'color 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'var(--gold)'}
+                                onMouseLeave={(e) => e.target.style.color = '#aaa'}
+                            >
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        {detailsLoading ? (
+                            <div style={{ margin: 'auto', textAlign: 'center', color: '#aaa', fontSize: '0.9rem' }}>
+                                <div className="adm-spinner" style={{ marginBottom: 15 }}></div>
+                                Loading details...
+                            </div>
+                        ) : selectedMfgDetails ? (
+                            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                                
+                                {/* Info Section */}
+                                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '8px' }}>
+                                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--gold)', color: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 'bold', fontFamily: "'Cinzel'" }}>
+                                        {(selectedMfgDetails.manufacturer.business_name || selectedMfgDetails.manufacturer.username || 'M')[0].toUpperCase()}
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{selectedMfgDetails.manufacturer.business_name || 'Manufacturer'}</h4>
+                                        <span style={{ color: 'var(--gold)', fontSize: '0.8rem' }}>@{selectedMfgDetails.manufacturer.username}</span>
+                                        <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="far fa-envelope" style={{ marginRight: 6 }}></i>{selectedMfgDetails.manufacturer.email}</span>
+                                        {selectedMfgDetails.manufacturer.phone && (
+                                            <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="fas fa-phone-alt" style={{ marginRight: 6 }}></i>{selectedMfgDetails.manufacturer.phone}</span>
+                                        )}
+                                        {selectedMfgDetails.manufacturer.address && (
+                                            <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="fas fa-map-marker-alt" style={{ marginRight: 6 }}></i>{selectedMfgDetails.manufacturer.address}</span>
+                                        )}
+                                        {selectedMfgDetails.manufacturer.gstin && (
+                                            <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="fas fa-file-invoice" style={{ marginRight: 6 }}></i>GSTIN: {selectedMfgDetails.manufacturer.gstin}</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Ledger / Financial Grid */}
+                                <div>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                        FINANCIAL LEDGER
+                                    </h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Total Income</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981' }}>₹{Number(selectedMfgDetails.wallet.total_earnings || 0).toLocaleString()}</div>
+                                        </div>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Payouts</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#f59e0b' }}>₹{Number(selectedMfgDetails.wallet.total_withdrawn || 0).toLocaleString()}</div>
+                                        </div>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Balance</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--gold)' }}>₹{Number(selectedMfgDetails.wallet.balance || 0).toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Activity / Metrics Grid */}
+                                <div>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                        PLATFORM ACTIVITY
+                                    </h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Products Configured</div>
+                                            <div style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>{selectedMfgDetails.products.length}</div>
+                                        </div>
+                                        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4, display: 'none' }}></div>
+                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Assigned Orders</div>
+                                            <div style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>{selectedMfgDetails.orders.length}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Products list */}
+                                <div>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                        PRODUCTS ({selectedMfgDetails.products.length})
+                                    </h4>
+                                    {selectedMfgDetails.products.length === 0 ? (
+                                        <div style={{ color: '#666', fontSize: '0.8rem', padding: '10px 0' }}>No products configured yet.</div>
+                                    ) : (
+                                        <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {selectedMfgDetails.products.map(p => (
+                                                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{p.name}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: '#888' }}>ID: {p.id.substring(0,8)}...</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        <span style={{ fontSize: '0.85rem', color: 'var(--gold)', fontWeight: 600 }}>₹{p.base_price.toLocaleString()}</span>
+                                                        <span className={`adm-badge adm-badge--${p.status === 'active' ? 'active' : 'danger'}`} style={{ fontSize: '0.62rem' }}>
+                                                            {p.status || 'active'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Orders list */}
+                                <div>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                        ASSIGNED ORDERS ({selectedMfgDetails.orders.length})
+                                    </h4>
+                                    {selectedMfgDetails.orders.length === 0 ? (
+                                        <div style={{ color: '#666', fontSize: '0.8rem', padding: '10px 0' }}>No assigned orders.</div>
+                                    ) : (
+                                        <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {selectedMfgDetails.orders.map(o => (
+                                                <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Order #{o.order_id || o.id.substring(0,8).toUpperCase()}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: '#888' }}>{formatDate(o)}</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                                            <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>₹{Number(o.total_amount || 0).toLocaleString()}</span>
+                                                            <span style={{ fontSize: '0.65rem', color: '#10b981' }}>Earned: ₹{Number(o.mfg_earnings || 0).toLocaleString()}</span>
+                                                        </div>
+                                                        <span className={`adm-badge adm-badge--${o.status === 'completed' ? 'active' : o.status === 'cancelled' ? 'danger' : 'info'}`} style={{ fontSize: '0.62rem' }}>
+                                                            {o.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ margin: 'auto', color: '#666' }}>No details found.</div>
+                        )}
+                    </div>
+                </>
             )}
         </main>
     );
