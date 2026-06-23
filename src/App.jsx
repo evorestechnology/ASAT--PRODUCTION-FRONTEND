@@ -77,6 +77,7 @@ import MfgProfile      from './pages/mfg/MfgProfile';
 import MfgWallets      from './pages/mfg/MfgWallets';
 import MfgProducts     from './pages/mfg/MfgProducts';
 import MfgPrintStyles  from './pages/mfg/MfgPrintStyles';
+import MfgDesignDetail from './pages/mfg/MfgDesignDetail';
 
 
 function App() {
@@ -174,6 +175,7 @@ function App() {
           <Route path="history"  element={<MfgOrderHistory />} />
           <Route path="wallet"   element={<MfgWallets />} />
           <Route path="profile"  element={<MfgProfile />} />
+          <Route path="designs/:id" element={<MfgDesignDetail />} />
         </Route>
 
       </Routes>

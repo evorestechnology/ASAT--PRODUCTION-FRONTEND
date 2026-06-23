@@ -1,15 +1,55 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
 import '../../styles/admin.css';
+import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
 function MfgOrderHistory() {
+    const navigate = useNavigate();
     const { user } = useAuth();
+    const { toasts, showToast } = useToast();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [enlargedImage, setEnlargedImage] = useState(null);
+    const [fetchingDesigns, setFetchingDesigns] = useState({});
+
+    const handleGoToDesign = async (item) => {
+        let designId = item.id;
+
+        if (!designId && item.designerId) {
+            const resolveKey = `resolve_${item.designerId}_${item.name}`;
+            setFetchingDesigns(prev => ({ ...prev, [resolveKey]: true }));
+            try {
+                const designs = await apiFetch(`/api/designs?designerId=${item.designerId}`);
+                const matchedDesign = (designs || []).find(d => 
+                    d.title?.trim().toLowerCase() === item.name?.trim().toLowerCase()
+                );
+                if (matchedDesign && matchedDesign.id) {
+                    designId = matchedDesign.id;
+                    item.id = designId; // mutate reference
+                } else {
+                    showToast("Could not find matching design details for this item.", "error");
+                    return;
+                }
+            } catch (err) {
+                console.error("Failed to resolve design ID for legacy order:", err);
+                showToast("Failed to resolve design details.", "error");
+                return;
+            } finally {
+                setFetchingDesigns(prev => ({ ...prev, [resolveKey]: false }));
+            }
+        }
+
+        if (designId) {
+            navigate(`/mfg/designs/${designId}`);
+        } else {
+            showToast("Design details are unavailable for this item.", "error");
+        }
+    };
 
     const fetchHistory = async () => {
         if (!user) return;
@@ -76,6 +116,7 @@ function MfgOrderHistory() {
 
     return (
         <main className="adm-page">
+            <ToastContainer toasts={toasts} />
             <BackButton />
             <h1 className="adm-page__title">ORDER HISTORY</h1>
             <p className="adm-page__subtitle">Completed and cancelled orders archive</p>
@@ -241,19 +282,114 @@ function MfgOrderHistory() {
                             {(selectedOrder.items || []).map((item, idx) => (
                                 <div key={idx} style={{ display: 'flex', gap: 15, padding: 12, border: '1px solid #f0f0f0', borderRadius: 8 }}>
                                     {item.image && (
-                                        <img src={item.image} alt={item.name} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid #eaeaea' }} />
+                                        <img 
+                                            src={item.image} 
+                                            alt={item.name} 
+                                            onClick={() => setEnlargedImage(item.image)}
+                                            style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid #eaeaea', cursor: 'zoom-in' }} 
+                                        />
                                     )}
                                     <div style={{ flex: 1 }}>
                                         <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: '0 0 4px 0' }}>{item.name}</h4>
                                         <p style={{ fontSize: '0.8rem', color: '#666', margin: '2px 0' }}>Size: {item.size} | Qty: {item.qty}</p>
                                         <p style={{ fontSize: '0.8rem', color: '#666', margin: '2px 0' }}>Unit Price: ₹{item.price?.toLocaleString('en-IN')}</p>
                                         {item.designerId && (
-                                            <p style={{ fontSize: '0.75rem', color: '#999', margin: '4px 0 0 0' }}>Designer ID: {item.designerId}</p>
+                                            <>
+                                                <p style={{ fontSize: '0.75rem', color: '#999', margin: '4px 0 0 0' }}>Designer ID: {item.designerId}</p>
+                                                <div style={{ marginTop: 12 }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleGoToDesign(item)}
+                                                        style={{
+                                                            background: 'var(--admin-gold, #C5A059)',
+                                                            border: 'none',
+                                                            color: '#fff',
+                                                            padding: '4px 10px',
+                                                            borderRadius: 4,
+                                                            fontSize: '0.7rem',
+                                                            fontWeight: 600,
+                                                            fontFamily: "'Montserrat', sans-serif",
+                                                            cursor: 'pointer',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: 6
+                                                        }}
+                                                        disabled={fetchingDesigns[`resolve_${item.designerId}_${item.name}`]}
+                                                    >
+                                                        {fetchingDesigns[`resolve_${item.designerId}_${item.name}`] ? (
+                                                            <>
+                                                                <i className="fas fa-spinner fa-spin"></i>
+                                                                Resolving Design...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <i className="fas fa-external-link-alt"></i>
+                                                                Go to Design
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </>
                                         )}
                                     </div>
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Image Enlargement Modal */}
+            {enlargedImage && (
+                <div 
+                    onClick={() => setEnlargedImage(null)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(0,0,0,0.85)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 2000,
+                        cursor: 'zoom-out'
+                    }}
+                >
+                    <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img 
+                            src={enlargedImage} 
+                            alt="Enlarged history view" 
+                            style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '80vh', 
+                                objectFit: 'contain', 
+                                borderRadius: 8,
+                                border: '3px solid #fff',
+                                boxShadow: '0 5px 25px rgba(0,0,0,0.5)'
+                            }} 
+                        />
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setEnlargedImage(null); }}
+                            style={{
+                                position: 'absolute',
+                                top: -45,
+                                right: 0,
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '1.25rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                fontWeight: 600
+                            }}
+                        >
+                            <i className="fas fa-times"></i> Close
+                        </button>
                     </div>
                 </div>
             )}

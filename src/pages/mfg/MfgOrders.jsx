@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
@@ -6,6 +7,7 @@ import '../../styles/admin.css';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
 function MfgOrders() {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { toasts, showToast } = useToast();
     const [orders, setOrders] = useState([]);
@@ -18,6 +20,7 @@ function MfgOrders() {
     const [expandedTechPack, setExpandedTechPack] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [enlargedImage, setEnlargedImage] = useState(null);
 
     const handleDownloadFile = async (url, filename) => {
         try {
@@ -39,7 +42,38 @@ function MfgOrders() {
         }
     };
 
-    const toggleTechPack = async (designId) => {
+    const toggleTechPack = async (item) => {
+        let designId = item.id;
+
+        if (!designId && item.designerId) {
+            const resolveKey = `resolve_${item.designerId}_${item.name}`;
+            setFetchingDesigns(prev => ({ ...prev, [resolveKey]: true }));
+            try {
+                const designs = await apiFetch(`/api/designs?designerId=${item.designerId}`);
+                const matchedDesign = (designs || []).find(d => 
+                    d.title?.trim().toLowerCase() === item.name?.trim().toLowerCase()
+                );
+                if (matchedDesign && matchedDesign.id) {
+                    designId = matchedDesign.id;
+                    item.id = designId; // mutate reference
+                } else {
+                    showToast("Could not find matching design details for this item.", "error");
+                    return;
+                }
+            } catch (err) {
+                console.error("Failed to resolve design ID for legacy order:", err);
+                showToast("Failed to resolve design details.", "error");
+                return;
+            } finally {
+                setFetchingDesigns(prev => ({ ...prev, [resolveKey]: false }));
+            }
+        }
+
+        if (!designId || designId === 'undefined') {
+            showToast("Design details are unavailable for this item.", "error");
+            return;
+        }
+
         if (expandedTechPack[designId]) {
             setExpandedTechPack(prev => ({ ...prev, [designId]: false }));
             return;
@@ -80,6 +114,40 @@ function MfgOrders() {
             } finally {
                 setFetchingDesigns(prev => ({ ...prev, [designId]: false }));
             }
+        }
+    };
+
+    const handleGoToDesign = async (item) => {
+        let designId = item.id;
+
+        if (!designId && item.designerId) {
+            const resolveKey = `resolve_${item.designerId}_${item.name}`;
+            setFetchingDesigns(prev => ({ ...prev, [resolveKey]: true }));
+            try {
+                const designs = await apiFetch(`/api/designs?designerId=${item.designerId}`);
+                const matchedDesign = (designs || []).find(d => 
+                    d.title?.trim().toLowerCase() === item.name?.trim().toLowerCase()
+                );
+                if (matchedDesign && matchedDesign.id) {
+                    designId = matchedDesign.id;
+                    item.id = designId; // mutate reference
+                } else {
+                    showToast("Could not find matching design details for this item.", "error");
+                    return;
+                }
+            } catch (err) {
+                console.error("Failed to resolve design ID for legacy order:", err);
+                showToast("Failed to resolve design details.", "error");
+                return;
+            } finally {
+                setFetchingDesigns(prev => ({ ...prev, [resolveKey]: false }));
+            }
+        }
+
+        if (designId) {
+            navigate(`/mfg/designs/${designId}`);
+        } else {
+            showToast("Design details are unavailable for this item.", "error");
         }
     };
 
@@ -279,7 +347,12 @@ function MfgOrders() {
                                                 <div key={idx} style={{ fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: 2, borderBottom: idx < o.items.length - 1 ? '1px solid #f0f0f0' : 'none', paddingBottom: idx < o.items.length - 1 ? 4 : 0 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                         {item.image && (
-                                                            <img src={item.image} alt={item.name} style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }} />
+                                                            <img 
+                                                                src={item.image} 
+                                                                alt={item.name} 
+                                                                onClick={() => setEnlargedImage(item.image)}
+                                                                style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4, cursor: 'zoom-in' }} 
+                                                            />
                                                         )}
                                                         <span style={{ fontWeight: 600 }}>{item.name} ({item.size}) x {item.qty}</span>
                                                     </div>
@@ -437,7 +510,12 @@ function MfgOrders() {
                             {(selectedOrder.items || []).map((item, idx) => (
                                 <div key={idx} style={{ display: 'flex', gap: 15, padding: 12, border: '1px solid #f0f0f0', borderRadius: 8 }}>
                                     {item.image && (
-                                        <img src={item.image} alt={item.name} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid #eaeaea' }} />
+                                        <img 
+                                            src={item.image} 
+                                            alt={item.name} 
+                                            onClick={() => setEnlargedImage(item.image)}
+                                            style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid #eaeaea', cursor: 'zoom-in' }} 
+                                        />
                                     )}
                                     <div style={{ flex: 1 }}>
                                         <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: '0 0 4px 0' }}>{item.name}</h4>
@@ -458,48 +536,154 @@ function MfgOrders() {
                                         </div>
 
                                         {item.designerId && !item.isMfgProduct && (
-                                            <>
-                                                <p style={{ fontSize: '0.75rem', color: '#999', margin: '6px 0 0 0' }}>Designer ID: {item.designerId}</p>
-                                                <div style={{ marginTop: 12 }}>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => toggleTechPack(item.id)}
-                                                        style={{
-                                                            background: 'transparent',
-                                                            border: '1px solid var(--admin-gold, #C5A059)',
-                                                            color: 'var(--admin-gold, #C5A059)',
-                                                            padding: '4px 10px',
-                                                            borderRadius: 4,
-                                                            fontSize: '0.7rem',
-                                                            fontWeight: 600,
-                                                            fontFamily: "'Montserrat', sans-serif",
-                                                            cursor: 'pointer',
-                                                            display: 'inline-flex',
-                                                            alignItems: 'center',
-                                                            gap: 6
-                                                        }}
-                                                    >
-                                                        <i className={`fas ${expandedTechPack[item.id] ? 'fa-chevron-up' : 'fa-print'}`}></i>
-                                                        {expandedTechPack[item.id] ? 'Hide Tech Pack' : 'View Tech Pack & Files'}
-                                                    </button>
+                                             <>
+                                                 <p style={{ fontSize: '0.75rem', color: '#999', margin: '6px 0 0 0' }}>Designer ID: {item.designerId}</p>
+                                                 <div style={{ marginTop: 12 }}>
+                                                     {item.id ? (
+                                                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                                                             <button
+                                                                 type="button"
+                                                                 onClick={() => navigate(`/mfg/designs/${item.id}`)}
+                                                                 style={{
+                                                                     background: 'var(--admin-gold, #C5A059)',
+                                                                     border: 'none',
+                                                                     color: '#fff',
+                                                                     padding: '4px 10px',
+                                                                     borderRadius: 4,
+                                                                     fontSize: '0.7rem',
+                                                                     fontWeight: 600,
+                                                                     fontFamily: "'Montserrat', sans-serif",
+                                                                     cursor: 'pointer',
+                                                                     display: 'inline-flex',
+                                                                     alignItems: 'center',
+                                                                     gap: 6
+                                                                 }}
+                                                             >
+                                                                 <i className="fas fa-external-link-alt"></i> Go to Design
+                                                             </button>
+                                                             <button
+                                                                 type="button"
+                                                                 onClick={() => toggleTechPack(item)}
+                                                                 style={{
+                                                                     background: 'transparent',
+                                                                     border: '1px solid var(--admin-gold, #C5A059)',
+                                                                     color: 'var(--admin-gold, #C5A059)',
+                                                                     padding: '4px 10px',
+                                                                     borderRadius: 4,
+                                                                     fontSize: '0.7rem',
+                                                                     fontWeight: 600,
+                                                                     fontFamily: "'Montserrat', sans-serif",
+                                                                     cursor: 'pointer',
+                                                                     display: 'inline-flex',
+                                                                     alignItems: 'center',
+                                                                     gap: 6
+                                                                 }}
+                                                             >
+                                                                 <i className={`fas ${expandedTechPack[item.id] ? 'fa-chevron-up' : 'fa-print'}`}></i>
+                                                                 {expandedTechPack[item.id] ? 'Hide Tech Pack' : 'View Tech Pack & Files'}
+                                                             </button>
+                                                         </div>
+                                                     ) : (
+                                                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                                                             <button
+                                                                 type="button"
+                                                                 onClick={() => handleGoToDesign(item)}
+                                                                 style={{
+                                                                     background: 'var(--admin-gold, #C5A059)',
+                                                                     border: 'none',
+                                                                     color: '#fff',
+                                                                     padding: '4px 10px',
+                                                                     borderRadius: 4,
+                                                                     fontSize: '0.7rem',
+                                                                     fontWeight: 600,
+                                                                     fontFamily: "'Montserrat', sans-serif",
+                                                                     cursor: 'pointer',
+                                                                     display: 'inline-flex',
+                                                                     alignItems: 'center',
+                                                                     gap: 6
+                                                                 }}
+                                                                 disabled={fetchingDesigns[`resolve_${item.designerId}_${item.name}`]}
+                                                             >
+                                                                 {fetchingDesigns[`resolve_${item.designerId}_${item.name}`] ? (
+                                                                     <>
+                                                                         <i className="fas fa-spinner fa-spin"></i>
+                                                                         Resolving Design...
+                                                                     </>
+                                                                 ) : (
+                                                                     <>
+                                                                         <i className="fas fa-external-link-alt"></i>
+                                                                         Go to Design
+                                                                     </>
+                                                                 )}
+                                                             </button>
+                                                             <button
+                                                                 type="button"
+                                                                 onClick={() => toggleTechPack(item)}
+                                                                 style={{
+                                                                     background: 'transparent',
+                                                                     border: '1px solid var(--admin-gold, #C5A059)',
+                                                                     color: 'var(--admin-gold, #C5A059)',
+                                                                     padding: '4px 10px',
+                                                                     borderRadius: 4,
+                                                                     fontSize: '0.7rem',
+                                                                     fontWeight: 600,
+                                                                     fontFamily: "'Montserrat', sans-serif",
+                                                                     cursor: 'pointer',
+                                                                     display: 'inline-flex',
+                                                                     alignItems: 'center',
+                                                                     gap: 6
+                                                                 }}
+                                                                 disabled={fetchingDesigns[`resolve_${item.designerId}_${item.name}`]}
+                                                             >
+                                                                 {fetchingDesigns[`resolve_${item.designerId}_${item.name}`] ? (
+                                                                     <>
+                                                                         <i className="fas fa-spinner fa-spin"></i>
+                                                                         Resolving Design...
+                                                                     </>
+                                                                 ) : (
+                                                                     <>
+                                                                         <i className="fas fa-print"></i>
+                                                                         View Tech Pack & Files
+                                                                     </>
+                                                                 )}
+                                                             </button>
+                                                         </div>
+                                                     )}
 
-                                                    {expandedTechPack[item.id] && (
-                                                        <div style={{
-                                                            marginTop: 10,
-                                                            padding: 12,
-                                                            background: '#fafafa',
-                                                            border: '1px solid #ddd',
-                                                            borderRadius: 6
-                                                        }}>
-                                                            {fetchingDesigns[item.id] ? (
-                                                                <div style={{ fontSize: '0.75rem', color: '#888' }}>
-                                                                    <i className="fas fa-spinner fa-spin" style={{ marginRight: 6 }}></i> Loading tech pack...
-                                                                </div>
-                                                            ) : designCache[item.id] ? (
-                                                                <div>
-                                                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', color: '#333' }}>
-                                                                        Printing Placements for {item.colorName || 'Default Color'}
-                                                                    </div>
+                                                     {item.id && expandedTechPack[item.id] && (
+                                                         <div style={{
+                                                             marginTop: 10,
+                                                             padding: 12,
+                                                             background: '#fafafa',
+                                                             border: '1px solid #ddd',
+                                                             borderRadius: 6
+                                                         }}>
+                                                             {fetchingDesigns[item.id] ? (
+                                                                 <div style={{ fontSize: '0.75rem', color: '#888' }}>
+                                                                     <i className="fas fa-spinner fa-spin" style={{ marginRight: 6 }}></i> Loading tech pack...
+                                                                 </div>
+                                                             ) : designCache[item.id] ? (
+                                                                 <div>
+                                                                     {designCache[item.id].text && (
+                                                                         <div style={{ 
+                                                                             padding: '10px 12px', 
+                                                                             backgroundColor: '#fff', 
+                                                                             borderLeft: '3px solid var(--admin-gold, #C5A059)', 
+                                                                             borderRadius: '0 6px 6px 0', 
+                                                                             boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                                                             marginBottom: 12
+                                                                         }}>
+                                                                             <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#C5A059', textTransform: 'uppercase', marginBottom: 4 }}>
+                                                                                 Designer Instructions & Notes
+                                                                             </div>
+                                                                             <div style={{ fontSize: '0.75rem', color: '#333', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                                                                                 {designCache[item.id].text}
+                                                                             </div>
+                                                                         </div>
+                                                                     )}
+                                                                     <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', color: '#333' }}>
+                                                                         Printing Placements for {item.colorName || 'Default Color'}
+                                                                     </div>
                                                                     
                                                                     {(() => {
                                                                         const colorKey = item.colorName || '';
@@ -513,10 +697,31 @@ function MfgOrders() {
                                                                         return (
                                                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                                                                 {placements.map((p, pIdx) => (
-                                                                                    <div key={pIdx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, padding: 8, border: '1px solid #eee', borderRadius: 4, background: 'white' }}>
+                                                                                    <div key={pIdx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 8, padding: 8, border: '1px solid #eee', borderRadius: 4, background: 'white' }}>
                                                                                         <div>
                                                                                             <div style={{ fontSize: '0.62rem', color: '#888', fontWeight: 600 }}>Style & Zone:</div>
                                                                                             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#111' }}>{p.style} on {p.placementLabel}</div>
+                                                                                            
+                                                                                            <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+                                                                                                {p.designUrl && (
+                                                                                                    <div style={{ textAlign: 'center' }}>
+                                                                                                        <span style={{ fontSize: '0.55rem', color: '#888', display: 'block', marginBottom: 2 }}>Artwork:</span>
+                                                                                                        <div 
+                                                                                                            onClick={() => setEnlargedImage(p.designUrl)}
+                                                                                                            style={{ width: 50, height: 50, border: '1px solid #ddd', borderRadius: 4, background: `url(${p.designUrl}) center/contain no-repeat #fff`, cursor: 'zoom-in' }}
+                                                                                                        ></div>
+                                                                                                    </div>
+                                                                                                )}
+                                                                                                {p.mockupUrl && (
+                                                                                                    <div style={{ textAlign: 'center' }}>
+                                                                                                        <span style={{ fontSize: '0.55rem', color: '#888', display: 'block', marginBottom: 2 }}>Mockup:</span>
+                                                                                                        <div 
+                                                                                                            onClick={() => setEnlargedImage(p.mockupUrl)}
+                                                                                                            style={{ width: 50, height: 50, border: '1px solid #ddd', borderRadius: 4, background: `url(${p.mockupUrl}) center/contain no-repeat #fff`, cursor: 'zoom-in' }}
+                                                                                                        ></div>
+                                                                                                    </div>
+                                                                                                )}
+                                                                                            </div>
                                                                                         </div>
                                                                                         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
                                                                                             {p.designUrl && (
@@ -571,10 +776,14 @@ function MfgOrders() {
                                                                                         <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#555', marginBottom: 6 }}>Manufacturer Reference Images:</div>
                                                                                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                                                                                             {refs.map((refUrl, rIdx) => (
-                                                                                                <div key={rIdx} style={{ position: 'relative', width: 60, height: 60, border: '1px solid #ddd', borderRadius: 4, overflow: 'hidden', background: `url(${refUrl}) center/cover no-repeat` }}>
+                                                                                                <div 
+                                                                                                    key={rIdx} 
+                                                                                                    onClick={() => setEnlargedImage(refUrl)}
+                                                                                                    style={{ position: 'relative', width: 60, height: 60, border: '1px solid #ddd', borderRadius: 4, overflow: 'hidden', background: `url(${refUrl}) center/cover no-repeat`, cursor: 'zoom-in' }}
+                                                                                                >
                                                                                                     <button
                                                                                                         type="button"
-                                                                                                        onClick={() => handleDownloadFile(refUrl, `${item.name}_${colorKey}_RefImage_${rIdx + 1}`)}
+                                                                                                        onClick={(e) => { e.stopPropagation(); handleDownloadFile(refUrl, `${item.name}_${colorKey}_RefImage_${rIdx + 1}`); }}
                                                                                                         style={{
                                                                                                             position: 'absolute',
                                                                                                             bottom: 0,
@@ -615,6 +824,61 @@ function MfgOrders() {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Image Enlargement Modal */}
+            {enlargedImage && (
+                <div 
+                    onClick={() => setEnlargedImage(null)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(0,0,0,0.85)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 2000,
+                        cursor: 'zoom-out'
+                    }}
+                >
+                    <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img 
+                            src={enlargedImage} 
+                            alt="Enlarged order view" 
+                            style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '80vh', 
+                                objectFit: 'contain', 
+                                borderRadius: 8,
+                                border: '3px solid #fff',
+                                boxShadow: '0 5px 25px rgba(0,0,0,0.5)'
+                            }} 
+                        />
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setEnlargedImage(null); }}
+                            style={{
+                                position: 'absolute',
+                                top: -45,
+                                right: 0,
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '1.25rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                fontWeight: 600
+                            }}
+                        >
+                            <i className="fas fa-times"></i> Close
+                        </button>
                     </div>
                 </div>
             )}

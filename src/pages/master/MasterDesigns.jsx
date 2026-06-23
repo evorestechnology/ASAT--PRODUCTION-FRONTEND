@@ -3,6 +3,7 @@ import { apiFetch } from '../../api';
 import '../../styles/admin.css';
 import BackButton from '../../components/BackButton';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
+import { useCurrency } from '../../context/CurrencyContext';
 
 function MasterDesigns() {
     const [tab, setTab] = useState('pending');
@@ -13,6 +14,7 @@ function MasterDesigns() {
     const [actionLoading, setActionLoading] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
     const { toasts, showToast } = useToast();
+    const { packingCost, operatingCost } = useCurrency();
 
     const fetchDesigns = async () => {
         try {
@@ -259,27 +261,44 @@ function MasterDesigns() {
                                                     const desc = d.description && typeof d.description === 'string' && d.description.startsWith('{') ? JSON.parse(d.description) : null;
                                                     const pricing = desc?.pricing;
                                                     if (pricing) {
+                                                        const bCost = pricing.baseCost || 0;
+                                                        const pCost = pricing.printingCost || 0;
+                                                        const dCost = pricing.designerCost || 0;
+                                                        const oCost = operatingCost || 0;
+                                                        const pkCost = packingCost || 0;
+                                                        const totalSelling = d.price || 0;
+                                                        const rawTotal = bCost + pCost + dCost + oCost + pkCost;
+                                                        const calculatedMarkup = Math.max(0, totalSelling - rawTotal);
+
                                                         return (
-                                                            <div style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '120px' }}>
+                                                            <div style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '2px', width: '140px' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                     <span style={{ color: '#888' }}>Base:</span>
-                                                                    <span>₹{(pricing.baseCost || 0).toLocaleString()}</span>
+                                                                    <span>₹{bCost.toLocaleString()}</span>
                                                                 </div>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '120px' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                     <span style={{ color: '#888' }}>Print:</span>
-                                                                    <span>₹{(pricing.printingCost || 0).toLocaleString()}</span>
+                                                                    <span>₹{pCost.toLocaleString()}</span>
                                                                 </div>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '120px' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                     <span style={{ color: '#888' }}>Designer:</span>
-                                                                    <span>₹{(pricing.designerCost || 0).toLocaleString()}</span>
+                                                                    <span>₹{dCost.toLocaleString()}</span>
                                                                 </div>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '120px' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                    <span style={{ color: '#888' }}>Operating:</span>
+                                                                    <span>₹{oCost.toLocaleString()}</span>
+                                                                </div>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                    <span style={{ color: '#888' }}>Packing:</span>
+                                                                    <span>₹{pkCost.toLocaleString()}</span>
+                                                                </div>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                     <span style={{ color: '#888' }}>Markup:</span>
-                                                                    <span>₹{(pricing.markup || 0).toLocaleString()}</span>
+                                                                    <span style={{ color: '#C5A059' }}>₹{calculatedMarkup.toLocaleString()}</span>
                                                                 </div>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '120px', borderTop: '1px solid #333', paddingTop: '2px', marginTop: '2px', fontWeight: 'bold' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #333', paddingTop: '4px', marginTop: '2px', fontWeight: 'bold' }}>
                                                                     <span>Total:</span>
-                                                                    <span>₹{(d.price || 0).toLocaleString()}</span>
+                                                                    <span>₹{totalSelling.toLocaleString()}</span>
                                                                 </div>
                                                             </div>
                                                         );

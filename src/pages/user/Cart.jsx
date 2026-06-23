@@ -1011,6 +1011,7 @@ function Cart() {
                 }
 
                 return {
+                    id: i.id || null,
                     name: i.name,
                     title: i.name,
                     size: i.size,
