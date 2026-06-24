@@ -198,6 +198,7 @@ function MasterOrderHistory() {
                                 <th>Country</th>
                                 <th>Status</th>
                                 <th>Track ID</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -228,6 +229,29 @@ function MasterOrderHistory() {
                                             </span>
                                         </td>
                                         <td>{o.trackId || o.trackingId || '—'}</td>
+                                        <td>
+                                            <button 
+                                                className="adm-action-btn"
+                                                onClick={() => {
+                                                    import('../../utils/invoiceGenerator').then(module => {
+                                                        module.generateInvoice({
+                                                            ...o,
+                                                            orderId: o.orderId || o.id,
+                                                            createdAt: o.createdAt || o.created_at,
+                                                            customerName: o.userId || o.user, // Master view might lack customerName, fallback to user
+                                                            address: o.address || o.shippingAddress,
+                                                            totalAmount: o.totalAmount || o.revenue
+                                                        });
+                                                    }).catch(err => {
+                                                        console.error("Failed to load invoice generator:", err);
+                                                        if(window.showToast) window.showToast("Failed to generate invoice.", "error");
+                                                    });
+                                                }}
+                                                title="Download Invoice"
+                                            >
+                                                <i className="fas fa-file-invoice"></i>
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))
                             )}

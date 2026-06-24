@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import html2canvas from 'html2canvas';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
@@ -21,6 +22,9 @@ function MfgOrders() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [enlargedImage, setEnlargedImage] = useState(null);
+    const [neckLogoGenItem, setNeckLogoGenItem] = useState(null);
+    const neckLogoRef = useRef(null);
+    const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
 
     const handleDownloadFile = async (url, filename) => {
         try {
@@ -93,7 +97,8 @@ function MfgOrders() {
                             [designId]: {
                                 text: parsedDesc.text || '',
                                 placements: parsedDesc.placements || {},
-                                manufacturerRefs: parsedDesc.manufacturerRefs || {}
+                                manufacturerRefs: parsedDesc.manufacturerRefs || {},
+                                designerName: data.designers?.full_name || data.designer_username || data.designers?.username || 'Designer'
                             }
                         }));
                     } catch (err) {
@@ -103,7 +108,8 @@ function MfgOrders() {
                             [designId]: {
                                 text: data.description,
                                 placements: {},
-                                manufacturerRefs: {}
+                                manufacturerRefs: {},
+                                designerName: data.designers?.full_name || data.designer_username || data.designers?.username || 'Designer'
                             }
                         }));
                     }
@@ -148,6 +154,28 @@ function MfgOrders() {
             navigate(`/mfg/designs/${designId}`);
         } else {
             showToast("Design details are unavailable for this item.", "error");
+        }
+    };
+
+    const handleDownloadNeckLogo = async () => {
+        if (!neckLogoRef.current || !neckLogoGenItem) return;
+        setIsGeneratingLogo(true);
+        try {
+            const canvas = await html2canvas(neckLogoRef.current, {
+                backgroundColor: null,
+                useCORS: true,
+                scale: 3
+            });
+            const link = document.createElement('a');
+            link.download = `neck-logo-${neckLogoGenItem.designerUsername || 'designer'}-${neckLogoGenItem.name.replace(/\s+/g, '-')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast("Neck logo downloaded successfully!", "success");
+        } catch (err) {
+            console.error("Failed to generate neck logo:", err);
+            showToast("Failed to generate neck logo.", "error");
+        } finally {
+            setIsGeneratingLogo(false);
         }
     };
 
@@ -373,6 +401,7 @@ function MfgOrders() {
                                     </td>
                                     <td style={{ maxWidth: 200, fontSize: '0.75rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                                         <div><strong>{o.customerName || 'Customer'}</strong></div>
+                                        <div><a href={`mailto:${o.customerEmail}`} style={{color: '#C5A059', textDecoration: 'none'}}>{o.customerEmail}</a></div>
                                         <div>{o.address}</div>
                                         <div>{o.phone}</div>
                                     </td>
@@ -563,6 +592,26 @@ function MfgOrders() {
                                                              </button>
                                                              <button
                                                                  type="button"
+                                                                 onClick={() => setNeckLogoGenItem(item)}
+                                                                 style={{
+                                                                     background: 'transparent',
+                                                                     border: '1px solid var(--admin-gold, #C5A059)',
+                                                                     color: 'var(--admin-gold, #C5A059)',
+                                                                     padding: '4px 10px',
+                                                                     borderRadius: 4,
+                                                                     fontSize: '0.7rem',
+                                                                     fontWeight: 600,
+                                                                     fontFamily: "'Montserrat', sans-serif",
+                                                                     cursor: 'pointer',
+                                                                     display: 'inline-flex',
+                                                                     alignItems: 'center',
+                                                                     gap: 6
+                                                                 }}
+                                                             >
+                                                                 <i className="fas fa-tag"></i> Generate Neck Logo
+                                                             </button>
+                                                             <button
+                                                                 type="button"
                                                                  onClick={() => toggleTechPack(item)}
                                                                  style={{
                                                                      background: 'transparent',
@@ -615,6 +664,26 @@ function MfgOrders() {
                                                                          Go to Design
                                                                      </>
                                                                  )}
+                                                             </button>
+                                                             <button
+                                                                 type="button"
+                                                                 onClick={() => setNeckLogoGenItem(item)}
+                                                                 style={{
+                                                                     background: 'transparent',
+                                                                     border: '1px solid var(--admin-gold, #C5A059)',
+                                                                     color: 'var(--admin-gold, #C5A059)',
+                                                                     padding: '4px 10px',
+                                                                     borderRadius: 4,
+                                                                     fontSize: '0.7rem',
+                                                                     fontWeight: 600,
+                                                                     fontFamily: "'Montserrat', sans-serif",
+                                                                     cursor: 'pointer',
+                                                                     display: 'inline-flex',
+                                                                     alignItems: 'center',
+                                                                     gap: 6
+                                                                 }}
+                                                             >
+                                                                 <i className="fas fa-tag"></i> Generate Neck Logo
                                                              </button>
                                                              <button
                                                                  type="button"
@@ -878,6 +947,123 @@ function MfgOrders() {
                             }}
                         >
                             <i className="fas fa-times"></i> Close
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Neck Logo Generator Modal */}
+            {neckLogoGenItem && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(5px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2000,
+                    padding: 20
+                }}>
+                    <div style={{
+                        background: '#1a1a1a',
+                        width: '100%',
+                        maxWidth: 400,
+                        borderRadius: 12,
+                        padding: 30,
+                        position: 'relative',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                        border: '1px solid #333',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center'
+                    }}>
+                        <button 
+                            onClick={() => setNeckLogoGenItem(null)}
+                            style={{
+                                position: 'absolute',
+                                top: 15,
+                                right: 15,
+                                border: 'none',
+                                background: 'transparent',
+                                fontSize: '1.25rem',
+                                cursor: 'pointer',
+                                color: '#aaa'
+                            }}
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
+                        
+                        <h2 style={{ fontFamily: "'Montserrat'", fontSize: '1.2rem', fontWeight: 600, color: '#fff', marginBottom: 20, width: '100%', textAlign: 'center' }}>
+                            Generate Neck Logo
+                        </h2>
+
+                        {/* Capture Area */}
+                        <div 
+                            ref={neckLogoRef}
+                            style={{
+                                width: '220px',
+                                padding: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '15px'
+                            }}
+                        >
+                            <img 
+                                src="/ast-logo.jpg" 
+                                alt="AST Logo" 
+                                crossOrigin="anonymous"
+                                style={{
+                                    width: '80px',
+                                    height: 'auto',
+                                    display: 'block'
+                                }}
+                            />
+                            <div style={{
+                                fontFamily: "'Montserrat', sans-serif",
+                                fontWeight: 600,
+                                fontSize: '12px',
+                                textTransform: 'uppercase',
+                                color: '#000',
+                                letterSpacing: '0.05em',
+                                textAlign: 'center'
+                            }}>
+                                By {designCache[neckLogoGenItem.id]?.designerName || neckLogoGenItem.designerUsername || 'Designer'}
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleDownloadNeckLogo}
+                            disabled={isGeneratingLogo}
+                            style={{
+                                marginTop: 30,
+                                background: 'var(--admin-gold, #C5A059)',
+                                color: '#fff',
+                                border: 'none',
+                                padding: '12px 24px',
+                                borderRadius: 6,
+                                fontSize: '0.9rem',
+                                fontWeight: 600,
+                                fontFamily: "'Montserrat', sans-serif",
+                                cursor: isGeneratingLogo ? 'not-allowed' : 'pointer',
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: 8,
+                                transition: 'background 0.2s'
+                            }}
+                        >
+                            {isGeneratingLogo ? (
+                                <><i className="fas fa-spinner fa-spin"></i> Generating...</>
+                            ) : (
+                                <><i className="fas fa-download"></i> Download PNG</>
+                            )}
                         </button>
                     </div>
                 </div>

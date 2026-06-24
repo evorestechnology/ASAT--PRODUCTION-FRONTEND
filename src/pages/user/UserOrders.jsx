@@ -319,7 +319,7 @@ function UserOrders() {
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                                         <button className="track-btn" onClick={() => navigate(`/tracking?id=${o.order_id || o.id}`)}>
                                                             Track
                                                         </button>
@@ -338,6 +338,26 @@ function UserOrders() {
                                                             }}
                                                         >
                                                             <i className="fab fa-whatsapp" style={{ marginRight: '4px' }}></i> Share
+                                                        </button>
+                                                        <button 
+                                                            className="track-btn" 
+                                                            style={{ background: '#333', border: 'none', color: '#fff' }} 
+                                                            onClick={() => {
+                                                                import('../../utils/invoiceGenerator').then(module => {
+                                                                    module.generateInvoice({
+                                                                        ...o,
+                                                                        orderId: o.order_id || o.id.slice(0, 10).toUpperCase(),
+                                                                        createdAt: o.created_at,
+                                                                        customerName: o.customer_name,
+                                                                        totalAmount: o.total_amount
+                                                                    });
+                                                                }).catch(err => {
+                                                                    console.error("Failed to load invoice generator:", err);
+                                                                    showToast("Failed to generate invoice.", "error");
+                                                                });
+                                                            }}
+                                                        >
+                                                            <i className="fas fa-file-invoice" style={{ marginRight: '4px' }}></i> Invoice
                                                         </button>
                                                     </div>
                                                 </td>

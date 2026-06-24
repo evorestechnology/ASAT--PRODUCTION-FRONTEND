@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import html2canvas from 'html2canvas';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
@@ -16,6 +17,9 @@ function MfgOrderHistory() {
     const [searchTerm, setSearchTerm] = useState('');
     const [enlargedImage, setEnlargedImage] = useState(null);
     const [fetchingDesigns, setFetchingDesigns] = useState({});
+    const [neckLogoGenItem, setNeckLogoGenItem] = useState(null);
+    const neckLogoRef = useRef(null);
+    const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
 
     const handleGoToDesign = async (item) => {
         let designId = item.id;
@@ -48,6 +52,28 @@ function MfgOrderHistory() {
             navigate(`/mfg/designs/${designId}`);
         } else {
             showToast("Design details are unavailable for this item.", "error");
+        }
+    };
+
+    const handleDownloadNeckLogo = async () => {
+        if (!neckLogoRef.current || !neckLogoGenItem) return;
+        setIsGeneratingLogo(true);
+        try {
+            const canvas = await html2canvas(neckLogoRef.current, {
+                backgroundColor: null,
+                useCORS: true,
+                scale: 3
+            });
+            const link = document.createElement('a');
+            link.download = `neck-logo-${neckLogoGenItem.designerUsername || 'designer'}-${neckLogoGenItem.name.replace(/\s+/g, '-')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast("Neck logo downloaded successfully!", "success");
+        } catch (err) {
+            console.error("Failed to generate neck logo:", err);
+            showToast("Failed to generate neck logo.", "error");
+        } finally {
+            setIsGeneratingLogo(false);
         }
     };
 
@@ -157,7 +183,7 @@ function MfgOrderHistory() {
                             <th>Order ID</th>
                             <th>Date</th>
                             <th>Items</th>
-                            <th>Total Qty</th>
+                            <th>Shipping Address</th>
                             <th>Earnings</th>
                             <th>Country</th>
                             <th>Status</th>
@@ -177,15 +203,41 @@ function MfgOrderHistory() {
                                     <td style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{o.id.substring(0, 8)}...</td>
                                     <td style={{ fontSize: '0.75rem' }}>{formatOrderDate(o)}</td>
                                     <td>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                             {(o.items || []).map((item, idx) => (
-                                                <span key={idx} style={{ fontSize: '0.75rem' }}>
-                                                    {item.name} ({item.size})
-                                                </span>
+                                                <div key={idx} style={{ fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: 2, borderBottom: idx < o.items.length - 1 ? '1px solid #f0f0f0' : 'none', paddingBottom: idx < o.items.length - 1 ? 4 : 0 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                        {item.image && (
+                                                            <img 
+                                                                src={item.image} 
+                                                                alt={item.name} 
+                                                                onClick={() => setEnlargedImage(item.image)}
+                                                                style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4, cursor: 'zoom-in' }} 
+                                                            />
+                                                        )}
+                                                        <span style={{ fontWeight: 600 }}>{item.name} ({item.size}) x {item.qty}</span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: item.image ? 30 : 0, color: '#666', fontSize: '0.7rem' }}>
+                                                        {item.color && (
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #ccc' }}></span>
+                                                                {item.colorName || 'Selected'}
+                                                            </span>
+                                                        )}
+                                                        {item.printStyle && (
+                                                            <span>• Print: {item.printStyle}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             ))}
                                         </div>
                                     </td>
-                                    <td>{getItemsTotalQty(o.items)}</td>
+                                    <td style={{ maxWidth: 200, fontSize: '0.75rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                                        <div><strong>{o.customerName || 'Customer'}</strong></div>
+                                        <div><a href={`mailto:${o.customerEmail}`} style={{color: '#C5A059', textDecoration: 'none'}}>{o.customerEmail}</a></div>
+                                        <div>{o.address}</div>
+                                        <div>{o.phone}</div>
+                                    </td>
                                     <td style={{ fontWeight: '600' }}>₹{Number(o.mfgEarnings || 0).toLocaleString('en-IN')}</td>
                                     <td>{o.country || 'India'}</td>
                                     <td>
@@ -328,6 +380,26 @@ function MfgOrderHistory() {
                                                             </>
                                                         )}
                                                     </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setNeckLogoGenItem(item)}
+                                                        style={{
+                                                            background: 'transparent',
+                                                            border: '1px solid var(--admin-gold, #C5A059)',
+                                                            color: 'var(--admin-gold, #C5A059)',
+                                                            padding: '4px 10px',
+                                                            borderRadius: 4,
+                                                            fontSize: '0.7rem',
+                                                            fontWeight: 600,
+                                                            fontFamily: "'Montserrat', sans-serif",
+                                                            cursor: 'pointer',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: 6
+                                                        }}
+                                                    >
+                                                        <i className="fas fa-tag"></i> Generate Neck Logo
+                                                    </button>
                                                 </div>
                                             </>
                                         )}
@@ -389,6 +461,123 @@ function MfgOrderHistory() {
                             }}
                         >
                             <i className="fas fa-times"></i> Close
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Neck Logo Generator Modal */}
+            {neckLogoGenItem && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(5px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2000,
+                    padding: 20
+                }}>
+                    <div style={{
+                        background: '#1a1a1a',
+                        width: '100%',
+                        maxWidth: 400,
+                        borderRadius: 12,
+                        padding: 30,
+                        position: 'relative',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                        border: '1px solid #333',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center'
+                    }}>
+                        <button 
+                            onClick={() => setNeckLogoGenItem(null)}
+                            style={{
+                                position: 'absolute',
+                                top: 15,
+                                right: 15,
+                                border: 'none',
+                                background: 'transparent',
+                                fontSize: '1.25rem',
+                                cursor: 'pointer',
+                                color: '#aaa'
+                            }}
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
+                        
+                        <h2 style={{ fontFamily: "'Montserrat'", fontSize: '1.2rem', fontWeight: 600, color: '#fff', marginBottom: 20, width: '100%', textAlign: 'center' }}>
+                            Generate Neck Logo
+                        </h2>
+
+                        {/* Capture Area */}
+                        <div 
+                            ref={neckLogoRef}
+                            style={{
+                                width: '220px',
+                                padding: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '15px'
+                            }}
+                        >
+                            <img 
+                                src="/ast-logo.jpg" 
+                                alt="AST Logo" 
+                                crossOrigin="anonymous"
+                                style={{
+                                    width: '80px',
+                                    height: 'auto',
+                                    display: 'block'
+                                }}
+                            />
+                            <div style={{
+                                fontFamily: "'Montserrat', sans-serif",
+                                fontWeight: 600,
+                                fontSize: '12px',
+                                textTransform: 'uppercase',
+                                color: '#000',
+                                letterSpacing: '0.05em',
+                                textAlign: 'center'
+                            }}>
+                                By {neckLogoGenItem.designerUsername || 'Designer'}
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleDownloadNeckLogo}
+                            disabled={isGeneratingLogo}
+                            style={{
+                                marginTop: 30,
+                                background: 'var(--admin-gold, #C5A059)',
+                                color: '#fff',
+                                border: 'none',
+                                padding: '12px 24px',
+                                borderRadius: 6,
+                                fontSize: '0.9rem',
+                                fontWeight: 600,
+                                fontFamily: "'Montserrat', sans-serif",
+                                cursor: isGeneratingLogo ? 'not-allowed' : 'pointer',
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: 8,
+                                transition: 'background 0.2s'
+                            }}
+                        >
+                            {isGeneratingLogo ? (
+                                <><i className="fas fa-spinner fa-spin"></i> Generating...</>
+                            ) : (
+                                <><i className="fas fa-download"></i> Download PNG</>
+                            )}
                         </button>
                     </div>
                 </div>

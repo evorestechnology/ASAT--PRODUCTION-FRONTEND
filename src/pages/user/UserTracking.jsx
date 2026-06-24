@@ -309,6 +309,30 @@ function UserTracking() {
                                         </span>
                                     </div>
                                 )}
+                                
+                                <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                                    <button 
+                                        className="cta-gold" 
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                                        onClick={() => {
+                                            import('../../utils/invoiceGenerator').then(module => {
+                                                module.generateInvoice({
+                                                    ...order,
+                                                    orderId: order.order_id || order.id?.slice(0, 10).toUpperCase(),
+                                                    createdAt: order.created_at,
+                                                    customerName: order.customer_name,
+                                                    totalAmount: order.total_amount
+                                                });
+                                            }).catch(err => {
+                                                console.error("Failed to load invoice generator:", err);
+                                                // Using alert if toast isn't configured in Tracking
+                                                alert("Failed to generate invoice.");
+                                            });
+                                        }}
+                                    >
+                                        <i className="fas fa-file-invoice" /> Download Invoice
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
