@@ -362,11 +362,11 @@ function StyleEditCard({ ps, idx, uploadingId, onUpdate, onRemove, onImageClick,
                             style={{ ...INPUT_ST, cursor: 'pointer' }}>
                             <option value="DTF">DTF (Direct to Film)</option>
                             <option value="DTG">DTG (Direct to Garment)</option>
-                            <option value="Screen Printing">Screen Printing</option>
+                            {/* <option value="Screen Printing">Screen Printing</option> */}
                             <option value="Embroidery">Embroidery</option>
-                            <option value="Sublimation">Sublimation</option>
-                            <option value="Vinyl">Vinyl</option>
-                            <option value="Other">Other</option>
+                            {/* <option value="Sublimation">Sublimation</option> */}
+                            {/* <option value="Vinyl">Vinyl</option> */}
+                            {/* <option value="Other">Other</option> */}
                         </select>
                     </div>
                     <div>
