@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+﻿import { createClient } from '@supabase/supabase-js';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -87,7 +87,7 @@ export async function apiFetch(path, options = {}) {
   }
 
   // Return data directly (backend wraps in { success: true, data, message })
-  return data?.data ?? data;
+  return data?.publicUrl ?? data?.data ?? data;
 }
 
 /**
@@ -132,7 +132,7 @@ export async function uploadFile(file, path, bucket = 'asat-uploads') {
     throw error;
   }
 
-  return data?.data ?? data;
+  return data?.publicUrl ?? data?.data ?? data;
 }
 
 /**

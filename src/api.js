@@ -1,4 +1,4 @@
-let authToken = null;
+﻿let authToken = null;
 
 export function setAuthToken(token) {
   authToken = token;
@@ -39,16 +39,17 @@ export async function apiFetch(path, options = {}) {
  * @param {File} file - The File object to upload
  * @returns {Promise<string>} Public URL of the uploaded file
  */
-export async function uploadFile(bucket, path, file) {
+export async function uploadFile(file, path, bucket = "asat-uploads") {
   const formData = new FormData();
-  formData.append('file', file);
-  formData.append('path', path);
-  formData.append('bucket', bucket);
+  formData.append("file", file);
+  formData.append("path", path);
+  formData.append("bucket", bucket);
 
-  const data = await apiFetch('/api/storage/upload', {
-    method: 'POST',
+  const data = await apiFetch("/api/storage/upload", {
+    method: "POST",
     body: formData,
   });
 
   return data.publicUrl;
 }
+

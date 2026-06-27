@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { apiFetch, uploadFile } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
 import '../../styles/admin.css';
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    PLACEMENT MATRIX (matching MfgProducts PLACEMENT_MATRIX)
-───────────────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export const PLACEMENT_MATRIX = {
     DTF: {
         "Tshirt Front": ["pocket", "a6", "a4", "a3", "14x16", "16x20"],
@@ -30,9 +30,9 @@ export const PLACEMENT_MATRIX = {
 
 const PRINT_TYPES = ["DTF", "DTG", "Embroidery"];
 
-/* ─────────────────────────────────────────────────────────────
-   SUMMARY CARD — compact view in the list
-───────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   SUMMARY CARD â€” compact view in the list
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function StyleSummaryCard({ ps, idx, onEdit, onRemove }) {
     return (
         <div style={{
@@ -112,9 +112,9 @@ function StyleSummaryCard({ ps, idx, onEdit, onRemove }) {
     );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    ADD / EDIT MODAL
-───────────────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, uploadFile: uploadFileFn, userId }) {
     const [name, setName] = useState(editingStyle?.name || '');
     const [category, setCategory] = useState(editingStyle?.category || '');
@@ -188,7 +188,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
         try {
             const ext = imageFile.name.split('.').pop() || 'jpg';
             const filePath = `mfgPrintStyles/${userId}/${Date.now()}_ref.${ext}`;
-            const url = await uploadFileFn('asat-uploads', filePath, imageFile);
+            const url = await uploadFileFn(imageFile, filePath, "asat-uploads");
             setImageUrl(url);
             setImageFile(null);
             setUploading(false);
@@ -216,7 +216,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                         if (v.imageFile) {
                             const ext = v.imageFile.name.split('.').pop() || 'jpg';
                             const filePath = `mfgPrintStyles/${userId}/placements/${Date.now()}_${pc.category.replace(/\s+/g, '_')}_${optName.replace(/\s+/g, '_')}.${ext}`;
-                            imgUrl = await uploadFileFn('asat-uploads', filePath, v.imageFile);
+                            imgUrl = await uploadFileFn(v.imageFile, filePath, "asat-uploads");
                         }
                         updatedPlacements[optName] = {
                             imagePreview: imgUrl,
@@ -268,7 +268,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
                         {editingStyle?.id ? 'Edit Print Style' : 'Add Printing Method'}
                     </h3>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer', lineHeight: 1 }}>âœ•</button>
                 </div>
 
                 <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -293,7 +293,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                         <label style={LABEL_ST}><i className="fas fa-image" style={{ marginRight: 5, color: 'var(--gold)' }} />Reference Image (optional)</label>
                         {uploading ? (
                             <div style={{ padding: '9px 14px', background: '#2c2c2c', borderRadius: 4, fontSize: '0.75rem', color: '#aaa' }}>
-                                <i className="fas fa-circle-notch fa-spin" style={{ marginRight: 8 }} />Uploading…
+                                <i className="fas fa-circle-notch fa-spin" style={{ marginRight: 8 }} />Uploadingâ€¦
                             </div>
                         ) : imageUrl || imageFile ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -520,19 +520,19 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                                                                     {category === 'DTG' ? (
                                                                         <>
                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                                <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Dark Garment (₹):</label>
+                                                                                <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Dark Garment (â‚¹):</label>
                                                                                 <input type="number" min="0" value={opt.darkPrice} onChange={e => updateOption(pc.category, optName, 'darkPrice', e.target.value)}
                                                                                     style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
                                                                             </div>
                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                                <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Light Garment (₹):</label>
+                                                                                <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Light Garment (â‚¹):</label>
                                                                                 <input type="number" min="0" value={opt.lightPrice} onChange={e => updateOption(pc.category, optName, 'lightPrice', e.target.value)}
                                                                                     style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
                                                                             </div>
                                                                         </>
                                                                     ) : (
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                            <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Set Price (₹):</label>
+                                                                            <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Set Price (â‚¹):</label>
                                                                             <input type="number" min="0" value={opt.price} onChange={e => updateOption(pc.category, optName, 'price', e.target.value)}
                                                                                 style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
                                                                         </div>
@@ -558,7 +558,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                     </button>
                     <button onClick={handleSubmit} disabled={saving}
                         style={{ padding: '10px 24px', background: saving ? '#555' : '#28a745', color: 'white', border: 'none', borderRadius: 4, cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700 }}>
-                        {saving ? <><i className="fas fa-circle-notch fa-spin" style={{ marginRight: 8 }} />Saving…</> : 'Save Style'}
+                        {saving ? <><i className="fas fa-circle-notch fa-spin" style={{ marginRight: 8 }} />Savingâ€¦</> : 'Save Style'}
                     </button>
                 </div>
             </div>
@@ -566,9 +566,9 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
     );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Main Component
-───────────────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function MfgPrintStyles() {
     const { user } = useAuth();
     const [styles, setStyles]     = useState([]);
@@ -581,7 +581,7 @@ export default function MfgPrintStyles() {
 
     const showToast = (msg, type = 'success') => { setToast({ msg, type }); setTimeout(() => setToast(null), 4000); };
 
-    /* ── Load ── */
+    /* â”€â”€ Load â”€â”€ */
     const fetchStyles = async () => {
         if (!user) return;
         try {
@@ -629,12 +629,12 @@ export default function MfgPrintStyles() {
         }
     }, [user]);
 
-    /* ── Open/Close Modal ── */
+    /* â”€â”€ Open/Close Modal â”€â”€ */
     const openAddModal = () => { setEditingStyle(null); setModalOpen(true); };
     const openEditModal = (ps) => { setEditingStyle(ps); setModalOpen(true); };
     const closeModal = () => { setModalOpen(false); setEditingStyle(null); };
 
-    /* ── Save ── */
+    /* â”€â”€ Save â”€â”€ */
     const handleSave = async (formData) => {
         const isEdit = editingStyle?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(editingStyle.id);
         const payload = {
@@ -664,7 +664,7 @@ export default function MfgPrintStyles() {
         fetchStyles();
     };
 
-    /* ── Delete ── */
+    /* â”€â”€ Delete â”€â”€ */
     const executeDelete = async () => {
         const id = pendingDeleteId;
         if (!id) return;
@@ -693,7 +693,7 @@ export default function MfgPrintStyles() {
 
             {loading ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '40px 0', color: '#888', fontSize: '0.8rem' }}>
-                    <i className="fas fa-circle-notch fa-spin" style={{ color: 'var(--gold)' }} /> Loading…
+                    <i className="fas fa-circle-notch fa-spin" style={{ color: 'var(--gold)' }} /> Loadingâ€¦
                 </div>
             ) : (
                 <div style={{ maxWidth: 860 }}>
@@ -766,3 +766,4 @@ export default function MfgPrintStyles() {
 
 const LABEL_ST = { display: 'block', fontSize: '0.65rem', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: '#aaa', marginBottom: 5 };
 const INPUT_ST = { width: '100%', padding: '9px 11px', border: '1px solid #444', fontSize: '0.82rem', color: 'white', borderRadius: 4, outline: 'none', boxSizing: 'border-box', background: '#2c2c2c', transition: 'border-color 0.2s' };
+

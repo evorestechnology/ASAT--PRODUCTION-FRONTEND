@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { apiFetch, uploadFile } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
@@ -62,8 +62,9 @@ function MasterCategories() {
             if (editingCategory) {
                 let downloadUrl = editingCategory.image;
                 if (categoryFile) {
-                    const path = `categories/${Date.now()}_${categoryFile.name}`;
-                    downloadUrl = await uploadFile(categoryFile, path, 'asat-uploads');
+                    const cleanName = categoryFile.name.replace(/[^a-zA-Z0-9.]/g, "_");
+                    const path = `categories/${Date.now()}_${cleanName}`;
+                    downloadUrl = await uploadFile(categoryFile, path, "asat-uploads");
                 }
 
                 await apiFetch(`/api/categories/${editingCategory.id}`, {
@@ -83,8 +84,9 @@ function MasterCategories() {
                     return;
                 }
 
-                const path = `categories/${Date.now()}_${categoryFile.name}`;
-                const downloadUrl = await uploadFile(categoryFile, path, 'asat-uploads');
+                const cleanName = categoryFile.name.replace(/[^a-zA-Z0-9.]/g, "_");
+                const path = `categories/${Date.now()}_${cleanName}`;
+                const downloadUrl = await uploadFile(categoryFile, path, "asat-uploads");
 
                 await apiFetch('/api/categories', {
                     method: 'POST',
@@ -468,7 +470,7 @@ function MasterCategories() {
             {deleteTarget && (
                 <div style={{ position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.6)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1100,padding:20 }}>
                     <div style={{ background:'#fff',borderRadius:12,padding:32,maxWidth:420,width:'100%',boxShadow:'0 10px 40px rgba(0,0,0,0.3)',fontFamily:"'Montserrat',sans-serif" }}>
-                        <div style={{ fontSize:'2rem',textAlign:'center',marginBottom:12 }}>⚠️</div>
+                        <div style={{ fontSize:'2rem',textAlign:'center',marginBottom:12 }}>âš ï¸</div>
                         <h3 style={{ fontFamily:"'Cinzel',serif",textAlign:'center',marginBottom:10,color:'#121212' }}>Delete Category?</h3>
                         <p style={{ fontSize:'0.82rem',color:'#555',textAlign:'center',marginBottom:24,lineHeight:1.5 }}>
                             Permanently delete <strong>"{deleteTarget.name}"</strong>? All products in this category across all manufacturers will be marked as <em>Not Available</em>.
@@ -489,3 +491,4 @@ function MasterCategories() {
 }
 
 export default MasterCategories;
+
