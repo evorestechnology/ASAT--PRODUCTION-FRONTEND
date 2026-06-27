@@ -6,123 +6,85 @@ import BackButton from '../../components/BackButton';
 import '../../styles/admin.css';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
-const PLACEMENT_LABELS = {
-    // Front
-    'front_pocket_logo': 'Front Pocket Logo',
-    'front_a6': 'Front A6',
-    'front_a4': 'Front A4',
-    'front_a3': 'Front A3',
-    'front_14x16': 'Front 14×16',
-    'front_16x20': 'Front 16×20',
-    // Back
-    'back_a6': 'Back A6',
-    'back_a4': 'Back A4',
-    'back_a3': 'Back A3',
-    'back_14x16': 'Back 14×16',
-    'back_16x20': 'Back 16×20',
-    'back_neck': 'Back Neck',
-    'right_front_shoulder': 'Right Front Shoulder',
-    'right_back_shoulder': 'Right Back Shoulder',
-    'left_front_shoulder': 'Left Front Shoulder',
-    'left_back_shoulder': 'Left Back Shoulder',
-    'neck_logo': 'Neck Logo',
-    // Pant
-    'right_front_upper': 'Right Front Upper',
-    'right_front_bottom': 'Right Front Bottom',
-    'right_front_full': 'Right Front Full',
-    'left_front_upper': 'Left Front Upper',
-    'left_front_bottom': 'Left Front Bottom',
-    'left_front_lower': 'Left Front Lower',
-    'right_back_upper': 'Right Back Upper',
-    'right_back_bottom': 'Right Back Bottom',
-    'right_back_full': 'Right Back Full',
-    'left_back_upper': 'Left Back Upper',
-    'left_back_bottom': 'Left Back Bottom',
-    'left_back_lower': 'Left Back Lower',
+const PLACEMENT_MATRIX = {
+    dtf: {
+        "tshirt front": ["pocket", "a6", "a4", "a3", "14x16", "16x20"],
+        "tshirt back": ["a6", "a4", "a3", "14x16", "16x20"],
+        "pant front": ["right", "left", "right upper", "right lower", "left upper", "left lower"],
+        "pant back": ["right", "left", "right upper", "right lower", "left upper", "left lower"]
+    },
+    dtg: {
+        "tshirt front": ["pocket", "a6", "a4", "a3", "14x16", "16x20"],
+        "tshirt back": ["a6", "a4", "a3", "14x16", "16x20"],
+        "pant front": ["right", "left", "right upper", "right lower", "left upper", "left lower"],
+        "pant back": ["right", "left", "right upper", "right lower", "left upper", "left lower"]
+    },
+    embrio: {
+        "tshirt front": ["a6"],
+        "tshirt back": ["a6"],
+        "pant front": ["right upper", "left upper"],
+        "pant back": ["right upper", "left upper"]
+    }
 };
+
+const STANDARD_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL"];
 
 function MfgProducts() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { toasts, showToast } = useToast();
-    const [products, setProducts] = useState(() => {
-        try {
-            const saved = sessionStorage.getItem('asat_mfg_products');
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            return [];
-        }
-    });
+    const [products, setProducts] = useState([]);
     const [companyName, setCompanyName] = useState('Manufacturer');
-    const [loading, setLoading] = useState(() => {
-        try {
-            const saved = sessionStorage.getItem('asat_mfg_products');
-            return saved ? false : true;
-        } catch (e) {
-            return true;
-        }
-    });
-    const [error, setError] = useState(null);
-    const [pendingDeleteProduct, setPendingDeleteProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [dbCategories, setDbCategories] = useState([]);
+    const [dbPrintStyles, setDbPrintStyles] = useState([]);
 
-    // Modal state
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editProduct, setEditProduct] = useState(null);
+    // Workflow state
+    const [isCreating, setIsCreating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [pendingDeleteProduct, setPendingDeleteProduct] = useState(null);
 
     // Form inputs state
+    const [editProductId, setEditProductId] = useState(null);
     const [formData, setFormData] = useState({
         title: '',
         category: '',
         cost: '',
-        gender: 'Unisex',
+        gender: 'unisex',
         details: '',
-        washCare: ''
+        washCare: '',
+        referenceFile: null,
+        referencePreview: ''
     });
 
-    const [colors, setColors] = useState([]);
-    const [printingStyles, setPrintingStyles] = useState([]);
+    const [colors, setColors] = useState([]); // [{id, color, colorName, mode, frontFile, frontPreview, backFile, backPreview}]
+    
+    // UI state for color panel
+    const [showColorPanel, setShowColorPanel] = useState(false);
+    const [pickerSwatch, setPickerSwatch] = useState('#000000');
+    const [pickerName, setPickerName] = useState('');
+    const [pickerMode, setPickerMode] = useState('dark');
+    const [pickerFrontFile, setPickerFrontFile] = useState(null);
+    const [pickerBackFile, setPickerBackFile] = useState(null);
+    
+    // Print Methods UI State (Replacing old selectedDesigns)
+    const [printMethods, setPrintMethods] = useState([]); // [{ id, type, category, options: { optionName: { imageFile, imagePreview, price, darkPrice, lightPrice } } }]
+    const [isPmModalOpen, setIsPmModalOpen] = useState(false);
+    const [pmType, setPmType] = useState('');
+    // Multi-category state: { catKey: { optName: { price, darkPrice, lightPrice, imageFile, imagePreview } } }
+    const [pmCategories, setPmCategories] = useState({});
+    const [pmSelectedCat, setPmSelectedCat] = useState(''); // the picker dropdown value
+    const [pmExpandedCat, setPmExpandedCat] = useState(''); // which category accordion is open
+    const [pmExpandedRow, setPmExpandedRow] = useState(null); // index within expanded cat
+    const [pmEditId, setPmEditId] = useState(null);
 
-    // Size chart and manual sizes states
+    // Sizing
     const [sizeChartFile, setSizeChartFile] = useState(null);
     const [sizeChartPreview, setSizeChartPreview] = useState('');
-    const [selectedSizes, setSelectedSizes] = useState([]);
-    const [customSizeInput, setCustomSizeInput] = useState('');
-    const STANDARD_SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL'];
+    const [selectedSizes, setSelectedSizes] = useState(new Set());
 
-    // Categories database state
-    const [dbCategories, setDbCategories] = useState([]);
-
-    // Global print styles loaded from admin settings
-    const [globalPrintStyles, setGlobalPrintStyles] = useState([]);
-
-    // Dynamically compile categories list from database
-    const categoriesList = useMemo(() => {
-        const uniqueCats = new Set(
-            dbCategories.map(c => c.name).filter(Boolean)
-        );
-        return Array.from(uniqueCats).sort();
-    }, [dbCategories]);
-
-    // Set of category names that are currently active (not deleted or inactive)
-    const activeCategoryNames = useMemo(() => {
-        return new Set(
-            dbCategories
-                .filter(c => c.active !== false)
-                .map(c => c.name)
-                .filter(Boolean)
-        );
-    }, [dbCategories]);
-
-    // Helper: is a product truly available on the storefront?
-    const isProductAvailable = (p) => {
-        if (p.available === false) return false;
-        if (!activeCategoryNames.has(p.category)) return false;
-        return true;
-    };
-
-    // Fetch manufacturer profile to get name
+    // Fetch manufacturer profile
     useEffect(() => {
         if (!user) return;
         const fetchMfgProfile = async () => {
@@ -138,40 +100,32 @@ function MfgProducts() {
         fetchMfgProfile();
     }, [user]);
 
+    // Fetch print styles
+    useEffect(() => {
+        if (!user) return;
+        const fetchPrintStyles = async () => {
+            try {
+                const data = await apiFetch(`/api/print-styles?mfg_id=${user.id}`);
+                setDbPrintStyles(data || []);
+            } catch (err) {
+                console.error('Error fetching print styles:', err);
+            }
+        };
+        fetchPrintStyles();
+    }, [user]);
+
     const fetchProducts = async () => {
         if (!user) return;
         try {
-            const data = await apiFetch('/api/products/mfg');
-            const list = (data || []).map(row => ({
-                id: row.id,
-                title: row.title,
-                category: row.category,
-                cost: Number(row.cost) || 0,
-                gender: row.gender,
-                coverImage: row.cover_image,
-                colors: row.colors,
-                printingStyles: row.printing_styles,
-                sizeChartImage: row.size_chart_image,
-                sizes: row.sizes,
-                mfgId: row.mfg_id,
-                mfgName: row.mfg_name,
-                available: row.available,
-                details: row.details,
-                washCare: row.wash_care
-            }));
-            setProducts(list);
-            try {
-                sessionStorage.setItem('asat_mfg_products', JSON.stringify(list));
-            } catch (e) {}
+            const data = await apiFetch(`/api/products/mfg?cb=${Date.now()}`);
+            setProducts(data || []);
             setLoading(false);
         } catch (err) {
             console.error('Error fetching products:', err);
-            setError('Failed to fetch product catalogue.');
             setLoading(false);
         }
     };
 
-    // Real-time products list
     useEffect(() => {
         if (!user) return;
         fetchProducts();
@@ -181,121 +135,138 @@ function MfgProducts() {
         const fetchCategories = async () => {
             try {
                 const data = await apiFetch('/api/categories');
-                const list = (data || []).map(row => ({
-                    id: row.id,
-                    name: row.name,
-                    slug: row.slug,
-                    image: row.image,
-                    description: row.description,
-                    active: true
-                }));
-                setDbCategories(list);
+                setDbCategories(data || []);
             } catch (err) {
                 console.error('Error fetching categories:', err);
             }
         };
-
         fetchCategories();
     }, []);
 
-    // Load this manufacturer's own print styles from Supabase
-    useEffect(() => {
-        if (!user) return;
-        const loadPrintStyles = async () => {
-            try {
-                const data = await apiFetch(`/api/print-styles?mfg_id=${user.id}`);
-                const list = (data || []).map(row => {
-                    let costVal = 0;
-                    let placementsVal = [];
-                    let customPlacementsVal = [];
-                    try {
-                        const parsed = JSON.parse(row.description);
-                        costVal = Number(parsed.cost) || 0;
-                        placementsVal = parsed.placements || [];
-                        customPlacementsVal = parsed.customPlacements || [];
-                    } catch (e) {}
-                    return {
-                        id: row.id,
-                        name: row.name,
-                        category: row.category || 'DTF',
-                        cost: costVal,
-                        imageUrl: row.image || '',
-                        placements: placementsVal,
-                        customPlacements: customPlacementsVal
-                    };
-                });
-                setGlobalPrintStyles(list);
-            } catch (err) {
-                console.error('Error loading print styles:', err);
-            }
-        };
-        loadPrintStyles();
-    }, [user]);
+    const categoriesList = useMemo(() => {
+        const uniqueCats = new Set(dbCategories.map(c => c.name).filter(Boolean));
+        return Array.from(uniqueCats).sort();
+    }, [dbCategories]);
 
-    const groupedPrintStyles = useMemo(() => {
-        const groups = {};
-        globalPrintStyles.forEach(ps => {
-            const cat = ps.category || 'DTF';
-            if (!groups[cat]) {
-                groups[cat] = [];
-            }
-            groups[cat].push(ps);
+    const activeCategoryNames = useMemo(() => {
+        return new Set(dbCategories.filter(c => c.active !== false).map(c => c.name).filter(Boolean));
+    }, [dbCategories]);
+
+    const isProductAvailable = (p) => {
+        if (p.available === false) return false;
+        if (!activeCategoryNames.has(p.category)) return false;
+        return true;
+    };
+
+    const handleCreateClick = () => {
+        setEditProductId(null);
+        resetForm();
+        setIsCreating(true);
+    };
+
+    const handleEditClick = (p) => {
+        setEditProductId(p.id);
+        
+        // Pre-fill form data
+        setFormData({
+            title: p.title || '',
+            category: p.category || (categoriesList[0] || ''),
+            cost: p.cost || '',
+            gender: p.gender || 'unisex',
+            details: (p.details || []).join('\n'),
+            washCare: (p.wash_care || p.washCare || []).join('\n'),
+            referenceFile: null,
+            referencePreview: p.cover_image || ''
         });
-        return groups;
-    }, [globalPrintStyles]);
 
-    const handleAddClick = () => {
-        setEditProduct(null);
+        // Pre-fill colors
+        setColors((p.colors || []).map((c, i) => ({
+            id: Date.now() + i,
+            color: c.color,
+            colorName: c.colorName,
+            mode: c.mode || 'dark',
+            frontFile: null,
+            frontPreview: c.frontImage || c.frontPreview,
+            backFile: null,
+            backPreview: c.backImage || c.backPreview,
+            available: c.available !== false
+        })));
+
+        // Pre-fill print methods
+        // DB format: [{ style: 'dtg', placements: [{ id: 'tshirt front_pocket', label, cost_dark, cost_light, image, price }] }]
+        const parsedMethods = [];
+        (p.printing_styles || p.printingStyles || []).forEach(ps => {
+            const grouped = {};
+            (ps.placements || []).forEach(pl => {
+                const opt = pl.label || '';
+                let cat = 'default';
+                if (pl.id) {
+                    if (opt && pl.id.endsWith('_' + opt)) {
+                        cat = pl.id.substring(0, pl.id.length - opt.length - 1);
+                    } else if (pl.id.includes('_')) {
+                        const idx = pl.id.lastIndexOf('_');
+                        cat = pl.id.substring(0, idx);
+                    } else {
+                        cat = pl.id;
+                    }
+                }
+                if (!grouped[cat]) grouped[cat] = {};
+                grouped[cat][opt || pl.id] = {
+                    imagePreview: pl.image || '',
+                    imageFile: null,
+                    price: pl.price || '',
+                    darkPrice: pl.cost_dark || '',
+                    lightPrice: pl.cost_light || ''
+                };
+            });
+            Object.keys(grouped).forEach(cat => {
+                const placementsInCat = ps.placements.filter(pl => {
+                    const optId = pl.id || '';
+                    return optId.startsWith(cat + '_') || optId === cat;
+                });
+                const isActive = placementsInCat.length > 0 ? placementsInCat.some(pl => pl.active !== false) : true;
+
+                parsedMethods.push({
+                    id: Date.now() + Math.random(),
+                    type: ps.style,
+                    category: cat,
+                    options: grouped[cat],
+                    active: isActive
+                });
+            });
+        });
+        setPrintMethods(parsedMethods);
+
+        // Pre-fill sizes
+        setSizeChartFile(null);
+        setSizeChartPreview(p.size_chart_image || p.sizeChartImage || '');
+        setSelectedSizes(new Set(p.sizes || []));
+
+        setIsCreating(true);
+    };
+
+    const resetForm = () => {
         setFormData({
             title: '',
             category: categoriesList[0] || '',
             cost: '',
-            gender: 'Unisex',
+            gender: 'unisex',
             details: '',
             washCare: '',
-            available: true
+            referenceFile: null,
+            referencePreview: ''
         });
         setColors([]);
-        setPrintingStyles([]);
+        setShowColorPanel(false);
+        setPickerSwatch('#000000');
+        setPickerName('');
+        setPickerMode('dark');
+        setPickerFrontFile(null);
+        setPickerBackFile(null);
+        setPrintMethods([]);
         setSizeChartFile(null);
         setSizeChartPreview('');
-        setSelectedSizes([]);
-        setCustomSizeInput('');
-        setIsModalOpen(true);
-    };
-
-    const handleEditClick = (p) => {
-        setEditProduct(p);
-        setFormData({
-            title: p.title || '',
-            category: p.category || categoriesList[0] || '',
-            cost: p.cost || '',
-            gender: p.gender || 'Unisex',
-            details: (p.details || []).join('\n'),
-            washCare: (p.washCare || []).join('\n'),
-            available: p.available !== false
-        });
-        // Colors mapping
-        setColors((p.colors || []).map((c, i) => ({
-            id: i,
-            color: c.color,
-            colorName: c.colorName,
-            frontFile: null,
-            frontPreview: c.frontImage,
-            backFile: null,
-            backPreview: c.backImage
-        })));
-        // Printing styles mapping — now an array of selected style objects
-        setPrintingStyles((p.printingStyles || []).map(s => ({
-            style: s.style,
-            placements: s.placements || []
-        })));
-        // Sizing prefill
-        setSizeChartFile(null);
-        setSizeChartPreview(p.sizeChartImage || '');
-        setSelectedSizes(p.sizes || []);
-        setCustomSizeInput('');
-        setIsModalOpen(true);
+        setSelectedSizes(new Set());
     };
 
     const executeDelete = async () => {
@@ -312,221 +283,401 @@ function MfgProducts() {
         }
     };
 
-    // Color Handlers
-    const addColorField = () => {
-        setColors(prev => [
-            ...prev,
-            {
-                id: Date.now(),
-                color: '#000000',
-                colorName: '',
-                frontFile: null,
-                frontPreview: '',
-                backFile: null,
-                backPreview: ''
-            }
-        ]);
+    // Color Swatch Logic
+    const hexToRgbStr = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '';
     };
 
-    const removeColorField = (id) => {
+    const handleSaveColor = () => {
+        if (!pickerName.trim()) {
+            showToast('Please provide a color name.', 'error');
+            return;
+        }
+        if (!pickerFrontFile && !editProductId) {
+            showToast('Please upload a front reference image.', 'error');
+            return;
+        }
+        if (!pickerBackFile && !editProductId) {
+            showToast('Please upload a back reference image.', 'error');
+            return;
+        }
+
+        const frontPrev = pickerFrontFile ? URL.createObjectURL(pickerFrontFile) : '';
+        const backPrev = pickerBackFile ? URL.createObjectURL(pickerBackFile) : '';
+
+        setColors(prev => [...prev, {
+            id: Date.now(),
+            color: pickerSwatch,
+            colorName: pickerName.trim(),
+            mode: pickerMode,
+            frontFile: pickerFrontFile,
+            frontPreview: frontPrev,
+            backFile: pickerBackFile,
+            backPreview: backPrev
+        }]);
+
+        // Reset picker
+        setPickerName('');
+        setPickerMode('dark');
+        setPickerFrontFile(null);
+        setPickerBackFile(null);
+        setShowColorPanel(false);
+    };
+
+    const handleRemoveColor = (id) => {
         setColors(prev => prev.filter(c => c.id !== id));
     };
 
-    const updateColorField = (id, field, value) => {
-        setColors(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+    // ── Print Methods Modal (multi-category) ──────────────────────
+    const openPmModal = () => {
+        setPmEditId(null);
+        setPmType('');
+        setPmCategories({});
+        setPmSelectedCat('');
+        setPmExpandedCat('');
+        setPmExpandedRow(null);
+        setIsPmModalOpen(true);
     };
 
-    const handleColorImageUpload = (id, side, file) => {
-        if (!file) return;
-        const previewUrl = URL.createObjectURL(file);
-        setColors(prev => prev.map(c => c.id === id ? {
-            ...c,
-            [`${side}File`]: file,
-            [`${side}Preview`]: previewUrl
-        } : c));
+    const closePmModal = () => setIsPmModalOpen(false);
+
+    const handlePmTypeChange = (e) => {
+        if (Object.keys(pmCategories).length > 0) {
+            if (!window.confirm('Changing Print Type will clear your current configuration. Continue?')) return;
+        }
+        setPmType(e.target.value);
+        setPmCategories({});
+        setPmSelectedCat('');
+        setPmExpandedCat('');
     };
 
-    // Helper to find the placement label
-    const getPlacementLabel = (ps, pid) => {
-        if (PLACEMENT_LABELS[pid]) return PLACEMENT_LABELS[pid];
-        const custom = (ps.customPlacements || []).find(c => c.id === pid);
-        if (custom) return custom.label;
-        return pid.replace(/^custom_[a-z]+_\d+_/, '').replace(/_/g, ' ');
-    };
-
-    // Printing Style Toggle — selects/deselects a style name and default placements
-    const togglePrintingStyle = (name) => {
-        setPrintingStyles(prev => {
-            const exists = prev.find(p => p.style === name);
-            if (exists) {
-                return prev.filter(p => p.style !== name);
-            } else {
-                const gps = globalPrintStyles.find(x => x.name === name);
-                const defaultPlacements = gps?.placements || [];
-                const mappedPlacements = defaultPlacements.map(pid => ({
-                    id: pid,
-                    label: getPlacementLabel(gps, pid)
-                }));
-                return [...prev, { style: name, placements: mappedPlacements }];
-            }
+    // Add a new category to the multi-category dict
+    const handleAddPmCategory = () => {
+        if (!pmSelectedCat) return;
+        if (pmCategories[pmSelectedCat]) {
+            showToast('This category is already added.', 'error');
+            return;
+        }
+        const opts = {};
+        (PLACEMENT_MATRIX[pmType]?.[pmSelectedCat] || []).forEach(opt => {
+            opts[opt] = { price: '', darkPrice: '', lightPrice: '', imageFile: null, imagePreview: '' };
         });
+        setPmCategories(prev => ({ ...prev, [pmSelectedCat]: opts }));
+        setPmExpandedCat(pmSelectedCat); // auto-expand newly added
+        setPmSelectedCat('');
+        setPmExpandedRow(null);
     };
 
-    const togglePlacementForStyle = (styleName, placementId, label) => {
-        setPrintingStyles(prev => prev.map(ps => {
-            if (ps.style !== styleName) return ps;
-            const exists = ps.placements.find(p => p.id === placementId);
-            if (exists) {
-                return { ...ps, placements: ps.placements.filter(p => p.id !== placementId) };
-            } else {
-                return { ...ps, placements: [...ps.placements, { id: placementId, label }] };
+    const handleRemovePmCategory = (catKey) => {
+        setPmCategories(prev => {
+            const next = { ...prev };
+            delete next[catKey];
+            return next;
+        });
+        if (pmExpandedCat === catKey) setPmExpandedCat('');
+    };
+
+    const updatePmOption = (catKey, optName, field, value) => {
+        setPmCategories(prev => ({
+            ...prev,
+            [catKey]: {
+                ...prev[catKey],
+                [optName]: { ...prev[catKey][optName], [field]: value }
             }
         }));
     };
 
-    // Sizing and Size Chart Handlers
-    const handleSizeCheckboxChange = (size, checked) => {
-        if (checked) {
-            setSelectedSizes(prev => [...prev, size]);
+    const isOptionValid = (opt, type) => {
+        const hasImage = opt.imageFile || opt.imagePreview;
+        if (!hasImage) return false;
+        if ((type || pmType) === 'dtg') return opt.darkPrice !== '' && opt.lightPrice !== '';
+        return opt.price !== '';
+    };
+
+    const savePrintMethod = () => {
+        // Validate: at least one option configured across all categories
+        let totalConfigured = 0;
+        Object.values(pmCategories).forEach(catOpts => {
+            Object.values(catOpts).forEach(opt => { if (isOptionValid(opt)) totalConfigured++; });
+        });
+        if (totalConfigured === 0) {
+            showToast('Please fully configure at least one placement option.', 'error');
+            return;
+        }
+        // Filter each category to only configured options
+        const filteredCats = {};
+        Object.keys(pmCategories).forEach(catKey => {
+            const configured = {};
+            Object.keys(pmCategories[catKey]).forEach(optName => {
+                if (isOptionValid(pmCategories[catKey][optName])) configured[optName] = pmCategories[catKey][optName];
+            });
+            if (Object.keys(configured).length > 0) filteredCats[catKey] = configured;
+        });
+
+        // Save as multiple entries (one per category) — preserving original per-category architecture
+        if (pmEditId) {
+            // Remove ALL entries of the same type (not just the one clicked),
+            // because the edit modal shows/edits all categories for that type at once.
+            setPrintMethods(prev => {
+                // Collect active states from the existing same-type entries to preserve them
+                const existingActiveByCategory = {};
+                prev.filter(pm => pm.type === pmType).forEach(pm => {
+                    existingActiveByCategory[pm.category] = pm.active !== false;
+                });
+
+                const filtered = prev.filter(pm => pm.type !== pmType);
+                const newEntries = Object.keys(filteredCats).map((catKey, i) => ({
+                    id: pmEditId + i,
+                    type: pmType,
+                    category: catKey,
+                    options: filteredCats[catKey],
+                    // Preserve active state: default to true for new categories, preserve for existing ones
+                    active: existingActiveByCategory.hasOwnProperty(catKey) ? existingActiveByCategory[catKey] : true
+                }));
+                return [...filtered, ...newEntries];
+            });
         } else {
-            setSelectedSizes(prev => prev.filter(s => s !== size));
+            const newEntries = Object.keys(filteredCats).map((catKey, i) => ({
+                id: Date.now() + i,
+                type: pmType,
+                category: catKey,
+                options: filteredCats[catKey],
+                active: true
+            }));
+            setPrintMethods(prev => [...prev, ...newEntries]);
+        }
+        closePmModal();
+    };
+
+
+    // Edit: load all categories for the same type into the multi-cat UI
+    const editPrintMethod = (pm) => {
+        setPmEditId(pm.id);
+        setPmType(pm.type);
+        // Load all existing entries of same type into the modal
+        const sametype = printMethods.filter(x => x.type === pm.type);
+        const rebuiltCats = {};
+        sametype.forEach(entry => {
+            const opts = {};
+            // Populate fallback options
+            const fallbackList = PLACEMENT_MATRIX[entry.type]?.[entry.category] || [];
+            fallbackList.forEach(optName => {
+                opts[optName] = entry.options[optName] || { price: '', darkPrice: '', lightPrice: '', imageFile: null, imagePreview: '' };
+            });
+            // Populate custom/previously saved options not in fallback
+            Object.keys(entry.options || {}).forEach(optName => {
+                if (!opts[optName]) {
+                    opts[optName] = entry.options[optName];
+                }
+            });
+            rebuiltCats[entry.category] = opts;
+        });
+        setPmCategories(rebuiltCats);
+        setPmSelectedCat('');
+        setPmExpandedCat(pm.category);
+        setPmExpandedRow(null);
+        setIsPmModalOpen(true);
+    };
+
+    const removePrintMethod = (id) => {
+        setPrintMethods(prev => prev.filter(pm => pm.id !== id));
+    };
+
+    const getNormalizedType = (type) => {
+        if (!type) return '';
+        const t = type.toLowerCase();
+        if (t === 'dtf') return 'dtf';
+        if (t === 'dtg') return 'dtg';
+        if (t === 'embrio' || t === 'embroidery') return 'embrio';
+        return t;
+    };
+
+    const handleToggleDbPrintStyle = (styleId, checked) => {
+        if (checked) {
+            const selectedStyle = dbPrintStyles.find(ps => ps.id === styleId);
+            if (!selectedStyle) return;
+            // Add all categories/placements from this print style to printMethods
+            const newEntries = [];
+            (selectedStyle.placementCategories || []).forEach(pc => {
+                const opts = {};
+                Object.keys(pc.placements || {}).forEach(optName => {
+                    const pl = pc.placements[optName];
+                    opts[optName] = {
+                        price: pl.price !== undefined ? String(pl.price) : '',
+                        darkPrice: pl.darkPrice !== undefined ? String(pl.darkPrice) : '',
+                        lightPrice: pl.lightPrice !== undefined ? String(pl.lightPrice) : '',
+                        imageFile: null,
+                        imagePreview: pl.imagePreview || ''
+                    };
+                });
+                newEntries.push({
+                    id: styleId + '_' + pc.category + '_' + Date.now() + Math.random(),
+                    type: getNormalizedType(selectedStyle.category),
+                    category: pc.category,
+                    options: opts,
+                    fromStyleId: styleId
+                });
+            });
+            setPrintMethods(prev => [...prev, ...newEntries]);
+        } else {
+            // Remove all print methods that came from this style
+            setPrintMethods(prev => prev.filter(pm => pm.fromStyleId !== styleId));
         }
     };
 
-    const handleAddCustomSize = (e) => {
-        e.preventDefault();
-        const trimmed = customSizeInput.trim().toUpperCase();
-        if (!trimmed) return;
-        if (selectedSizes.includes(trimmed)) {
-            showToast('Size already added.', 'warning');
+    // Toggle a single category within a saved print style
+    const handleTogglePrintCategory = (styleId, pc, checked) => {
+        if (checked) {
+            const selectedStyle = dbPrintStyles.find(ps => ps.id === styleId);
+            if (!selectedStyle) return;
+            const opts = {};
+            Object.keys(pc.placements || {}).forEach(optName => {
+                const pl = pc.placements[optName];
+                opts[optName] = {
+                    price: pl.price !== undefined ? String(pl.price) : '',
+                    darkPrice: pl.darkPrice !== undefined ? String(pl.darkPrice) : '',
+                    lightPrice: pl.lightPrice !== undefined ? String(pl.lightPrice) : '',
+                    imageFile: null,
+                    imagePreview: pl.imagePreview || ''
+                };
+            });
+            const newEntry = {
+                id: styleId + '_' + pc.category + '_' + Date.now(),
+                type: getNormalizedType(selectedStyle.category),
+                category: pc.category,
+                options: opts,
+                fromStyleId: styleId,
+                fromCategory: pc.category
+            };
+            setPrintMethods(prev => [...prev, newEntry]);
+        } else {
+            // Remove only the entry matching this style + category
+            setPrintMethods(prev => prev.filter(pm => !(pm.fromStyleId === styleId && pm.fromCategory === pc.category)));
+        }
+    };
+
+
+    const handleSizeToggle = (size) => {
+        const next = new Set(selectedSizes);
+        if (next.has(size)) next.delete(size);
+        else next.add(size);
+        setSelectedSizes(next);
+    };
+
+    // Main Submit
+    const handleSubmit = async () => {
+        if (!formData.title || !formData.category || !formData.cost || !formData.details || !formData.washCare) {
+            showToast('Please fill out all required fields (*)', 'error');
             return;
         }
-        setSelectedSizes(prev => [...prev, trimmed]);
-        setCustomSizeInput('');
-    };
-
-    const handleRemoveSize = (sizeToRemove) => {
-        setSelectedSizes(prev => prev.filter(s => s !== sizeToRemove));
-    };
-
-    const handleSizeChartUpload = (file) => {
-        if (!file) return;
-        const previewUrl = URL.createObjectURL(file);
-        setSizeChartFile(file);
-        setSizeChartPreview(previewUrl);
-    };
-
-    // Save product
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (isSaving) return;
-
-        const savedCategory = formData.category;
-        if (!savedCategory) {
-            showToast('Please select or specify a category.', 'error');
-            return;
-        }
-
         if (colors.length === 0) {
-            showToast('Please add at least one color configuration.', 'error');
+            showToast('Please add at least one color.', 'error');
             return;
         }
-
-        // Validate size chart and sizes
-        if (!sizeChartPreview) {
-            showToast('Please upload a Size Chart image.', 'error');
+        if (selectedSizes.size === 0) {
+            showToast('Please select at least one size.', 'error');
             return;
         }
-
-        if (selectedSizes.length === 0) {
-            showToast('Please select or add at least one size.', 'error');
+        if (printMethods.length === 0) {
+            showToast('Please add at least one printing method.', 'error');
             return;
         }
-
-        // Validate colors
-        for (let i = 0; i < colors.length; i++) {
-            const c = colors[i];
-            if (!c.colorName.trim()) {
-                showToast('All color names must be filled out.', 'error');
-                return;
-            }
-            if (!c.frontPreview) {
-                showToast(`Please upload a Front View image for the color "${c.colorName}".`, 'error');
-                return;
-            }
-            if (!c.backPreview) {
-                showToast(`Please upload a Back View image for the color "${c.colorName}".`, 'error');
-                return;
-            }
-        }
-
 
         setIsSaving(true);
-
         try {
-            // 0. Upload Size Chart image if a new file is chosen
-            let finalSizeChartImage = sizeChartPreview;
+            // Upload Reference File
+            let finalReference = formData.referencePreview;
+            if (formData.referenceFile) {
+                const ext = formData.referenceFile.name.split('.').pop() || 'jpg';
+                const filePath = `products/${user.id}/references/${Date.now()}_ref.${ext}`;
+                finalReference = await uploadFile(formData.referenceFile, filePath, 'asat-uploads');
+            }
+
+            // Upload Size Chart
+            let finalSizeChart = sizeChartPreview;
             if (sizeChartFile) {
                 const ext = sizeChartFile.name.split('.').pop() || 'jpg';
                 const filePath = `products/${user.id}/size_charts/${Date.now()}_size_chart.${ext}`;
-                finalSizeChartImage = await uploadFile('asat-uploads', filePath, sizeChartFile);
+                finalSizeChart = await uploadFile(sizeChartFile, filePath, 'asat-uploads');
             }
 
-            // 1. Upload Front/Back images for colors if new files selected
+            // Upload Color Images
             const finalColors = [];
-            for (let i = 0; i < colors.length; i++) {
-                const c = colors[i];
-                let frontUrl = c.frontPreview;
-                let backUrl = c.backPreview;
-
+            for (let c of colors) {
+                let fUrl = c.frontPreview;
+                let bUrl = c.backPreview;
                 if (c.frontFile) {
                     const ext = c.frontFile.name.split('.').pop() || 'jpg';
                     const filePath = `products/${user.id}/${Date.now()}_front_${c.colorName.replace(/\s+/g, '_')}.${ext}`;
-                    frontUrl = await uploadFile('asat-uploads', filePath, c.frontFile);
+                    fUrl = await uploadFile(c.frontFile, filePath, 'asat-uploads');
                 }
-
                 if (c.backFile) {
                     const ext = c.backFile.name.split('.').pop() || 'jpg';
                     const filePath = `products/${user.id}/${Date.now()}_back_${c.colorName.replace(/\s+/g, '_')}.${ext}`;
-                    backUrl = await uploadFile('asat-uploads', filePath, c.backFile);
+                    bUrl = await uploadFile(c.backFile, filePath, 'asat-uploads');
                 }
-
                 finalColors.push({
                     color: c.color,
-                    colorName: c.colorName.trim(),
-                    frontImage: frontUrl,
-                    backImage: backUrl
+                    colorName: c.colorName,
+                    mode: c.mode,
+                    frontImage: fUrl,
+                    backImage: bUrl,
+                    available: c.available !== false
                 });
             }
 
-            // 2. Compile payload (setting cover_image to colors[0].frontImage)
+            // Upload Placement Reference Images and Build printing_styles Array
+            const styleGroups = {}; // { dtf: [], dtg: [] }
+            for (let pm of printMethods) {
+                if (!styleGroups[pm.type]) styleGroups[pm.type] = [];
+
+                for (let optName of Object.keys(pm.options)) {
+                    const opt = pm.options[optName];
+                    let imgUrl = opt.imagePreview;
+                    if (opt.imageFile) {
+                        const ext = opt.imageFile.name.split('.').pop() || 'jpg';
+                        const filePath = `products/${user.id}/placements/${Date.now()}_${pm.type}_${optName.replace(/\s+/g, '_')}.${ext}`;
+                        imgUrl = await uploadFile(opt.imageFile, filePath, 'asat-uploads');
+                    }
+                    
+                    styleGroups[pm.type].push({
+                        id: `${pm.category}_${optName}`,
+                        label: optName,
+                        image: imgUrl,
+                        price: parseFloat(opt.price) || 0,
+                        cost_dark: parseFloat(opt.darkPrice) || 0,
+                        cost_light: parseFloat(opt.lightPrice) || 0,
+                        active: pm.active !== false
+                    });
+                }
+            }
+
+            const printing_styles = Object.keys(styleGroups).map(type => ({
+                style: type,
+                cost: 0, // global style cost not used in this architecture
+                placements: styleGroups[type]
+            }));
+
             const payload = {
                 title: formData.title.trim(),
-                category: savedCategory,
+                category: formData.category,
                 cost: parseFloat(formData.cost) || 0,
-                gender: formData.gender || 'Unisex',
-                cover_image: finalColors[0]?.frontImage || '',
+                gender: formData.gender,
+                cover_image: finalReference || finalColors[0]?.frontImage || '',
                 colors: finalColors,
-                printing_styles: printingStyles.map(ps => {
-                    const g = globalPrintStyles.find(x => x.name === ps.style);
-                    return { 
-                        style: ps.style, 
-                        cost: g ? Number(g.cost) : 0,
-                        placements: ps.placements || []
-                    };
-                }),
-                size_chart_image: finalSizeChartImage,
-                sizes: selectedSizes,
+                printing_styles,
+                size_chart_image: finalSizeChart,
+                sizes: Array.from(selectedSizes),
+                details: formData.details.split('\n').map(s => s.trim()).filter(Boolean),
+                wash_care: formData.washCare.split('\n').map(s => s.trim()).filter(Boolean),
                 mfg_id: user.id,
                 mfg_name: companyName,
-                available: formData.available,
-                details: formData.details ? formData.details.split('\n').map(s => s.trim()).filter(Boolean) : [],
-                wash_care: formData.washCare ? formData.washCare.split('\n').map(s => s.trim()).filter(Boolean) : [],
-                updated_at: new Date().toISOString()
+                available: true
             };
 
-            if (editProduct) {
-                await apiFetch(`/api/products/${editProduct.id}`, {
+            if (editProductId) {
+                await apiFetch(`/api/products/${editProductId}`, {
                     method: 'PUT',
                     body: JSON.stringify(payload)
                 });
@@ -537,8 +688,8 @@ function MfgProducts() {
                 });
             }
 
-            showToast(editProduct ? 'Product updated successfully!' : 'Product added successfully!', 'success');
-            setIsModalOpen(false);
+            showToast(editProductId ? 'Product updated successfully!' : 'Product added successfully!', 'success');
+            setIsCreating(false);
             fetchProducts();
         } catch (err) {
             console.error('Error saving product:', err);
@@ -551,17 +702,669 @@ function MfgProducts() {
     const filteredProducts = products.filter(p => {
         if (searchTerm.trim() !== '') {
             const q = searchTerm.toLowerCase();
-            const titleStr = (p.title || '').toLowerCase();
-            const categoryStr = (p.category || '').toLowerCase();
-            const colorsStr = (p.colors || []).map(c => c.colorName || '').join(' ').toLowerCase();
-            return (
-                titleStr.includes(q) ||
-                categoryStr.includes(q) ||
-                colorsStr.includes(q)
-            );
+            return (p.title || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q);
         }
         return true;
     });
+
+    if (isCreating) {
+        return (
+            <main className="adm-page" style={{ paddingBottom: '100px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 30 }}>
+                    <button onClick={() => setIsCreating(false)} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '1.2rem' }}>
+                        <i className="fas fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h1 className="adm-page__title" style={{ margin: 0, padding: 0 }}>{editProductId ? 'Edit Product' : 'New Product Configuration'}</h1>
+                        <p className="adm-page__subtitle" style={{ margin: 0 }}>Define your blank base product options</p>
+                    </div>
+                </div>
+
+                <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 25, background: '#1c1c1c', padding: 30, borderRadius: 8, border: '1px solid #333' }}>
+                    
+                    {/* Category */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Category *</label>
+                        <select 
+                            value={formData.category}
+                            onChange={e => setFormData({...formData, category: e.target.value})}
+                            style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}>
+                            {categoriesList.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Name */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Name of the Product *</label>
+                        <input 
+                            type="text" 
+                            placeholder="e.g. Premium Cotton T-Shirt"
+                            value={formData.title}
+                            onChange={e => setFormData({...formData, title: e.target.value})}
+                            style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}
+                        />
+                    </div>
+
+                    {/* Upload Reference */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Upload Reference</label>
+                        <div style={{ padding: 15, background: '#2c2c2c', border: '1px solid #444', borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.85rem', color: formData.referenceFile || formData.referencePreview ? 'white' : '#888' }}>
+                                {formData.referenceFile ? formData.referenceFile.name : (formData.referencePreview ? 'Reference Uploaded' : 'No file uploaded')}
+                            </span>
+                            <button 
+                                onClick={() => document.getElementById('refUpload').click()}
+                                style={{ padding: '6px 14px', background: 'transparent', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem' }}>
+                                Choose File
+                            </button>
+                            <input id="refUpload" type="file" style={{ display: 'none' }} accept="image/*,.pdf" onChange={e => {
+                                if(e.target.files[0]) {
+                                    setFormData({...formData, referenceFile: e.target.files[0]});
+                                }
+                            }} />
+                        </div>
+                    </div>
+
+                    {/* Gender & Base Cost row */}
+                    <div style={{ display: 'flex', gap: 20 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Target Gender *</label>
+                            <select 
+                                value={formData.gender}
+                                onChange={e => setFormData({...formData, gender: e.target.value})}
+                                style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="unisex">Unisex</option>
+                            </select>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Base Cost (₹) *</label>
+                            <input 
+                                type="number" step="0.01" min="0" placeholder="0.00"
+                                value={formData.cost}
+                                onChange={e => setFormData({...formData, cost: e.target.value})}
+                                style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Details */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Product Details *</label>
+                        <textarea 
+                            rows="3" placeholder="Enter product description (each line is a bullet point)"
+                            value={formData.details}
+                            onChange={e => setFormData({...formData, details: e.target.value})}
+                            style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', resize: 'vertical' }}
+                        ></textarea>
+                    </div>
+
+                    {/* Wash Care */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Wash Care Instructions *</label>
+                        <textarea 
+                            rows="3" placeholder="Enter washing care guidelines (each line is a bullet point)"
+                            value={formData.washCare}
+                            onChange={e => setFormData({...formData, washCare: e.target.value})}
+                            style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', resize: 'vertical' }}
+                        ></textarea>
+                    </div>
+
+                    {/* Colors Module */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', paddingBottom: 8 }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Colors</label>
+                            <button type="button" onClick={() => setShowColorPanel(!showColorPanel)} style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>
+                                {showColorPanel ? 'Cancel Color' : '+ Add Color'}
+                            </button>
+                        </div>
+
+                        {showColorPanel && (
+                            <div style={{ padding: 20, background: '#252525', border: '1px solid #444', borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 15 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
+                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#ccc' }}>Color swatch:</label>
+                                    <input type="color" value={pickerSwatch} onChange={e => setPickerSwatch(e.target.value)} style={{ width: 40, height: 40, cursor: 'pointer', border: 'none', background: 'transparent' }} />
+                                    <input type="text" value={pickerSwatch} onChange={e => setPickerSwatch(e.target.value)} style={{ width: 100, padding: '6px 10px', background: '#1c1c1c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
+                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#ccc' }}>RGB values:</label>
+                                    <input type="text" readOnly value={hexToRgbStr(pickerSwatch)} style={{ flex: 1, padding: '6px 10px', background: '#1c1c1c', border: '1px solid #444', color: '#aaa', borderRadius: 4 }} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
+                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#ccc' }}>Color Name:</label>
+                                    <input type="text" placeholder="e.g. Jet Black" value={pickerName} onChange={e => {
+                                        setPickerName(e.target.value);
+                                        const v = e.target.value.toLowerCase();
+                                        if (v.includes('white')) setPickerMode('light');
+                                        else if (v.includes('black') || v.includes('navy')) setPickerMode('dark');
+                                    }} style={{ flex: 1, padding: '6px 10px', background: '#1c1c1c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
+                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#ccc' }}>Garment Mode:</label>
+                                    <select value={pickerMode} onChange={e => setPickerMode(e.target.value)} style={{ flex: 1, padding: '6px 10px', background: '#1c1c1c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}>
+                                        <option value="dark">Dark</option>
+                                        <option value="light">Light</option>
+                                    </select>
+                                </div>
+                                <div style={{ borderTop: '1px solid #333', paddingTop: 15, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <label style={{ fontSize: '0.8rem', color: '#ccc' }}>Front Reference Image:</label>
+                                    <input type="file" accept="image/*" onChange={e => setPickerFrontFile(e.target.files[0])} style={{ color: '#ccc', fontSize: '0.8rem' }} />
+                                    
+                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginTop: 10 }}>Back View Reference Image:</label>
+                                    <input type="file" accept="image/*" onChange={e => setPickerBackFile(e.target.files[0])} style={{ color: '#ccc', fontSize: '0.8rem' }} />
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 10 }}>
+                                    <button onClick={handleSaveColor} style={{ padding: '8px 20px', background: 'var(--gold)', border: 'none', borderRadius: 4, color: 'black', fontWeight: 600, cursor: 'pointer' }}>
+                                        Save Color
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {colors.length === 0 && <p style={{ fontSize: '0.8rem', color: '#777', fontStyle: 'italic' }}>No colors added yet.</p>}
+                            {colors.map(color => (
+                                <div key={color.id} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, background: '#252525', border: '1px solid #444', borderRadius: 4 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                            <div style={{ width: 20, height: 20, borderRadius: '50%', background: color.color, border: '1px solid #666' }}></div>
+                                            <span style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600 }}>{color.colorName}</span>
+                                            <span style={{ fontSize: '0.8rem', color: '#888', fontFamily: 'monospace' }}>({color.color})</span>
+                                            <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: color.mode === 'dark' ? '#333' : '#ddd', color: color.mode === 'dark' ? '#fff' : '#000', borderRadius: 12 }}>{color.mode === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: '#aaa', cursor: 'pointer', marginLeft: 8 }}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={color.available !== false} 
+                                                    onChange={(e) => {
+                                                        const isChecked = e.target.checked;
+                                                        setColors(prev => prev.map(x => x.id === color.id ? { ...x, available: isChecked } : x));
+                                                    }} 
+                                                    style={{ width: 12, height: 12, accentColor: '#C5A059', cursor: 'pointer' }}
+                                                />
+                                                Available
+                                            </label>
+                                        </div>
+                                        <button onClick={() => handleRemoveColor(color.id)} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '0.85rem' }}>Remove</button>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 20, fontSize: '0.75rem', color: '#aaa', borderTop: '1px solid #333', paddingTop: 8 }}>
+                                        <div><strong style={{color:'#ccc'}}>Front:</strong> {color.frontFile ? color.frontFile.name : (color.frontPreview ? 'Uploaded' : 'None')}</div>
+                                        <div><strong style={{color:'#ccc'}}>Back:</strong> {color.backFile ? color.backFile.name : (color.backPreview ? 'Uploaded' : 'None')}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Printing Methods Manager — selection only (no manual add/edit/remove) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                        <div style={{ borderBottom: '1px solid #333', paddingBottom: 8 }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Printing Styles &amp; Placements</label>
+                        </div>
+
+                        {dbPrintStyles.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {dbPrintStyles.map(ps => {
+                                    const totalCats = ps.placementCategories?.length || 0;
+                                    const enabledCats = (ps.placementCategories || []).filter(pc =>
+                                        printMethods.some(pm => pm.fromStyleId === ps.id && pm.fromCategory === pc.category)
+                                    ).length;
+                                    const allSelected = totalCats > 0 && enabledCats === totalCats;
+                                    const someSelected = enabledCats > 0 && enabledCats < totalCats;
+
+                                    return (
+                                        <div key={ps.id} style={{ background: '#1c1c1c', border: `1px solid ${enabledCats > 0 ? 'var(--gold)' : '#333'}`, borderRadius: 6, overflow: 'hidden', transition: 'border-color 0.2s' }}>
+                                            {/* Style header — select all */}
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', cursor: 'pointer', background: enabledCats > 0 ? 'rgba(197,160,89,0.07)' : 'transparent' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={allSelected}
+                                                    ref={el => { if (el) el.indeterminate = someSelected; }}
+                                                    onChange={e => handleToggleDbPrintStyle(ps.id, e.target.checked)}
+                                                    style={{ accentColor: 'var(--gold)', width: 15, height: 15, cursor: 'pointer' }}
+                                                />
+                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>{ps.name}</span>
+                                                    <span style={{ fontSize: '0.7rem', color: '#888' }}>
+                                                        {ps.category?.toUpperCase()} • {enabledCats}/{totalCats} selected
+                                                    </span>
+                                                </div>
+                                            </label>
+
+                                            {/* Individual category checkboxes */}
+                                            {totalCats > 0 && (
+                                                <div style={{ borderTop: '1px solid #2a2a2a', display: 'flex', flexDirection: 'column', gap: 0 }}>
+                                                    {(ps.placementCategories || []).map((pc, i) => {
+                                                        const isCatEnabled = printMethods.some(pm => pm.fromStyleId === ps.id && pm.fromCategory === pc.category);
+                                                        const optCount = Object.keys(pc.placements || {}).length;
+                                                        return (
+                                                            <label key={pc.category} style={{
+                                                                display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
+                                                                cursor: 'pointer',
+                                                                background: isCatEnabled ? 'rgba(197,160,89,0.04)' : 'transparent',
+                                                                borderTop: i > 0 ? '1px solid #222' : 'none',
+                                                                transition: 'background 0.15s'
+                                                            }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isCatEnabled}
+                                                                    onChange={e => handleTogglePrintCategory(ps.id, pc, e.target.checked)}
+                                                                    style={{ accentColor: 'var(--gold)', width: 14, height: 14, cursor: 'pointer' }}
+                                                                />
+                                                                <span style={{ fontSize: '0.85rem', color: isCatEnabled ? 'white' : '#aaa', fontWeight: isCatEnabled ? 600 : 400, textTransform: 'capitalize', flex: 1 }}>
+                                                                    {pc.category}
+                                                                </span>
+                                                                <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: '#252525', color: '#777', borderRadius: 10 }}>
+                                                                    {optCount} placement{optCount !== 1 ? 's' : ''}
+                                                                </span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p style={{ fontSize: '0.8rem', color: '#777', fontStyle: 'italic' }}>
+                                No saved print styles found. Please create print styles first from the Print Styles section.
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Size Chart */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #333', paddingBottom: 8 }}>Size Chart</label>
+                        <div style={{ padding: 15, background: '#2c2c2c', border: '1px solid #444', borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.85rem', color: sizeChartFile || sizeChartPreview ? 'white' : '#888' }}>
+                                {sizeChartFile ? sizeChartFile.name : (sizeChartPreview ? 'Size Chart Uploaded' : 'No file uploaded')}
+                            </span>
+                            <button 
+                                onClick={() => document.getElementById('sizeChartUpload').click()}
+                                style={{ padding: '6px 14px', background: 'transparent', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem' }}>
+                                Choose File
+                            </button>
+                            <input id="sizeChartUpload" type="file" style={{ display: 'none' }} accept="image/*,.pdf" onChange={e => {
+                                if(e.target.files[0]) {
+                                    setSizeChartFile(e.target.files[0]);
+                                }
+                            }} />
+                        </div>
+                    </div>
+
+                    {/* Select Sizes */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #333', paddingBottom: 8 }}>Select Sizes</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {STANDARD_SIZES.map(size => {
+                                const isSelected = selectedSizes.has(size);
+                                return (
+                                    <div 
+                                        key={size}
+                                        onClick={() => handleSizeToggle(size)}
+                                        style={{ 
+                                            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 15px', 
+                                            background: isSelected ? 'rgba(212,175,55,0.1)' : '#252525', 
+                                            border: `1px solid ${isSelected ? 'var(--gold)' : '#444'}`, 
+                                            borderRadius: 4, cursor: 'pointer', userSelect: 'none', transition: 'all 0.2s'
+                                        }}>
+                                        <input type="checkbox" checked={isSelected} readOnly style={{ accentColor: 'var(--gold)' }} />
+                                        <span style={{ fontSize: '0.85rem', color: isSelected ? 'var(--gold)' : '#ccc', fontWeight: 600 }}>{size}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, borderTop: '1px solid #444', paddingTop: 20, marginTop: 10 }}>
+                        <button 
+                            onClick={handleSubmit} 
+                            disabled={isSaving}
+                            style={{ padding: '15px', background: 'var(--gold)', color: 'black', border: 'none', borderRadius: 4, fontWeight: 'bold', fontSize: '1rem', cursor: isSaving ? 'not-allowed' : 'pointer' }}>
+                            {isSaving ? 'Saving...' : 'Save Product'}
+                        </button>
+                        <button 
+                            onClick={() => setIsCreating(false)} 
+                            disabled={isSaving}
+                            style={{ padding: '12px', background: 'transparent', color: '#ccc', border: '1px solid #555', borderRadius: 4, fontWeight: 'bold', fontSize: '0.9rem', cursor: isSaving ? 'not-allowed' : 'pointer' }}>
+                            Cancel / Reset
+                        </button>
+                    </div>
+
+                </div>
+
+                {/* ── Print Method Modal (multi-category) ── */}
+                {isPmModalOpen && (
+                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                        <div style={{ background: '#1c1c1c', padding: 25, borderRadius: 8, width: 540, maxHeight: '88vh', overflowY: 'auto', border: '1px solid #444', color: 'white' }}>
+                            <h3 style={{ margin: '0 0 20px 0', color: 'white' }}>{pmEditId ? 'Edit' : 'Add'} Printing Method</h3>
+
+                            {/* Print Type */}
+                            <div style={{ marginBottom: 16 }}>
+                                <label style={{ display: 'block', marginBottom: 6, fontSize: '0.85rem', color: '#ccc' }}>Print Type</label>
+                                <select value={pmType} onChange={handlePmTypeChange}
+                                    style={{ width: '100%', padding: '10px', background: '#2c2c2c', border: '1px solid #555', color: 'white', borderRadius: 4, outline: 'none' }}>
+                                    <option value="" disabled>Select Print Type</option>
+                                    <option value="dtf">DTF (Direct to Film)</option>
+                                    <option value="dtg">DTG (Direct to Garment)</option>
+                                    <option value="embrio">Embroidery</option>
+                                </select>
+                            </div>
+
+                            {/* Saved Print Style Loader */}
+                            {pmType && (
+                                <div style={{ marginBottom: 16 }}>
+                                    <label style={{ display: 'block', marginBottom: 6, fontSize: '0.85rem', color: '#ccc' }}>Load from Saved Print Style (optional)</label>
+                                    <select 
+                                        onChange={e => {
+                                            const styleId = e.target.value;
+                                            if (styleId) {
+                                                const selectedStyle = dbPrintStyles.find(ps => ps.id === styleId);
+                                                if (selectedStyle) {
+                                                    const rebuiltCats = {};
+                                                    (selectedStyle.placementCategories || []).forEach(pc => {
+                                                        const opts = {};
+                                                        Object.keys(pc.placements || {}).forEach(optName => {
+                                                            const pl = pc.placements[optName];
+                                                            opts[optName] = {
+                                                                price: pl.price !== undefined ? String(pl.price) : '',
+                                                                darkPrice: pl.darkPrice !== undefined ? String(pl.darkPrice) : '',
+                                                                lightPrice: pl.lightPrice !== undefined ? String(pl.lightPrice) : '',
+                                                                imageFile: null,
+                                                                imagePreview: pl.imagePreview || ''
+                                                            };
+                                                        });
+                                                        rebuiltCats[pc.category] = opts;
+                                                    });
+                                                    setPmCategories(rebuiltCats);
+                                                    if (Object.keys(rebuiltCats).length > 0) {
+                                                        setPmExpandedCat(Object.keys(rebuiltCats)[0]);
+                                                    }
+                                                }
+                                            }
+                                        }}
+                                        defaultValue=""
+                                        style={{ width: '100%', padding: '10px', background: '#2c2c2c', border: '1px solid #555', color: 'white', borderRadius: 4, outline: 'none' }}>
+                                        <option value="">-- Select a saved style to auto-fill --</option>
+                                        {dbPrintStyles.filter(ps => {
+                                            const t = ps.category?.toLowerCase();
+                                            const target = pmType?.toLowerCase();
+                                            if (target === 'dtf') return t === 'dtf';
+                                            if (target === 'dtg') return t === 'dtg';
+                                            if (target === 'embrio') return t === 'embrio' || t === 'embroidery';
+                                            return false;
+                                        }).map(ps => (
+                                            <option key={ps.id} value={ps.id}>{ps.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Category picker + Add button */}
+                            {pmType && (
+                                <div style={{ marginBottom: 16 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <input
+                                                type="text"
+                                                id="mfgNewCatInput"
+                                                list="mfgDbCategories"
+                                                placeholder="Category (e.g. Tshirt Front)"
+                                                style={{ flex: 1, padding: '10px', background: '#2c2c2c', border: '1px solid #555', color: 'white', borderRadius: 4, outline: 'none' }}
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        const val = e.target.value.trim();
+                                                        if (val) {
+                                                            if (pmCategories[val]) {
+                                                                showToast('Category already added.', 'error');
+                                                            } else {
+                                                                const opts = {};
+                                                                const fallbackOpts = PLACEMENT_MATRIX[pmType]?.[val.toLowerCase()] || [];
+                                                                fallbackOpts.forEach(opt => {
+                                                                    opts[opt] = { price: '', darkPrice: '', lightPrice: '', imageFile: null, imagePreview: '' };
+                                                                });
+                                                                setPmCategories(prev => ({ ...prev, [val]: opts }));
+                                                                setPmExpandedCat(val);
+                                                                e.target.value = '';
+                                                            }
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <datalist id="mfgDbCategories">
+                                                {dbCategories.map(cat => (
+                                                    <option key={cat.id} value={cat.name} />
+                                                ))}
+                                            </datalist>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const el = document.getElementById('mfgNewCatInput');
+                                                    const val = el?.value.trim();
+                                                    if (val) {
+                                                        if (pmCategories[val]) {
+                                                            showToast('Category already added.', 'error');
+                                                        } else {
+                                                            const opts = {};
+                                                            const fallbackOpts = PLACEMENT_MATRIX[pmType]?.[val.toLowerCase()] || [];
+                                                            fallbackOpts.forEach(opt => {
+                                                                opts[opt] = { price: '', darkPrice: '', lightPrice: '', imageFile: null, imagePreview: '' };
+                                                            });
+                                                            setPmCategories(prev => ({ ...prev, [val]: opts }));
+                                                            setPmExpandedCat(val);
+                                                            el.value = '';
+                                                        }
+                                                    }
+                                                }}
+                                                style={{ padding: '10px 18px', background: 'white', color: 'black', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }}>
+                                                + Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {Object.keys(pmCategories).length > 0 && (
+                                        <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#666' }}>
+                                            {Object.keys(pmCategories).length} categor{Object.keys(pmCategories).length === 1 ? 'y' : 'ies'} added
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Added categories with their options */}
+                            {Object.keys(pmCategories).length > 0 && (
+                                <div style={{ borderTop: '1px solid #333', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <label style={{ fontSize: '0.82rem', color: '#aaa', marginBottom: 4 }}>Select Configuration Options</label>
+
+                                    {Object.keys(pmCategories).map(catKey => {
+                                        const catOpts = pmCategories[catKey];
+                                        const isCatOpen = pmExpandedCat === catKey;
+                                        const catConfigured = Object.values(catOpts).filter(o => isOptionValid(o, pmType)).length;
+
+                                        return (
+                                            <div key={catKey} style={{ border: `1px solid ${isCatOpen ? 'var(--gold, #c5a030)' : '#3a3a3a'}`, borderRadius: 6, overflow: 'hidden', transition: 'border-color 0.2s' }}>
+                                                {/* Category header */}
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: isCatOpen ? 'rgba(197,160,48,0.07)' : '#252525', cursor: 'pointer' }}
+                                                    onClick={() => { setPmExpandedCat(isCatOpen ? '' : catKey); setPmExpandedRow(null); }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        <span style={{ fontWeight: 700, fontSize: '0.88rem', color: isCatOpen ? '#c5a030' : 'white', textTransform: 'capitalize' }}>
+                                                            {catKey.replace(/\b\w/g, l => l.toUpperCase())}
+                                                        </span>
+                                                        {catConfigured > 0 && (
+                                                            <span style={{ fontSize: '0.65rem', padding: '1px 7px', background: 'rgba(40,167,69,0.2)', color: '#28a745', borderRadius: 10, fontWeight: 700 }}>
+                                                                {catConfigured}/{Object.keys(catOpts).length}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        <button onClick={e => { e.stopPropagation(); handleRemovePmCategory(catKey); }}
+                                                            style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '0.75rem' }}
+                                                            title={`Remove ${catKey}`}>
+                                                            <i className="fas fa-times" />
+                                                        </button>
+                                                        <i className={`fas fa-chevron-${isCatOpen ? 'up' : 'down'}`} style={{ color: '#888', fontSize: '0.7rem' }} />
+                                                    </div>
+                                                </div>
+
+                                                {/* Option rows */}
+                                                {isCatOpen && (
+                                                    <div style={{ padding: '10px 12px', background: '#181818', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                        {/* Add custom option row creator */}
+                                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, borderBottom: '1px solid #333', paddingBottom: 10 }}>
+                                                            <input
+                                                                type="text"
+                                                                id={`newOptInput_${catKey.replace(/\s+/g, '_')}`}
+                                                                placeholder="Add position (e.g. Left Sleeve, Collar)"
+                                                                style={{ flex: 1, padding: '8px 10px', background: '#2c2c2c', border: '1px solid #555', color: 'white', borderRadius: 4, outline: 'none', fontSize: '0.78rem' }}
+                                                                onKeyDown={e => {
+                                                                    if (e.key === 'Enter') {
+                                                                        e.preventDefault();
+                                                                        const val = e.target.value.trim();
+                                                                        if (val) {
+                                                                            setPmCategories(prev => ({
+                                                                                ...prev,
+                                                                                [catKey]: {
+                                                                                    ...prev[catKey],
+                                                                                    [val]: { price: '', darkPrice: '', lightPrice: '', imageFile: null, imagePreview: '' }
+                                                                                }
+                                                                            }));
+                                                                            e.target.value = '';
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const el = document.getElementById(`newOptInput_${catKey.replace(/\s+/g, '_')}`);
+                                                                    const val = el?.value.trim();
+                                                                    if (val) {
+                                                                        setPmCategories(prev => ({
+                                                                            ...prev,
+                                                                            [catKey]: {
+                                                                                ...prev[catKey],
+                                                                                [val]: { price: '', darkPrice: '', lightPrice: '', imageFile: null, imagePreview: '' }
+                                                                            }
+                                                                        }));
+                                                                        el.value = '';
+                                                                    }
+                                                                }}
+                                                                style={{ padding: '8px 14px', background: 'white', color: 'black', border: 'none', borderRadius: 4, fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}>
+                                                                + Add Position
+                                                            </button>
+                                                        </div>
+
+                                                        {Object.keys(catOpts).map((optName, index) => {
+                                                            const opt = catOpts[optName];
+                                                            const isValid = isOptionValid(opt, pmType);
+                                                            const isRowExpanded = pmExpandedRow === `${catKey}_${index}`;
+                                                            return (
+                                                                <div key={optName} style={{ background: '#222', border: `1px solid ${isValid ? 'rgba(40,167,69,0.4)' : '#333'}`, borderRadius: 5, padding: 10 }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                                        onClick={() => setPmExpandedRow(isRowExpanded ? null : `${catKey}_${index}`)}>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, textTransform: 'capitalize', fontSize: '0.88rem' }}>
+                                                                            <div style={{ width: 16, height: 16, border: `2px solid ${isValid ? '#28a745' : '#555'}`, borderRadius: '50%', background: isValid ? '#28a745' : 'transparent', flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                                                                {isValid && <div style={{ width: 4, height: 7, border: 'solid white', borderWidth: '0 2px 2px 0', transform: 'rotate(45deg)', marginBottom: 2 }} />}
+                                                                            </div>
+                                                                            <span>{optName}</span>
+                                                                        </div>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={e => e.stopPropagation()}>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={e => {
+                                                                                    e.stopPropagation();
+                                                                                    if (window.confirm(`Remove position "${optName}"?`)) {
+                                                                                        setPmCategories(prev => {
+                                                                                            const nextOpts = { ...prev[catKey] };
+                                                                                            delete nextOpts[optName];
+                                                                                            return {
+                                                                                                ...prev,
+                                                                                                [catKey]: nextOpts
+                                                                                            };
+                                                                                        });
+                                                                                    }
+                                                                                }}
+                                                                                style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '0.75rem', padding: '2px' }}
+                                                                                title={`Remove ${optName}`}
+                                                                            >
+                                                                                <i className="fas fa-trash-alt" />
+                                                                            </button>
+                                                                            <button onClick={() => setPmExpandedRow(isRowExpanded ? null : `${catKey}_${index}`)}
+                                                                                style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                                                                                <i className={`fas fa-chevron-${isRowExpanded ? 'up' : 'down'}`} style={{ color: '#666', fontSize: '0.65rem', transition: 'transform 0.2s' }} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {isRowExpanded && (
+                                                                        <div style={{ marginTop: 10, padding: 12, background: '#1a1a1a', borderRadius: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                                            {/* Preview box */}
+                                                                            <div style={{ border: '1px dashed #555', padding: 10, textAlign: 'center', fontSize: '12px', color: '#777', background: '#222', borderRadius: 4 }}>
+                                                                                {opt.imagePreview
+                                                                                    ? <img src={opt.imagePreview} alt="preview" style={{ maxHeight: 60, objectFit: 'contain' }} />
+                                                                                    : 'print position boundary'}
+                                                                            </div>
+                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                                <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#bbb', flexShrink: 0 }}>Reference Image:</label>
+                                                                                <input type="file" onChange={e => {
+                                                                                    if (e.target.files[0]) {
+                                                                                        updatePmOption(catKey, optName, 'imageFile', e.target.files[0]);
+                                                                                        updatePmOption(catKey, optName, 'imagePreview', URL.createObjectURL(e.target.files[0]));
+                                                                                    }
+                                                                                }} style={{ flex: 1, fontSize: '12px', color: '#aaa' }} />
+                                                                            </div>
+                                                                            {pmType === 'dtg' ? (
+                                                                                <>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                                        <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#bbb', flexShrink: 0 }}>Dark Garment (₹):</label>
+                                                                                        <input type="number" min="0" value={opt.darkPrice}
+                                                                                            onChange={e => updatePmOption(catKey, optName, 'darkPrice', e.target.value)}
+                                                                                            style={{ flex: 1, padding: '6px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                                                                    </div>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                                        <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#bbb', flexShrink: 0 }}>Light Garment (₹):</label>
+                                                                                        <input type="number" min="0" value={opt.lightPrice}
+                                                                                            onChange={e => updatePmOption(catKey, optName, 'lightPrice', e.target.value)}
+                                                                                            style={{ flex: 1, padding: '6px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                                                                    </div>
+                                                                                </>
+                                                                            ) : (
+                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                                    <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#bbb', flexShrink: 0 }}>Set Price (₹):</label>
+                                                                                    <input type="number" min="0" value={opt.price}
+                                                                                        onChange={e => updatePmOption(catKey, optName, 'price', e.target.value)}
+                                                                                        style={{ flex: 1, padding: '6px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                                <button onClick={closePmModal} style={{ background: '#333', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}>Cancel</button>
+                                <button onClick={savePrintMethod} style={{ background: '#28a745', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }}>Save Method</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <style>{TOAST_CSS}</style>
+                <ToastContainer toasts={toasts} />
+            </main>
+        );
+    }
 
     return (
         <main className="adm-page">
@@ -571,7 +1374,7 @@ function MfgProducts() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <button className="adm-settings__btn" style={{ marginTop: 0 }} onClick={handleAddClick}>
+                    <button className="adm-settings__btn" style={{ marginTop: 0 }} onClick={handleCreateClick}>
                         <i className="fas fa-plus" style={{ marginRight: 6 }}></i> Add Base Product
                     </button>
                 </div>
@@ -594,760 +1397,109 @@ function MfgProducts() {
                             outline: 'none',
                             transition: 'border-color 0.2s'
                         }}
-                        onFocus={e => e.target.style.borderColor = 'var(--gold)'}
-                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                     />
                     <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
                 </div>
             </div>
 
             {loading ? (
-                <div className="adm-loading">
-                    <div className="adm-spinner"></div>
-                    <p>Loading real-time product list...</p>
-                </div>
-            ) : error ? (
-                <div className="adm-error-alert">
-                    <i className="fas fa-exclamation-triangle"></i> {error}
-                </div>
-            ) : products.length === 0 ? (
-                <div className="adm-table-wrap">
-                    <div className="adm-table__empty" style={{ padding: '60px 20px' }}>
-                        <i className="fas fa-tshirt"></i>
-                        No products created yet. Click "Add Base Product" to start.
-                    </div>
-                </div>
+                <div style={{ color: '#ccc', textAlign: 'center', padding: '40px 0' }}>Loading products...</div>
             ) : filteredProducts.length === 0 ? (
-                <div className="adm-table-wrap">
-                    <div className="adm-table__empty" style={{ padding: '60px 20px' }}>
-                        <i className="fas fa-search"></i>
-                        No matching products found.
-                    </div>
+                <div style={{ color: '#888', textAlign: 'center', padding: '60px 0', background: '#181818', borderRadius: 8, border: '1px solid #333' }}>
+                    <i className="fas fa-box-open" style={{ fontSize: '3rem', marginBottom: 15, opacity: 0.5 }}></i>
+                    <p>No base products found.</p>
                 </div>
             ) : (
-                <div className="adm-table-wrap">
-                    <table className="adm-table">
-                        <thead>
-                            <tr>
-                                <th>Cover</th>
-                                <th>Product Title</th>
-                                <th>Category</th>
-                                <th>Base Cost</th>
-                                <th>Colors Available</th>
-                                <th>Printing Styles</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredProducts.map(p => (
-                                <tr key={p.id}>
-                                    <td>
-                                        <div style={{
-                                            width: 44,
-                                            height: 54,
-                                            background: `url(${p.coverImage || p.colors?.[0]?.frontImage || ''}) center/cover no-repeat`,
-                                            borderRadius: 4,
-                                            border: '1px solid #ddd'
-                                        }}></div>
-                                    </td>
-                                    <td style={{ fontWeight: 600 }}>{p.title}</td>
-                                    <td>{p.category}</td>
-                                    <td>₹{(p.cost || 0).toLocaleString()}</td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
-                                            {(p.colors || []).map((c, i) => (
-                                                <span
-                                                    key={i}
-                                                    title={c.colorName}
-                                                    style={{
-                                                        width: 18,
-                                                        height: 18,
-                                                        borderRadius: '50%',
-                                                        background: c.color,
-                                                        display: 'inline-block',
-                                                        border: '1px solid #ccc'
-                                                    }}
-                                                ></span>
-                                            ))}
-                                            <span style={{ fontSize: '0.75rem', color: '#666' }}>({(p.colors || []).length})</span>
+                <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                    {filteredProducts.map(p => {
+                        const availableStorefront = isProductAvailable(p);
+                        return (
+                            <div key={p.id} className="adm-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ height: 200, background: '#111', position: 'relative' }}>
+                                    {p.cover_image || (p.colors && p.colors[0]?.frontImage) ? (
+                                        <img src={p.cover_image || p.colors[0].frontImage} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    ) : (
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+                                            <i className="fas fa-image" style={{ fontSize: '3rem' }}></i>
                                         </div>
-                                    </td>
-                                    <td>
-                                        {(p.printingStyles || []).length === 0 ? (
-                                            <span style={{ color: '#aaa', fontSize: '0.75rem' }}>No custom printing</span>
-                                        ) : (
-                                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                                {(p.printingStyles || []).map((s, i) => (
-                                                    <span
-                                                        key={i}
-                                                        style={{
-                                                            background: '#eee',
-                                                            color: '#333',
-                                                            padding: '2px 8px',
-                                                            borderRadius: 4,
-                                                            fontSize: '0.7rem',
-                                                            fontWeight: 500
-                                                        }}
-                                                    >
-                                                        {s.style} (+₹{s.cost})
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td>
-                                        {isProductAvailable(p) ? (
-                                            <span style={{
-                                                background: 'rgba(40, 167, 69, 0.2)',
-                                                color: '#28a745',
-                                                padding: '4px 8px',
-                                                borderRadius: 4,
-                                                fontSize: '0.75rem',
-                                                fontWeight: 'bold',
-                                                border: '1px solid rgba(40, 167, 69, 0.4)'
-                                            }}>Available</span>
-                                        ) : (
-                                            <span style={{
-                                                background: 'rgba(220, 53, 69, 0.2)',
-                                                color: '#dc3545',
-                                                padding: '4px 8px',
-                                                borderRadius: 4,
-                                                fontSize: '0.75rem',
-                                                fontWeight: 'bold',
-                                                border: '1px solid rgba(220, 53, 69, 0.4)'
-                                            }}>Not Available</span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                            <button className="adm-action-btn" onClick={() => handleEditClick(p)}>Edit</button>
-                                            <button className="adm-action-btn adm-action-btn--reject" onClick={() => setPendingDeleteProduct(p.id)}>Delete</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {/* Custom Modal */}
-            {isModalOpen && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    background: 'rgba(0, 0, 0, 0.75)',
-                    backdropFilter: 'blur(10px)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 2000
-                }}>
-                    <div style={{
-                        background: 'rgba(18, 18, 18, 0.95)',
-                        border: '1px solid var(--admin-gold)',
-                        borderRadius: '8px',
-                        padding: '30px',
-                        width: '95%',
-                        maxWidth: '700px',
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-                        maxHeight: '90vh',
-                        overflowY: 'auto',
-                        fontFamily: "'Montserrat', sans-serif",
-                        color: 'white'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                            <h2 style={{ fontFamily: "'Cinzel', serif", color: 'var(--admin-gold)', fontSize: '1.4rem', margin: 0, textTransform: 'uppercase' }}>
-                                {editProduct ? 'Edit Base Product' : 'Add Base Product'}
-                            </h2>
-                            <button
-                                type="button"
-                                onClick={() => setIsModalOpen(false)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: '#ccc',
-                                    fontSize: '1.2rem',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                <i className="fas fa-times"></i>
-                            </button>
-                        </div>
-
-                        {isSaving && (
-                            <div style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                padding: '20px 0',
-                                color: 'var(--admin-gold)',
-                                fontWeight: 'bold'
-                            }}>
-                                <div className="adm-spinner" style={{ marginBottom: 12 }}></div>
-                                <p>Saving product... uploading images to secure storage...</p>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} style={{ display: isSaving ? 'none' : 'block' }}>
-                            {/* Product basic info */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: 6, fontWeight: 600 }}>Product Title *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="e.g. Premium Fleece Hoodie"
-                                        value={formData.title}
-                                        onChange={e => setFormData(p => ({ ...p, title: e.target.value }))}
-                                        style={{ padding: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid #444', borderRadius: 4, color: 'white', outline: 'none' }}
-                                    />
+                                    )}
+                                    <div style={{
+                                        position: 'absolute', top: 12, right: 12,
+                                        background: availableStorefront ? 'rgba(40, 167, 69, 0.9)' : 'rgba(220, 53, 69, 0.9)',
+                                        color: 'white', padding: '4px 10px', borderRadius: 12, fontSize: '0.7rem', fontWeight: 'bold'
+                                    }}>
+                                        {availableStorefront ? 'Available' : 'Unavailable'}
+                                    </div>
+                                    <div style={{
+                                        position: 'absolute', top: 12, left: 12,
+                                        background: 'rgba(0,0,0,0.7)',
+                                        color: 'var(--gold)', padding: '4px 10px', borderRadius: 4, fontSize: '0.7rem', fontWeight: 'bold',
+                                        textTransform: 'uppercase', letterSpacing: '1px'
+                                    }}>
+                                        {p.category}
+                                    </div>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: 6, fontWeight: 600 }}>Category *</label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={e => {
-                                            setFormData(p => ({ ...p, category: e.target.value }));
-                                        }}
-                                        style={{ padding: 10, background: 'rgba(18, 18, 18, 0.95)', border: '1px solid #444', borderRadius: 4, color: 'white', outline: 'none' }}
-                                    >
-                                        {categoriesList.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
+                                <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', color: 'white' }}>{p.title}</h3>
+                                    
+                                    <div style={{ display: 'flex', gap: 15, marginBottom: 15, fontSize: '0.8rem', color: '#aaa' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            <i className="fas fa-tag"></i> ₹{p.cost}
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, textTransform: 'capitalize' }}>
+                                            <i className="fas fa-venus-mars"></i> {p.gender}
+                                        </div>
+                                    </div>
+
+                                    {/* Colors Preview */}
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 15 }}>
+                                        {p.colors && p.colors.length > 0 ? (
+                                            p.colors.map((c, i) => {
+                                                const isAvail = c.available !== false;
+                                                return (
+                                                    <div key={i} title={`${c.colorName} ${isAvail ? '' : '(Unavailable)'}`} style={{
+                                                        width: 16, height: 16, borderRadius: '50%', background: c.color, 
+                                                        border: isAvail ? '1px solid #555' : '1px dashed #ff4d4d',
+                                                        position: 'relative',
+                                                        opacity: isAvail ? 1 : 0.4
+                                                    }}>
+                                                        {!isAvail && (
+                                                            <div style={{
+                                                                position: 'absolute', top: 1, left: 6, width: 2, height: 12, background: '#ff4d4d', transform: 'rotate(45deg)'
+                                                            }} />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <span style={{ fontSize: '0.75rem', color: '#666' }}>No colors</span>
+                                        )}
+                                    </div>
+
+                                    {/* Print Styles Preview */}
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 'auto' }}>
+                                        {(p.printing_styles || p.printingStyles || []).map((ps, i) => (
+                                            <span key={i} style={{ fontSize: '0.7rem', background: '#333', color: '#ccc', padding: '2px 8px', borderRadius: 4 }}>
+                                                {ps.style} ({ps.placements?.length || 0})
+                                            </span>
                                         ))}
-                                    </select>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: 6, fontWeight: 600 }}>Target Gender *</label>
-                                    <select
-                                        value={formData.gender || 'Unisex'}
-                                        onChange={e => setFormData(p => ({ ...p, gender: e.target.value }))}
-                                        style={{ padding: 10, background: 'rgba(18, 18, 18, 0.95)', border: '1px solid #444', borderRadius: 4, color: 'white', outline: 'none' }}
-                                    >
-                                        <option value="Unisex">Unisex</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                    </select>
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: 6, fontWeight: 600 }}>Availability Status *</label>
-                                    <select
-                                        value={formData.available ? "true" : "false"}
-                                        onChange={e => setFormData(p => ({ ...p, available: e.target.value === 'true' }))}
-                                        style={{ padding: 10, background: 'rgba(18, 18, 18, 0.95)', border: '1px solid #444', borderRadius: 4, color: 'white', outline: 'none' }}
-                                    >
-                                        <option value="true">Available</option>
-                                        <option value="false">Not Available</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: 6, fontWeight: 600 }}>Base Cost (₹) *</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        min="0"
-                                        placeholder="e.g. 999"
-                                        value={formData.cost}
-                                        onChange={e => setFormData(p => ({ ...p, cost: e.target.value }))}
-                                        style={{ padding: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid #444', borderRadius: 4, color: 'white', outline: 'none' }}
-                                    />
-                                </div>
-                                <div></div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: 6, fontWeight: 600 }}>Product Details (One point per line)</label>
-                                    <textarea
-                                        placeholder="e.g. 100% Cotton&#10;Premium Quality&#10;Oversized Fit"
-                                        value={formData.details}
-                                        onChange={e => setFormData(p => ({ ...p, details: e.target.value }))}
-                                        rows="4"
-                                        style={{ padding: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid #444', borderRadius: 4, color: 'white', outline: 'none', resize: 'vertical' }}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: 6, fontWeight: 600 }}>Wash Care (One point per line)</label>
-                                    <textarea
-                                        placeholder="e.g. Machine wash cold&#10;Do not bleach&#10;Tumble dry low"
-                                        value={formData.washCare}
-                                        onChange={e => setFormData(p => ({ ...p, washCare: e.target.value }))}
-                                        rows="4"
-                                        style={{ padding: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid #444', borderRadius: 4, color: 'white', outline: 'none', resize: 'vertical' }}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* COLORS SECTION */}
-                            <div style={{ borderTop: '1px solid #333', paddingTop: 16, marginBottom: 20 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                                    <h4 style={{ margin: 0, fontFamily: "'Cinzel', serif", color: 'var(--admin-gold)', fontSize: '0.95rem' }}>
-                                        Colors & Swatch Views
-                                    </h4>
-                                    <button
-                                        type="button"
-                                        onClick={addColorField}
-                                        style={{
-                                            padding: '4px 10px',
-                                            background: 'var(--admin-dark)',
-                                            border: '1px solid var(--admin-gold)',
-                                            borderRadius: 4,
-                                            color: 'var(--admin-gold)',
-                                            fontSize: '0.75rem',
-                                            cursor: 'pointer',
-                                            fontFamily: "'Montserrat', sans-serif"
-                                        }}
-                                    >
-                                        <i className="fas fa-plus"></i> Add Color
+                                
+                                <div style={{ display: 'flex', borderTop: '1px solid #333' }}>
+                                    <button onClick={() => handleEditClick(p)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#ccc', cursor: 'pointer', borderRight: '1px solid #333', transition: 'background 0.2s' }} onMouseOver={e => e.target.style.background = 'rgba(255,255,255,0.05)'} onMouseOut={e => e.target.style.background = 'transparent'}>
+                                        <i className="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button onClick={() => setPendingDeleteProduct(p.id)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#dc3545', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.target.style.background = 'rgba(220,53,69,0.1)'} onMouseOut={e => e.target.style.background = 'transparent'}>
+                                        <i className="fas fa-trash"></i> Delete
                                     </button>
                                 </div>
-
-                                {colors.length === 0 ? (
-                                    <p style={{ fontSize: '0.75rem', color: '#888', fontStyle: 'italic', textAlign: 'center' }}>
-                                        No colors configured. Please add at least one color view.
-                                    </p>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                        {colors.map((c, index) => (
-                                            <div
-                                                key={c.id}
-                                                style={{
-                                                    background: 'rgba(255,255,255,0.02)',
-                                                    border: '1px solid #333',
-                                                    borderRadius: 6,
-                                                    padding: 12
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                                                    <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600 }}>Color #{index + 1}</span>
-                                                    
-                                                    {/* Color Picker */}
-                                                    <input
-                                                        type="color"
-                                                        value={c.color}
-                                                        onChange={e => updateColorField(c.id, 'color', e.target.value)}
-                                                        style={{ width: 36, height: 26, padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
-                                                    />
-
-                                                    {/* Color Name */}
-                                                    <input
-                                                        type="text"
-                                                        required
-                                                        placeholder="Color name (e.g. Jet Black)"
-                                                        value={c.colorName}
-                                                        onChange={e => updateColorField(c.id, 'colorName', e.target.value)}
-                                                        style={{
-                                                            padding: '6px 10px',
-                                                            background: 'rgba(255,255,255,0.05)',
-                                                            border: '1px solid #444',
-                                                            borderRadius: 4,
-                                                            color: 'white',
-                                                            outline: 'none',
-                                                            fontSize: '0.75rem',
-                                                            flex: '1 1 120px'
-                                                        }}
-                                                    />
-
-                                                    {/* Remove Button */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeColorField(c.id)}
-                                                        style={{
-                                                            background: 'none',
-                                                            border: 'none',
-                                                            color: 'var(--admin-danger)',
-                                                            fontSize: '0.9rem',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        <i className="fas fa-trash-alt"></i>
-                                                    </button>
-                                                </div>
-
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                                                    {/* Front View */}
-                                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: 8, borderRadius: 4 }}>
-                                                        <label style={{ fontSize: '0.7rem', color: '#aaa', display: 'block', marginBottom: 4, fontWeight: 600 }}>Front View Image *</label>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                            {c.frontPreview && (
-                                                                <div style={{
-                                                                    width: 32,
-                                                                    height: 32,
-                                                                    background: `url(${c.frontPreview}) center/cover no-repeat`,
-                                                                    borderRadius: 4,
-                                                                    border: '1px solid #555'
-                                                                }}></div>
-                                                            )}
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*"
-                                                                onChange={e => handleColorImageUpload(c.id, 'front', e.target.files[0])}
-                                                                style={{ fontSize: '0.7rem', color: '#ccc', width: '100%' }}
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Back View */}
-                                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: 8, borderRadius: 4 }}>
-                                                        <label style={{ fontSize: '0.7rem', color: '#aaa', display: 'block', marginBottom: 4, fontWeight: 600 }}>Back View Image *</label>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                            {c.backPreview && (
-                                                                <div style={{
-                                                                    width: 32,
-                                                                    height: 32,
-                                                                    background: `url(${c.backPreview}) center/cover no-repeat`,
-                                                                    borderRadius: 4,
-                                                                    border: '1px solid #555'
-                                                                }}></div>
-                                                            )}
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*"
-                                                                onChange={e => handleColorImageUpload(c.id, 'back', e.target.files[0])}
-                                                                style={{ fontSize: '0.7rem', color: '#ccc', width: '100%' }}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
-
-                            {/* PRINTING STYLES */}
-                            <div style={{ borderTop: '1px solid #333', paddingTop: 16, marginBottom: 24 }}>
-                                <h4 style={{ margin: '0 0 12px 0', fontFamily: "'Cinzel', serif", color: 'var(--admin-gold)', fontSize: '0.95rem' }}>
-                                    Printing Options &amp; Add-on Costs
-                                </h4>
-                                {globalPrintStyles.length === 0 ? (
-                                    <div style={{ padding: '14px', textAlign: 'center', border: '1px dashed #444', borderRadius: 4 }}>
-                                        <p style={{ fontSize: '0.75rem', color: '#888', fontStyle: 'italic', margin: '0 0 8px' }}>
-                                            No print styles configured yet.
-                                        </p>
-                                        <span
-                                            onClick={() => navigate('/mfg/print-styles')}
-                                            style={{ fontSize: '0.72rem', color: 'var(--admin-gold)', textDecoration: 'underline', fontFamily: "'Montserrat', sans-serif", cursor: 'pointer' }}
-                                        >
-                                            → Go to Print Styles to set them up
-                                        </span>
-                                    </div>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                        {Object.entries(groupedPrintStyles).map(([categoryName, styles]) => (
-                                            <div key={categoryName} style={{ marginBottom: 8 }}>
-                                                <div style={{
-                                                    fontSize: '0.72rem',
-                                                    fontWeight: 700,
-                                                    color: 'var(--admin-gold)',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: 0.8,
-                                                    marginBottom: 8,
-                                                    paddingBottom: 4,
-                                                    borderBottom: '1px solid rgba(197,160,89,0.2)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 6
-                                                }}>
-                                                    <i className="fas fa-print" style={{ fontSize: '0.65rem' }} />
-                                                    {categoryName}
-                                                </div>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                                    {styles.map(ps => {
-                                                        const selectedObj = printingStyles.find(p => p.style === ps.name);
-                                                        const isSelected = !!selectedObj;
-                                                        return (
-                                                            <div
-                                                                key={ps.id}
-                                                                style={{
-                                                                    display: 'flex', flexDirection: 'column',
-                                                                    padding: '10px 14px',
-                                                                    background: isSelected ? 'rgba(197,160,89,0.08)' : 'rgba(255,255,255,0.02)',
-                                                                    border: `1px solid ${isSelected ? 'var(--admin-gold)' : '#333'}`,
-                                                                    borderRadius: 4, transition: 'all 0.15s',
-                                                                }}
-                                                            >
-                                                                <div 
-                                                                    onClick={() => togglePrintingStyle(ps.name)}
-                                                                    style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', width: '100%' }}
-                                                                >
-                                                                    {/* Custom checkbox */}
-                                                                    <span style={{
-                                                                        width: 16, height: 16, flexShrink: 0,
-                                                                        border: `2px solid ${isSelected ? 'var(--admin-gold)' : '#555'}`,
-                                                                        background: isSelected ? 'var(--admin-gold)' : 'transparent',
-                                                                        borderRadius: 3,
-                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                        transition: 'all 0.15s',
-                                                                    }}>
-                                                                        {isSelected && (
-                                                                            <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                                                                                <path d="M1 3.5L3.5 6L8 1" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                                                            </svg>
-                                                                        )}
-                                                                    </span>
-                                                                    {/* Reference thumbnail */}
-                                                                    {ps.imageUrl && (
-                                                                        <img
-                                                                            src={ps.imageUrl}
-                                                                            alt={ps.name}
-                                                                            onClick={e => { e.stopPropagation(); window.open(ps.imageUrl, '_blank'); }}
-                                                                            style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 3, border: '1px solid #444', flexShrink: 0, cursor: 'zoom-in' }}
-                                                                            title="Click to view reference image"
-                                                                        />
-                                                                    )}
-                                                                    <span style={{ flex: 1, fontFamily: "'Montserrat', sans-serif", fontSize: '0.8rem', color: isSelected ? '#fff' : '#ccc', fontWeight: 600 }}>
-                                                                        {ps.name}
-                                                                    </span>
-                                                                    <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.75rem', color: isSelected ? 'var(--admin-gold)' : '#666', fontWeight: 600 }}>
-                                                                        +₹{ps.cost}
-                                                                    </span>
-                                                                </div>
-
-                                                                {/* Placements for this style */}
-                                                                {isSelected && ps.placements && ps.placements.length > 0 && (
-                                                                    <div style={{ marginTop: 12, borderTop: '1px solid #444', paddingTop: 8 }}>
-                                                                        <div style={{ fontSize: '0.7rem', color: '#aaa', fontWeight: 600, marginBottom: 6 }}>Allowed Placements:</div>
-                                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
-                                                                            {ps.placements.map(pid => {
-                                                                                const label = getPlacementLabel(ps, pid);
-                                                                                const isPlSel = selectedObj.placements.some(p => p.id === pid);
-                                                                                return (
-                                                                                    <label 
-                                                                                        key={pid} 
-                                                                                        style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.7rem', color: isPlSel ? '#fff' : '#aaa', cursor: 'pointer', userSelect: 'none' }}
-                                                                                    >
-                                                                                        <input 
-                                                                                            type="checkbox"
-                                                                                            checked={isPlSel}
-                                                                                            onChange={() => togglePlacementForStyle(ps.name, pid, label)}
-                                                                                            style={{ accentColor: 'var(--admin-gold)' }}
-                                                                                        />
-                                                                                        {label}
-                                                                                    </label>
-                                                                                );
-                                                                            })}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* SIZING & SIZE CHART */}
-                            <div style={{ borderTop: '1px solid #333', paddingTop: 16, marginBottom: 24 }}>
-                                <h4 style={{ margin: '0 0 12px 0', fontFamily: "'Cinzel', serif", color: 'var(--admin-gold)', fontSize: '0.95rem' }}>
-                                    Sizing & Size Chart *
-                                </h4>
-                                
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                                    {/* Size Chart Image Upload */}
-                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 6, border: '1px solid #333' }}>
-                                        <label style={{ fontSize: '0.8rem', color: '#ccc', display: 'block', marginBottom: 8, fontWeight: 600 }}>
-                                            Size Chart Image *
-                                        </label>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                            {sizeChartPreview && (
-                                                <div style={{ position: 'relative', width: '100%', maxHeight: '150px', overflow: 'hidden', borderRadius: 4, border: '1px solid #555' }}>
-                                                    <img 
-                                                        src={sizeChartPreview} 
-                                                        alt="Size Chart Preview" 
-                                                        style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} 
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSizeChartFile(null);
-                                                            setSizeChartPreview('');
-                                                        }}
-                                                        style={{
-                                                            position: 'absolute',
-                                                            top: 6,
-                                                            right: 6,
-                                                            background: 'rgba(0,0,0,0.8)',
-                                                            border: '1px solid var(--admin-danger)',
-                                                            color: 'var(--admin-danger)',
-                                                            borderRadius: '50%',
-                                                            width: 24,
-                                                            height: 24,
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            cursor: 'pointer',
-                                                            fontSize: '0.75rem'
-                                                        }}
-                                                        title="Remove Image"
-                                                    >
-                                                        <i className="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            )}
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={e => handleSizeChartUpload(e.target.files[0])}
-                                                style={{ fontSize: '0.75rem', color: '#ccc', width: '100%' }}
-                                            />
-                                            <span style={{ fontSize: '0.65rem', color: '#888' }}>Upload an image detailing measurements for each size.</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Sizes Configuration */}
-                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 6, border: '1px solid #333', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                        <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#ccc', display: 'block', marginBottom: 8, fontWeight: 600 }}>
-                                                Available Sizes *
-                                            </label>
-                                            
-                                            {/* Standard Sizes Checkboxes */}
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
-                                                {STANDARD_SIZES.map(size => (
-                                                    <label key={size} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#ccc', cursor: 'pointer', userSelect: 'none' }}>
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selectedSizes.includes(size)}
-                                                            onChange={e => handleSizeCheckboxChange(size, e.target.checked)}
-                                                            style={{ accentColor: 'var(--admin-gold)', cursor: 'pointer' }}
-                                                        />
-                                                        {size}
-                                                    </label>
-                                                ))}
-                                            </div>
-
-                                            {/* Custom Size Field */}
-                                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid #333', paddingTop: 10 }}>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Custom size (e.g. 30, XXL)"
-                                                    value={customSizeInput}
-                                                    onChange={e => setCustomSizeInput(e.target.value)}
-                                                    style={{
-                                                        padding: '6px 10px',
-                                                        background: 'rgba(255,255,255,0.05)',
-                                                        border: '1px solid #444',
-                                                        borderRadius: 4,
-                                                        color: 'white',
-                                                        outline: 'none',
-                                                        fontSize: '0.75rem',
-                                                        flex: 1
-                                                    }}
-                                                    onKeyDown={e => {
-                                                        if (e.key === 'Enter') {
-                                                            handleAddCustomSize(e);
-                                                        }
-                                                    }}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={handleAddCustomSize}
-                                                    style={{
-                                                        padding: '6px 12px',
-                                                        background: 'var(--admin-dark)',
-                                                        border: '1px solid var(--admin-gold)',
-                                                        borderRadius: 4,
-                                                        color: 'var(--admin-gold)',
-                                                        fontSize: '0.75rem',
-                                                        cursor: 'pointer',
-                                                        fontFamily: "'Montserrat', sans-serif"
-                                                    }}
-                                                >
-                                                    Add
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Selected Sizes Tags */}
-                                        <div>
-                                            {selectedSizes.length > 0 && (
-                                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
-                                                    {selectedSizes.map(size => (
-                                                        <span key={size} style={{
-                                                            background: 'rgba(212, 175, 55, 0.1)',
-                                                            color: 'var(--admin-gold)',
-                                                            border: '1px solid var(--admin-gold)',
-                                                            padding: '2px 8px',
-                                                            borderRadius: 12,
-                                                            fontSize: '0.7rem',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: 4,
-                                                            fontWeight: 500
-                                                        }}>
-                                                            {size}
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleRemoveSize(size)}
-                                                                style={{
-                                                                    background: 'none',
-                                                                    border: 'none',
-                                                                    color: 'var(--admin-gold)',
-                                                                    cursor: 'pointer',
-                                                                    padding: 0,
-                                                                    fontSize: '0.75rem',
-                                                                    display: 'inline-flex',
-                                                                    alignItems: 'center'
-                                                                }}
-                                                            >
-                                                                <i className="fas fa-times"></i>
-                                                            </button>
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Submit and Cancel buttons */}
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, borderTop: '1px solid #333', paddingTop: 16 }}>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    style={{
-                                        padding: '10px 20px',
-                                        background: 'transparent',
-                                        border: '1px solid #666',
-                                        borderRadius: 4,
-                                        color: '#ccc',
-                                        cursor: 'pointer',
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '0.75rem'
-                                    }}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="adm-settings__btn"
-                                    style={{ padding: '10px 20px', borderRadius: 4, margin: 0, fontSize: '0.75rem' }}
-                                >
-                                    Save Product
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        );
+                    })}
                 </div>
             )}
 
-
-            {/* Delete Confirmation Modal */}
             {pendingDeleteProduct && (
                 <div className="modal-overlay">
                     <div className="modal-content">

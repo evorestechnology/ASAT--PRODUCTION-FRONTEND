@@ -33,6 +33,9 @@ function DesignerDesigns() {
                     }
                 } catch(e) {}
 
+                const pDetails = d.products?.details || [];
+                const isProductUnavailable = d.products ? (d.products.available === false || pDetails.includes('__DELETED__')) : false;
+
                 return {
                     id: d.id,
                     name: d.title || 'Untitled Design',
@@ -43,7 +46,8 @@ function DesignerDesigns() {
                     product: d.collection || 'Garment',
                     restrictionComment: d.rejection_reason || '',
                     descriptionRaw: d.description,
-                    isHidden
+                    isHidden,
+                    isProductUnavailable
                 };
             });
             setDesigns(list);
@@ -243,6 +247,11 @@ function DesignerDesigns() {
                                 {d.isHidden && (
                                     <span className="dsn-design-card__status" style={{ background: '#333', color: '#fff', marginLeft: '6px' }}>
                                         Hidden
+                                    </span>
+                                )}
+                                {d.isProductUnavailable && (
+                                    <span className="dsn-design-card__status" style={{ background: '#ff4d4d', color: '#fff', marginLeft: '6px' }}>
+                                        Product Unavailable
                                     </span>
                                 )}
                             </div>

@@ -76,10 +76,10 @@ function DesignerProfile() {
     const handlePhotoChange = async (e) => {
         const file = e.target.files[0];
         if (!file || !user) return;
-        
+
         showToast('Uploading profile photo...');
         try {
-            const downloadUrl = await uploadFile('asat-uploads', `avatars/${user.id}/${file.name}`, file);
+            const downloadUrl = await uploadFile(file, `avatars/${user.id}/${file.name}`, 'asat-uploads');
             set('profilePhoto', downloadUrl);
             await apiFetch('/api/designers/me', {
                 method: 'PUT',

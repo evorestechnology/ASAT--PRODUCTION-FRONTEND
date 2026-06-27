@@ -17,7 +17,12 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);  // Resolving auth state
   const [idToken, setIdToken] = useState(null);  // JWT token (access_token) for API calls
 
+  // Track current user ID to skip unnecessary re-fetches on token refresh
   const currentUserIdRef = useRef(null);
+  // Guard: prevent onAuthStateChange from re-entering resolveAuth while it's running
+  const resolvingRef = useRef(false);
+  // Flag: we initiated a signOut from within resolveAuth — ignore the resulting SIGNED_OUT event
+  const internalSignOutRef = useRef(false);
 
   useEffect(() => {
     // 1. Initial Session Check
@@ -31,6 +36,8 @@ export function AuthProvider({ children }) {
         }
       } catch (err) {
         console.error('Initial session check failed:', err);
+        internalSignOutRef.current = true;
+        await supabase.auth.signOut();
         clearAuthState();
       } finally {
         setLoading(false);
@@ -41,10 +48,18 @@ export function AuthProvider({ children }) {
 
     // 2. Auth State Change Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Ignore SIGNED_OUT events we triggered internally to avoid re-entry
+      if (event === 'SIGNED_OUT' && internalSignOutRef.current) {
+        internalSignOutRef.current = false;
+        return;
+      }
+
+      // If we're already mid-resolve, skip (prevents double-resolve on login)
+      if (resolvingRef.current) return;
+
       const newUserId = session?.user?.id || null;
 
-      // If the user ID is the same (e.g. TOKEN_REFRESHED, or window focus check),
-      // we do not need to show the loading spinner or re-fetch profile/role.
+      // If the user ID is the same (e.g. TOKEN_REFRESHED), just refresh tokens — no refetch
       if (newUserId && newUserId === currentUserIdRef.current) {
         setUser(session.user);
         setIdToken(session.access_token);
@@ -83,6 +98,8 @@ export function AuthProvider({ children }) {
   };
 
   const resolveAuth = async (session) => {
+    resolvingRef.current = true;
+
     const supabaseUser = session.user;
     setUser(supabaseUser);
     setIdToken(session.access_token);
@@ -93,7 +110,12 @@ export function AuthProvider({ children }) {
 
     try {
       // Resolve role and profile details via backend API
-      const { role: resolvedRole, profile: resolvedProfile } = await apiFetch('/api/auth/resolve-role');
+      // NOTE: backend wraps responses as { success, data: { role, profile }, ... }
+      const response = await apiFetch('/api/auth/resolve-role');
+      const resolvedRole = response?.data?.role ?? response?.role;
+      const resolvedProfile = response?.data?.profile ?? response?.profile;
+
+      if (!resolvedRole) throw Object.assign(new Error('No role returned'), { status: 404 });
 
       setRole(resolvedRole);
       setProfile(resolvedProfile);
@@ -111,12 +133,18 @@ export function AuthProvider({ children }) {
       window.dispatchEvent(new Event('storage'));
     } catch (err) {
       console.error('Error resolving user role profile:', err);
+      // Sign out, but mark it as internal so the listener doesn't re-trigger resolveAuth
       clearAuthState();
+      internalSignOutRef.current = true;
+      supabase.auth.signOut().catch(() => {});
+    } finally {
+      resolvingRef.current = false;
     }
   };
 
   const logout = async () => {
     clearAuthState();
+    internalSignOutRef.current = true;
     await supabase.auth.signOut();
   };
 

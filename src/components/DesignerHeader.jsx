@@ -22,6 +22,7 @@ function DesignerHeader() {
         { to: '/designer/orders', label: 'Orders', icon: 'fas fa-shopping-bag' },
         { to: '/designer/earnings', label: 'Earnings', icon: 'fas fa-coins' },
         { to: '/designer/designs', label: 'Designs', icon: 'fas fa-palette' },
+        { to: '/designer/base-products', label: 'Base Products', icon: 'fas fa-tshirt' },
         { to: '/designer/ranking', label: 'Ranking', icon: 'fas fa-trophy' },
     ];
 

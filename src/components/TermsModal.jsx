@@ -1,10 +1,7 @@
-import React, { useEffect } from 'react';
-import BackButton from '../../components/BackButton';
+import React from 'react';
 
-function UserTerms() {
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
+const TermsModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
 
     const sections = [
         {
@@ -81,28 +78,44 @@ function UserTerms() {
     ];
 
     return (
-        <main style={{ flex: 1, padding: '40px 5%', maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
-            <BackButton />
-            <div className="glass-card" style={{ padding: '40px', marginTop: '20px' }}>
-                <h1 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', textAlign: 'center', marginBottom: '40px' }}>TERMS &amp; CONDITIONS</h1>
+        <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            zIndex: 9999, padding: '20px'
+        }}>
+            <div style={{
+                background: 'white', padding: '30px', borderRadius: '12px', 
+                width: '100%', maxWidth: '800px', maxHeight: '85vh', 
+                overflowY: 'auto', position: 'relative',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+            }}>
+                <button onClick={onClose} style={{
+                    position: 'absolute', top: '20px', right: '20px',
+                    background: 'none', border: 'none', fontSize: '1.5rem', 
+                    cursor: 'pointer', color: '#666'
+                }}>
+                    <i className="fas fa-times"></i>
+                </button>
+
+                <h1 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', textAlign: 'center', marginBottom: '30px' }}>TERMS &amp; CONDITIONS</h1>
                 
                 <div style={{ fontFamily: 'Montserrat, sans-serif', color: 'var(--dark)' }}>
-                    <p style={{ marginBottom: '30px', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                    <p style={{ marginBottom: '20px', fontSize: '0.9rem', lineHeight: '1.6' }}>
                         By accessing and using <strong>As Simple as That</strong>, you agree to be bound by the following terms, conditions, and policies. Please read them carefully before making any purchase.
                     </p>
 
                     {sections.map((section, idx) => (
-                        <div key={idx} style={{ marginBottom: '35px' }}>
-                            <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--dark)', marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
+                        <div key={idx} style={{ marginBottom: '25px' }}>
+                            <h2 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--dark)', marginBottom: '10px', borderBottom: '1px solid #eee', paddingBottom: '5px' }}>
                                 {section.title}
                             </h2>
                             <div style={{ paddingLeft: '10px' }}>
                                 {section.content.map((paragraph, pIdx) => (
                                     <p key={pIdx} style={{ 
-                                        marginBottom: paragraph.startsWith('•') ? '8px' : '15px',
-                                        marginLeft: paragraph.startsWith('•') ? '20px' : '0',
-                                        fontSize: '0.95rem', 
-                                        lineHeight: '1.6',
+                                        marginBottom: paragraph.startsWith('•') ? '6px' : '10px',
+                                        marginLeft: paragraph.startsWith('•') ? '15px' : '0',
+                                        fontSize: '0.85rem', 
+                                        lineHeight: '1.5',
                                         color: '#444'
                                     }}>
                                         {paragraph}
@@ -111,14 +124,20 @@ function UserTerms() {
                             </div>
                         </div>
                     ))}
-
-                    <p style={{ marginTop: '40px', fontSize: '0.9rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '20px' }}>
-                        If you have any questions or concerns regarding these policies, please contact our support team.
-                    </p>
+                </div>
+                
+                <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                    <button onClick={onClose} style={{
+                        padding: '12px 30px', background: 'var(--dark)', color: 'white',
+                        border: 'none', borderRadius: '6px', fontFamily: "'Montserrat', sans-serif",
+                        fontWeight: 'bold', cursor: 'pointer', textTransform: 'uppercase'
+                    }}>
+                        I Understand
+                    </button>
                 </div>
             </div>
-        </main>
+        </div>
     );
-}
+};
 
-export default UserTerms;
+export default TermsModal;

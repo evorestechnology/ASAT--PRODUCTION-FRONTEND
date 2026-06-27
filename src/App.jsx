@@ -49,6 +49,8 @@ import DesignerAbout    from './pages/designer/DesignerAbout';
 import DesignerTerms    from './pages/designer/DesignerTerms';
 import DesignerDesigns  from './pages/designer/DesignerDesigns';
 import DesignerUpload   from './pages/designer/DesignerUpload';
+import DesignerBaseProducts from './pages/designer/DesignerBaseProducts';
+import DesignerProductDetail from './pages/designer/DesignerProductDetail';
 
 // Master pages
 import MasterDashboard    from './pages/master/MasterDashboard';
@@ -130,6 +132,8 @@ function App() {
           <Route path="terms"    element={<DesignerTerms />} />
           <Route path="designs"  element={<DesignerDesigns />} />
           <Route path="designs/upload" element={<DesignerUpload />} />
+          <Route path="base-products" element={<DesignerBaseProducts />} />
+          <Route path="base-products/:id" element={<DesignerProductDetail />} />
         </Route>
 
         {/* ─── Master Auth (standalone — no header) ─── */}

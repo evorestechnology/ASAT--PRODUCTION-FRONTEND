@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import BackButton from '../../components/BackButton';
@@ -6,130 +6,8 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 import { useAuth } from '../../context/AuthContext';
 
-
-/* ── Sample product data ── */
-const allProducts = [
-    {
-        id: 'signature-tshirt',
-        name: 'SIGNATURE T-SHIRT',
-        price: 2499,
-        category: 't-shirts',
-        collection: 'Royal Vintage',
-        designer: 'Arjun Studio',
-        description: 'Crafted from premium Egyptian cotton, our Signature T-Shirt is the epitome of understated luxury. The relaxed silhouette features a custom-embossed neckline and hand-finished hem stitching that sets it apart from conventional basics.',
-        details: [
-            '100% Egyptian Cotton – 200 GSM',
-            'Hand-embossed neckline with brand insignia',
-            'Pre-shrunk & colorfast',
-            'Relaxed fit with dropped shoulders',
-            'Machine washable – gentle cycle recommended',
-        ],
-        designerNote: 'This piece reflects a balance of heritage craftsmanship and modern aesthetics, designed for individuals who appreciate subtle luxury.',
-        washCare: ['Machine wash cold', 'Do not bleach', 'Iron on low heat', 'Do not tumble dry'],
-        sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-        colors: ['#121212', '#F5F5DC', '#8B4513', '#2F4F4F'],
-        images: [
-            'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=800&q=80',
-        ],
-    },
-    {
-        id: 'royal-hoodie',
-        name: 'ROYAL HOODIE',
-        price: 4999,
-        category: 'hoodies',
-        collection: 'Royal Vintage',
-        designer: 'Arjun Studio',
-        description: 'The Royal Hoodie blends streetwear edge with couture craftsmanship. Constructed from heavyweight French terry with a brushed interior, it delivers warmth without sacrificing style.',
-        details: ['380 GSM French Terry – Brushed Interior', 'Gold-tone metal aglets & zipper pull', 'Oversized hood with contrast drawcord', 'Ribbed cuffs and hem', 'Unisex – Oversized fit'],
-        designerNote: 'A modern interpretation of heritage warmth — designed for those who refuse to choose between comfort and style.',
-        washCare: ['Machine wash cold', 'Do not bleach', 'Hang dry', 'Iron on low heat'],
-        sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-        colors: ['#121212', '#F5F5DC', '#696969'],
-        images: [
-            'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80',
-        ],
-    },
-    {
-        id: 'elite-jacket',
-        name: 'ELITE JACKET',
-        price: 7499,
-        category: 'jackets',
-        collection: 'Minimalist Gold',
-        designer: 'Luxe Atelier',
-        description: 'A statement outerwear piece for the modern connoisseur. The Elite Jacket is cut from Italian wool-blend fabric with a water-resistant finish.',
-        details: ['Italian wool-blend with water-resistant coating', 'Concealed magnetic snap closures', 'Interior silk lining with monogram print', 'Tailored slim fit', 'Dry clean only'],
-        designerNote: 'Engineered for the discerning individual who values form as much as function.',
-        washCare: ['Dry clean only', 'Do not bleach', 'Do not tumble dry', 'Store on hanger'],
-        sizes: ['S', 'M', 'L', 'XL'],
-        colors: ['#121212', '#2F4F4F', '#191970'],
-        images: [
-            'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=800&q=80',
-        ],
-    },
-    {
-        id: 'vintage-pants',
-        name: 'VINTAGE PANTS',
-        price: 3299,
-        category: 'pants',
-        collection: 'Royal Vintage',
-        designer: 'Arjun Studio',
-        description: 'Reimagining classic tailoring with a modern twist. High-rise waist, tapered leg, and subtle pleats. Made from stretchy cotton-blend for all-day comfort.',
-        details: ['98% Cotton, 2% Elastane blend', 'High-rise with double pleat front', 'Tapered leg with cuffed hem', 'Side and back welt pockets', 'Machine washable'],
-        washCare: ['Machine wash cold', 'Do not bleach', 'Iron on medium heat', 'Tumble dry low'],
-        sizes: ['28', '30', '32', '34', '36', '38'],
-        colors: ['#121212', '#F5F5DC', '#8B4513', '#556B2F'],
-        images: [
-            'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80',
-        ],
-    },
-    {
-        id: 'dream-big-hoodie',
-        name: 'DREAM BIG HOODIE',
-        price: 4499,
-        category: 'hoodies',
-        collection: 'Minimalist Gold',
-        designer: 'Luxe Atelier',
-        description: 'Featuring our exclusive "Dream Big" graphic print, this hoodie is a wearable manifesto. Heavyweight cotton with a velvety soft interior and raglan sleeves.',
-        details: ['400 GSM Heavyweight Cotton', 'Screen-printed "Dream Big" graphic', 'Raglan sleeves for ease of movement', 'Ribbed cuffs with thumb holes', 'Oversized unisex fit'],
-        washCare: ['Machine wash cold inside out', 'Do not bleach', 'Hang dry', 'Do not iron on print'],
-        sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-        colors: ['#F5F5DC', '#121212', '#808080'],
-        images: [
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80',
-        ],
-    },
-    {
-        id: 'kids-classic-set',
-        name: 'KIDS CLASSIC SET',
-        price: 1999,
-        category: 'kids',
-        collection: 'Royal Vintage',
-        designer: 'Arjun Studio',
-        description: 'Designed for the little ones who deserve big style. Matching set with soft organic cotton tee and coordinating joggers.',
-        details: ['100% Organic Cotton – GOTS certified', 'Matching tee and jogger set', 'Elastic waistband with internal drawcord', 'Tagless labels for comfort', 'Available in ages 3–12'],
-        washCare: ['Machine wash cold', 'Do not bleach', 'Tumble dry low', 'Iron on low heat'],
-        sizes: ['3-4Y', '5-6Y', '7-8Y', '9-10Y', '11-12Y'],
-        colors: ['#F5F5DC', '#87CEEB', '#FFB6C1'],
-        images: [
-            'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80',
-        ],
-    },
-];
-
 const styles = `
-    /* ═══════ Product Detail — Full Width Split Layout ═══════ */
+    /* â•â•â•â•â•â•â• Product Detail â€” Full Width Split Layout â•â•â•â•â•â•â• */
     .pdp-page { background: var(--light); }
 
     .pdp-breadcrumb {
@@ -147,14 +25,14 @@ const styles = `
     .pdp-breadcrumb a:hover { color: var(--gold); }
     .pdp-breadcrumb span { color: var(--dark); font-weight: 600; }
 
-    /* Split layout — gallery left, info right */
+    /* Split layout â€” gallery left, info right */
     .pdp-split {
         display: grid;
         grid-template-columns: 55% 45%;
         min-height: 80vh;
     }
 
-    /* ── Gallery ── */
+    /* â”€â”€ Gallery â”€â”€ */
     .pdp-gallery {
         padding: 0 0 60px 4%;
     }
@@ -218,7 +96,7 @@ const styles = `
         transform: translateY(0);
     }
 
-    /* ── Enlarged Image Overlay (Lightbox) ── */
+    /* â”€â”€ Enlarged Image Overlay (Lightbox) â”€â”€ */
     .pdp-enlarged-overlay {
         position: fixed;
         top: 0;
@@ -475,7 +353,7 @@ const styles = `
         opacity: 1;
     }
 
-    /* ── Info panel — sticky ── */
+    /* â”€â”€ Info panel â€” sticky â”€â”€ */
     .pdp-info {
         padding: 0 5% 60px 40px;
         position: sticky;
@@ -614,7 +492,7 @@ const styles = `
     .pdp-tab-content ul { padding-left: 20px; margin: 0; }
     .pdp-tab-content li { margin-bottom: 8px; }
 
-    /* ── Not Found ── */
+    /* â”€â”€ Not Found â”€â”€ */
     .pdp-not-found {
         text-align: center; padding: 120px 5%;
     }
@@ -623,7 +501,7 @@ const styles = `
     }
     .pdp-not-found p { color: #888; margin-bottom: 30px; }
 
-    /* ── Responsive ── */
+    /* â”€â”€ Responsive â”€â”€ */
     @media (max-width: 900px) {
         .pdp-split { grid-template-columns: 1fr; }
         .pdp-gallery { padding: 0 4% 30px; }
@@ -809,7 +687,7 @@ function ProductDetail() {
     const activeImages = React.useMemo(() => {
         if (!product) return [];
 
-        // ── Designer products ─────────────────────────────────────────────
+        // â”€â”€ Designer products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if (!product.isMfgProduct) {
             const colorName = product.colors && product.colors[selectedColor]; // e.g. "BLACK"
 
@@ -829,7 +707,7 @@ function ProductDetail() {
                 }
             }
 
-            // 2. Parse color from filename — pattern: *_customer_COLORNAME_*.ext
+            // 2. Parse color from filename â€” pattern: *_customer_COLORNAME_*.ext
             //    Works for existing designs uploaded via DesignerUpload
             if (colorName && product.images && product.images.length > 0) {
                 const colorUpper = String(colorName).toUpperCase();
@@ -855,7 +733,7 @@ function ProductDetail() {
             return baseImgs;
         }
 
-        // ── Manufacturer (base) products ──────────────────────────────────
+        // â”€â”€ Manufacturer (base) products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const colorObj = product.colors && product.colors[selectedColor];
         if (colorObj) {
             const imgs = [];
@@ -956,7 +834,7 @@ function ProductDetail() {
         setIsMagnified(false);
     }, [selectedImage, isEnlarged]);
 
-    // ── Auto-scroll Effect (Normal & Enlarged Modes) ──
+    // â”€â”€ Auto-scroll Effect (Normal & Enlarged Modes) â”€â”€
     useEffect(() => {
         let timer;
         // Auto-scroll runs normally; in Enlarged modal it respects play/pause state
@@ -972,7 +850,7 @@ function ProductDetail() {
         };
     }, [isEnlarged, autoScrollActive, product, selectedImage, activeImages]);
 
-    // ── Keyboard Support for Enlarged Mode ──
+    // â”€â”€ Keyboard Support for Enlarged Mode â”€â”€
     useEffect(() => {
         if (!isEnlarged || !product) return;
 
@@ -1004,20 +882,6 @@ function ProductDetail() {
                 }
             } catch (e) {
                 console.error("Failed to fetch shipping note");
-            }
-
-            // 1. Check hardcoded products first
-            const mockProd = allProducts.find(p => p.id === productId);
-            if (mockProd) {
-                if (isMounted) {
-                    setProduct(mockProd);
-                    setSelectedImage(0);
-                    setSelectedColor(0);
-                    setSelectedSize(null);
-                    setQuantity(1);
-                    setLoading(false);
-                }
-                return;
             }
 
             try {
@@ -1108,6 +972,31 @@ function ProductDetail() {
                         try {
                             const catData = await apiFetch(`/api/products/${bpId}`);
                             if (catData) {
+                                const catDetails = catData.details || [];
+                                if (catData.available === false || catDetails.includes('__DELETED__')) {
+                                    if (isMounted) {
+                                        setProduct(null);
+                                        setLoading(false);
+                                    }
+                                    return;
+                                }
+
+                                if (catData.colors && Array.isArray(catData.colors)) {
+                                    dbProduct.colors = dbProduct.colors.filter(colorName => {
+                                        const baseColor = catData.colors.find(bc => bc.colorName === colorName);
+                                        return !baseColor || baseColor.available !== false;
+                                    });
+                                    dbProduct.colorDetails = catData.colors;
+                                }
+
+                                if (dbProduct.colors.length === 0) {
+                                    if (isMounted) {
+                                        setProduct(null);
+                                        setLoading(false);
+                                    }
+                                    return;
+                                }
+
                                 if (!designData.sizes && catData.sizes) {
                                     dbProduct.sizes = catData.sizes;
                                 }
@@ -1118,16 +1007,27 @@ function ProductDetail() {
                                     dbProduct.collection = catData.title;
                                 }
                                 if (catData.details && catData.details.length > 0) {
-                                    dbProduct.details = catData.details;
+                                    dbProduct.details = catData.details.filter(d => d !== '__DELETED__');
                                 }
                                 if (catData.wash_care && catData.wash_care.length > 0) {
                                     dbProduct.washCare = catData.wash_care;
                                 }
                                 dbProduct.mfgId = catData.mfg_id;
                                 dbProduct.mfgName = catData.mfg_name || catData.mfgName || '';
+                            } else {
+                                if (isMounted) {
+                                    setProduct(null);
+                                    setLoading(false);
+                                }
+                                return;
                             }
                         } catch (err) {
                             console.error('Error fetching base product details:', err);
+                            if (isMounted) {
+                                setProduct(null);
+                                setLoading(false);
+                            }
+                            return;
                         }
                     }
 
@@ -1140,7 +1040,7 @@ function ProductDetail() {
                         setQuantity(1);
                     }
                 } else {
-                    // Design not found — base products are not publicly visible
+                    // Design not found â€” base products are not publicly visible
                     if (isMounted) setProduct(null);
                 }
             } catch (err) {
@@ -1195,6 +1095,15 @@ function ProductDetail() {
             ? (product.colors[selectedColor]?.colorName || '') 
             : (product.colors[selectedColor] || '');
 
+        let garmentMode = "dark";
+        if (product.isMfgProduct) {
+            garmentMode = product.colors[selectedColor]?.mode || "dark";
+        } else if (product.colorDetails) {
+            const matchedColor = product.colorDetails.find(c => c.colorName === itemColorName);
+            if (matchedColor) {
+                garmentMode = matchedColor.mode || "dark";
+            }
+        }
         const finalPrice = applyMarkup(product.price + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0));
 
         const cartItem = {
@@ -1206,7 +1115,7 @@ function ProductDetail() {
             colorIdx: selectedColor,
             color: itemColor,
             colorName: itemColorName,
-            qty: quantity,
+            qty: quantity, garmentMode: garmentMode,
             ...(product.isMfgProduct ? {
                 isMfgProduct: true,
                 mfgId: product.mfgId,
@@ -1310,7 +1219,7 @@ function ProductDetail() {
                 </div>
 
                 <div className="pdp-split">
-                    {/* ── Gallery (left 55%) ── */}
+                    {/* â”€â”€ Gallery (left 55%) â”€â”€ */}
                     <div className="pdp-gallery">
                         <div className="pdp-main-image-container" onClick={() => setIsEnlarged(true)}>
                             <img key={selectedImage} className="pdp-main-image" src={activeImages[selectedImage] || product.coverImage || product.colors?.[0]?.frontImage || ''} alt={product.name} />
@@ -1325,7 +1234,7 @@ function ProductDetail() {
                         </div>
                     </div>
 
-                    {/* ── Info panel (right 45%) ── */}
+                    {/* â”€â”€ Info panel (right 45%) â”€â”€ */}
                     <div className="pdp-info">
                         <span className="pdp-collection-tag">{product.collection}</span>
                         <h1 className="pdp-product-name">{product.name}</h1>
@@ -1341,12 +1250,12 @@ function ProductDetail() {
                             COLOR{(() => {
                                 if (product.isMfgProduct) {
                                     return product.colors[selectedColor]?.colorName
-                                        ? ` — ${product.colors[selectedColor].colorName.toUpperCase()}`
+                                        ? ` â€” ${product.colors[selectedColor].colorName.toUpperCase()}`
                                         : '';
                                 }
-                                // Designer product — colors are plain strings
+                                // Designer product â€” colors are plain strings
                                 const c = product.colors?.[selectedColor];
-                                return c ? ` — ${String(c).toUpperCase()}` : '';
+                                return c ? ` â€” ${String(c).toUpperCase()}` : '';
                             })()}
                         </span>
                         <div className="pdp-colors">
@@ -1397,7 +1306,7 @@ function ProductDetail() {
                         <span className="pdp-section-label">QUANTITY</span>
                         <div className="pdp-qty-row">
                             <div className="pdp-qty-control">
-                                <button className="pdp-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
+                                <button className="pdp-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>âˆ’</button>
                                 <div className="pdp-qty-value">{quantity}</div>
                                 <button className="pdp-qty-btn" onClick={() => setQuantity(quantity + 1)}>+</button>
                             </div>
@@ -1411,7 +1320,7 @@ function ProductDetail() {
                             ) : (
                                 <>
                                     <button className="pdp-add-bag" onClick={handleAddToBag}>
-                                        {isAlreadyInCart() ? 'VIEW CART' : (added ? '✓ ADDED TO BAG' : 'ADD TO BAG')}
+                                        {isAlreadyInCart() ? 'VIEW CART' : (added ? 'âœ“ ADDED TO BAG' : 'ADD TO BAG')}
                                     </button>
                                     <button className="pdp-buy-now" onClick={() => { 
                                         // Guard check for Login
@@ -1448,7 +1357,7 @@ function ProductDetail() {
                                 title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
                                 style={{ color: wishlisted ? 'var(--gold)' : 'var(--dark)', borderColor: wishlisted ? 'var(--gold)' : '#ddd' }}
                             >
-                                {wishlisted ? '♥' : '♡'}
+                                {wishlisted ? 'â™¥' : 'â™¡'}
                             </button>
                         </div>
 
@@ -1493,7 +1402,7 @@ function ProductDetail() {
                 </div>
             </div>
 
-            {/* ── Size Guide Modal Overlay ── */}
+            {/* â”€â”€ Size Guide Modal Overlay â”€â”€ */}
             {showSizeChart && product && product.sizeChartImage && (
                 <div className="pdp-sizechart-overlay" onClick={() => setShowSizeChart(false)}>
                     <div className="pdp-sizechart-container" onClick={(e) => e.stopPropagation()}>
@@ -1510,7 +1419,7 @@ function ProductDetail() {
                 </div>
             )}
 
-            {/* ── Enlarged Image Modal Overlay (Lightbox with Auto-scroll) ── */}
+            {/* â”€â”€ Enlarged Image Modal Overlay (Lightbox with Auto-scroll) â”€â”€ */}
             {isEnlarged && product && (
                 <div className="pdp-enlarged-overlay" onClick={() => setIsEnlarged(false)}>
                     <div className="pdp-enlarged-container" onClick={(e) => e.stopPropagation()}>
@@ -1659,7 +1568,7 @@ function ProductDetail() {
                             marginLeft: '12px',
                             fontSize: '0.9rem'
                         }}
-                    >×</button>
+                    >Ã—</button>
                     <style>{`
                         @keyframes slideIn {
                             from { transform: translateX(120%); opacity: 0; }
@@ -1673,3 +1582,4 @@ function ProductDetail() {
 }
 
 export default ProductDetail;
+

@@ -608,7 +608,7 @@ function MasterSettings() {
                 const file = files[i];
                 const extension = file.name.split('.').pop();
                 const filePath = `settings/onboarding_media_${Date.now()}_${i}.${extension}`;
-                const url = await uploadFile('asat-uploads', filePath, file);
+                const url = await uploadFile(file, filePath, 'asat-uploads');
                 uploadedUrls.push(url);
             }
             

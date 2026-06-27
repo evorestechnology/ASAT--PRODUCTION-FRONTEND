@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { apiFetch } from '../api';
+import TermsModal from './TermsModal';
 
 const authImages = [
     'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1000&q=80',
@@ -243,10 +244,12 @@ function UserRegister() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [getUpdates, setGetUpdates] = useState(false);
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isTermsOpen, setIsTermsOpen] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -258,6 +261,10 @@ function UserRegister() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        if (!acceptedTerms) {
+            setError('You must accept the Terms & Conditions to create an account.');
+            return;
+        }
         if (password !== confirmPassword) {
             setError('Passwords do not match!');
             return;
@@ -419,7 +426,18 @@ function UserRegister() {
                             </div>
                         </div>
 
-                        <div className="auth-options">
+                        <div className="auth-options" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
+                            <label className="auth-checkbox-label">
+                                <input 
+                                    type="checkbox" 
+                                    checked={acceptedTerms}
+                                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                                /> 
+                                <span>I agree to the <span 
+                                    onClick={() => setIsTermsOpen(true)}
+                                    style={{ color: 'var(--dark)', textDecoration: 'underline', cursor: 'pointer' }}
+                                >Terms and Conditions</span></span>
+                            </label>
                             <label className="auth-checkbox-label">
                                 <input 
                                     type="checkbox" 
@@ -446,6 +464,8 @@ function UserRegister() {
                     </div>
                 </div>
             </div>
+            
+            <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
         </div>
     );
 }

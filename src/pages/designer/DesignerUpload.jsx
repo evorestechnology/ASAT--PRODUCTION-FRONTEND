@@ -1,126 +1,104 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+﻿import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { apiFetch, uploadFile } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 import { useCurrency } from '../../context/CurrencyContext';
 
+const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 
-const COLOR_PALETTE = [
-    { name: 'Black', hex: '#000000' }, { name: 'Navy Blue', hex: '#1B2A4A' },
-    { name: 'Red', hex: '#C0392B' }, { name: 'Olive', hex: '#556B2F' },
-    { name: 'White', hex: '#FFFFFF' }, { name: 'Burgundy', hex: '#800020' },
-    { name: 'Sand', hex: '#F5DEB3' }, { name: 'Charcoal', hex: '#2F2F2F' },
+const STEP_LABELS = [
+    { num: 1, label: 'Product' },
+    { num: 2, label: 'Configure' },
+    { num: 3, label: 'Comments' },
+    { num: 4, label: 'Customer Details' },
+    { num: 5, label: 'Details' },
 ];
 
-const IMAGE_SLOTS = ['Cover Image', 'Front View', 'Back View', 'Left Side View', 'Right Side View', 'Design Mockup'];
-const APPAREL_ZONES = ['Front Design', 'Back Design', 'Front Right Shoulder', 'Front Left Shoulder', 'Back Right Shoulder', 'Back Left Shoulder'];
-const BOTTOM_ZONES = ['Front Pant Upper', 'Front Pant Lower', 'Back Pant Upper', 'Back Pant Lower'];
+/* â”€â”€â”€ DropZone â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+function DropZone({ label, preview, onFile, accept = 'image/*' }) {
+    const [dragOver, setDragOver] = useState(false);
+    const fileInputRef = React.useRef(null);
+    return (
+        <div
+            className={`dsn-upload__drop ${dragOver ? 'dsn-upload__drop--active' : ''} ${preview ? 'dsn-upload__drop--has' : ''}`}
+            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]); }}
+            onClick={() => fileInputRef.current.click()}
+            style={{ cursor: 'pointer', width: '100%', height: '100%', aspectRatio: 'auto' }}
+        >
+            {preview ? (
+                <div className="dsn-upload__drop-preview" style={{ backgroundImage: `url(${preview})` }}>
+                    <span className="dsn-upload__drop-change" onClick={e => { e.stopPropagation(); fileInputRef.current.click(); }}>Change</span>
+                </div>
+            ) : (
+                <div className="dsn-upload__drop-empty">
+                    <i className="fas fa-cloud-upload-alt" />
+                    <span>{label}</span>
+                </div>
+            )}
+            <input type="file" ref={fileInputRef} accept={accept}
+                onChange={e => e.target.files[0] && onFile(e.target.files[0])}
+                style={{ display: 'none' }} />
+        </div>
+    );
+}
 
-const PLACEMENT_LABELS = {
-    // Front
-    'front_pocket_logo': 'Front Pocket Logo',
-    'front_a6': 'Front A6',
-    'front_a4': 'Front A4',
-    'front_a3': 'Front A3',
-    'front_14x16': 'Front 14×16',
-    'front_16x20': 'Front 16×20',
-    // Back
-    'back_a6': 'Back A6',
-    'back_a4': 'Back A4',
-    'back_a3': 'Back A3',
-    'back_14x16': 'Back 14×16',
-    'back_16x20': 'Back 16×20',
-    'back_neck': 'Back Neck',
-    'right_front_shoulder': 'Right Front Shoulder',
-    'right_back_shoulder': 'Right Back Shoulder',
-    'left_front_shoulder': 'Left Front Shoulder',
-    'left_back_shoulder': 'Left Back Shoulder',
-    'neck_logo': 'Neck Logo',
-    // Pant
-    'right_front_upper': 'Right Front Upper',
-    'right_front_bottom': 'Right Front Bottom',
-    'right_front_full': 'Right Front Full',
-    'left_front_upper': 'Left Front Upper',
-    'left_front_bottom': 'Left Front Bottom',
-    'left_front_lower': 'Left Front Lower',
-    'right_back_upper': 'Right Back Upper',
-    'right_back_bottom': 'Right Back Bottom',
-    'right_back_full': 'Right Back Full',
-    'left_back_upper': 'Left Back Upper',
-    'left_back_bottom': 'Left Back Bottom',
-    'left_back_lower': 'Left Back Lower',
+/* â”€â”€â”€ Reusable label style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+const SECTION_LABEL_ST = {
+    display: 'block', fontSize: '0.68rem', fontWeight: 700,
+    letterSpacing: '1px', textTransform: 'uppercase', color: '#888', marginBottom: 10,
 };
 
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function DesignerUpload() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { user, profile } = useAuth();
     const { toasts, showToast } = useToast();
     const { applyMarkup } = useCurrency();
     const [step, setStep] = useState(1);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Step 1
-    const [selectedColors, setSelectedColors] = useState([]);
-    
-    // Step 2: Placement Specifications (Per Color)
-    const [colorPlacements, setColorPlacements] = useState({}); // { colorName: [ { id, style, placementId, placementLabel, designFile, designPreview, mockupFile, mockupPreview } ] }
-    const [activePlacementColorTab, setActivePlacementColorTab] = useState('');
-
-    // Step 2 form inputs
-    const [formStyle, setFormStyle] = useState('');
-    const [formPlacement, setFormPlacement] = useState('');
-    const [formDesignFile, setFormDesignFile] = useState(null);
-    const [formDesignPreview, setFormDesignPreview] = useState('');
-    const [formMockupFile, setFormMockupFile] = useState(null);
-    const [formMockupPreview, setFormMockupPreview] = useState('');
-
-    // Step 3: Manufacturer Reference Images (Per Color)
-    const [manufacturerRefs, setManufacturerRefs] = useState({}); // { colorName: [ { file, preview } ] }
-    const [activeMfgRefColorTab, setActiveMfgRefColorTab] = useState('');
-
-    // Step 4: Details & Customer Images
-    const [designTitle, setDesignTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [designerCost, setDesignerCost] = useState('');
-    const [customerImages, setCustomerImages] = useState({}); // { colorName: [ { file, preview } ] }
-    const [activeCustomerImgColorTab, setActiveCustomerImgColorTab] = useState('');
-
-    // Dynamic products from Supabase
-    const [dbProducts, setDbProducts] = useState(() => {
-        try {
-            const saved = sessionStorage.getItem('asat_designer_upload_products');
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            return [];
-        }
-    });
-    const uniqueProducts = useMemo(() => {
-        const seen = new Set();
-        return dbProducts.filter(p => {
-            const titleLower = p.title?.trim().toLowerCase();
-            if (!titleLower || seen.has(titleLower)) return false;
-            seen.add(titleLower);
-            return true;
-        });
-    }, [dbProducts]);
-    const [productsLoading, setProductsLoading] = useState(() => {
-        try {
-            const saved = sessionStorage.getItem('asat_designer_upload_products');
-            return saved ? false : true;
-        } catch (e) {
-            return true;
-        }
-    });
+    /* â”€â”€ Step 1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedProductId, setSelectedProductId] = useState('');
+    const [showProductDetails, setShowProductDetails] = useState(false);
+    const [selectedColors, setSelectedColors] = useState([]);
+    const [primaryColor, setPrimaryColor] = useState('');
+    const [productSearchQuery, setProductSearchQuery] = useState('');
+
+    /* â”€â”€ Step 2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    // colorPlacements: { colorName: [{ id, style, placementId, placementLabel, designFile, designPreview, mockupFile, mockupPreview }] }
+    const [colorPlacements, setColorPlacements] = useState({});
+    const [activeColorTab, setActiveColorTab] = useState('');
+    const [expandedTechnique, setExpandedTechnique] = useState('');
+    const [expandedPlacement, setExpandedPlacement] = useState('');
+
+    /* â”€â”€ Step 3 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const [productionComments, setProductionComments] = useState('');
+
+    /* â”€â”€ Step 4 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const [coverImageFile, setCoverImageFile] = useState(null);
+    const [coverImagePreview, setCoverImagePreview] = useState('');
+    // colorMockups: { colorName: { frontFile, frontPreview, backFile, backPreview, modelFile, modelPreview } }
+    const [colorMockups, setColorMockups] = useState({});
+    const [selectedSizes, setSelectedSizes] = useState([]);
+
+    /* â”€â”€ Step 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const [designTitle, setDesignTitle] = useState('');
+    const [designerCost, setDesignerCost] = useState('');
+    const [designerNote, setDesignerNote] = useState('');
+
+    /* â”€â”€ Products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const [dbProducts, setDbProducts] = useState([]);
+    const [productsLoading, setProductsLoading] = useState(true);
 
     useEffect(() => {
-        const hasCache = sessionStorage.getItem('asat_designer_upload_products');
-        if (!hasCache) {
-            setProductsLoading(true);
-        }
-        apiFetch('/api/products')
-            .then((data) => {
+        apiFetch(`/api/products?cb=${Date.now()}`)
+            .then(data => {
                 const list = (data || []).map(d => ({
                     id: d.id,
                     title: d.title,
@@ -131,1082 +109,933 @@ function DesignerUpload() {
                     cost: d.cost,
                     sizes: d.sizes || [],
                     gender: d.gender || 'Unisex',
-                    printingStyles: d.printing_styles || []
+                    printingStyles: d.printing_styles || [],
+                    details: d.details || [],
+                    washCare: d.wash_care || [],
                 }));
                 setDbProducts(list);
-                try {
-                    sessionStorage.setItem('asat_designer_upload_products', JSON.stringify(list));
-                } catch (e) {}
             })
-            .catch((err) => {
-                console.error("Error loading products:", err);
-                setDbProducts([]);
-            })
+            .catch(err => { console.error('Error loading products:', err); setDbProducts([]); })
             .finally(() => setProductsLoading(false));
     }, []);
 
-    const selectedProductObj = dbProducts.find(p => p.id === selectedProductId);
-
     useEffect(() => {
-        if (selectedProductObj) {
-            setDesignTitle(selectedProductObj.title || '');
-        } else {
-            setDesignTitle('');
-        }
-    }, [selectedProductId, selectedProductObj]);
-
-    useEffect(() => {
-        if (selectedColors.length > 0) {
-            if (!activePlacementColorTab || !selectedColors.includes(activePlacementColorTab)) {
-                setActivePlacementColorTab(selectedColors[0]);
+        if (dbProducts.length > 0) {
+            const queryProductId = searchParams.get('productId');
+            const queryCategory = searchParams.get('category');
+            if (queryCategory) {
+                setSelectedCategory(queryCategory);
             }
-            if (!activeMfgRefColorTab || !selectedColors.includes(activeMfgRefColorTab)) {
-                setActiveMfgRefColorTab(selectedColors[0]);
+            if (queryProductId) {
+                const matchedProd = dbProducts.find(p => p.id === queryProductId);
+                if (matchedProd) {
+                    setSelectedProductId(queryProductId);
+                    setShowProductDetails(true);
+                }
             }
-            if (!activeCustomerImgColorTab || !selectedColors.includes(activeCustomerImgColorTab)) {
-                setActiveCustomerImgColorTab(selectedColors[0]);
+        }
+    }, [dbProducts, searchParams]);
+
+    /* â”€â”€ Derived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const uniqueCategories = useMemo(() => {
+        const cats = new Set(dbProducts.map(p => p.category).filter(Boolean));
+        return Array.from(cats).sort();
+    }, [dbProducts]);
+
+    const rawProductsInCategory = useMemo(() => {
+        return selectedCategory ? dbProducts.filter(p => p.category === selectedCategory) : [];
+    }, [dbProducts, selectedCategory]);
+
+    const productsInCategory = useMemo(() => {
+        const query = productSearchQuery.trim().toLowerCase();
+        if (!query) return rawProductsInCategory;
+        return rawProductsInCategory.filter(p => 
+            p.title.toLowerCase().includes(query) || 
+            (p.mfgName && p.mfgName.toLowerCase().includes(query))
+        );
+    }, [rawProductsInCategory, productSearchQuery]);
+
+    const selectedProductObj = useMemo(() =>
+        dbProducts.find(p => p.id === selectedProductId),
+        [dbProducts, selectedProductId]);
+
+    const availableTechniques = useMemo(() => {
+        if (!selectedProductObj?.printingStyles) return [];
+        // The DB stores one entry per category (e.g. multiple DTF rows).
+        // Merge all entries sharing the same style into one, deduplicating placements by id.
+        const merged = {};
+        selectedProductObj.printingStyles.forEach(ps => {
+            const key = (ps.style || '').toLowerCase();
+            if (!merged[key]) {
+                merged[key] = { ...ps, placements: [] };
             }
-        } else {
-            setActivePlacementColorTab('');
-            setActiveMfgRefColorTab('');
-            setActiveCustomerImgColorTab('');
-        }
-    }, [selectedColors, activePlacementColorTab, activeMfgRefColorTab, activeCustomerImgColorTab]);
-
-    const availableMethods = useMemo(() => {
-        if (!selectedProductObj || !selectedProductObj.printingStyles || selectedProductObj.printingStyles.length === 0) {
-            return ['DTG', 'DTF', 'Embroidery'];
-        }
-        // Filter out styles that have no placements assigned
-        const filtered = selectedProductObj.printingStyles.filter(ps => Array.isArray(ps.placements) && ps.placements.length > 0);
-        if (filtered.length === 0) {
-            return selectedProductObj.printingStyles.map(ps => ps.style);
-        }
-        return filtered.map(ps => ps.style);
-    }, [selectedProductObj]);
-
-    const getPlacementsForStyle = useCallback((styleName) => {
-        if (!selectedProductObj || !selectedProductObj.printingStyles) return [];
-        const ps = selectedProductObj.printingStyles.find(x => x.style === styleName);
-        if (!ps || !Array.isArray(ps.placements)) return [];
-        return ps.placements.map(pl => {
-            const id = typeof pl === 'object' ? pl.id : pl;
-            const label = typeof pl === 'object' ? pl.label : (PLACEMENT_LABELS[pl] || pl);
-            return { id, label };
+            const activePlacements = (ps.placements || []).filter(pl => pl.active !== false);
+            activePlacements.forEach(pl => {
+                if (!merged[key].placements.some(existing => existing.id === pl.id)) {
+                    merged[key].placements.push(pl);
+                }
+            });
         });
+        return Object.values(merged).filter(ps => ps.placements.length > 0);
     }, [selectedProductObj]);
 
+    /* â”€â”€ Active tab follows color selection â”€â”€â”€ */
     useEffect(() => {
-        if (availableMethods.length > 0) {
-            if (!formStyle || !availableMethods.includes(formStyle)) {
-                setFormStyle(availableMethods[0]);
-            }
-        } else {
-            setFormStyle('');
+        if (selectedColors.length > 0 && (!activeColorTab || !selectedColors.includes(activeColorTab))) {
+            setActiveColorTab(primaryColor || selectedColors[0]);
+        } else if (selectedColors.length === 0) {
+            setActiveColorTab('');
         }
-    }, [availableMethods, formStyle]);
+    }, [selectedColors, primaryColor]);
 
-    useEffect(() => {
-        if (formStyle) {
-            const list = getPlacementsForStyle(formStyle);
-            setFormPlacement(list[0]?.id || '');
-        }
-    }, [formStyle, getPlacementsForStyle]);
-
-    const handleDirectDownload = async (url, filename) => {
-        try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(blobUrl);
-        } catch (err) {
-            console.error("Direct download failed, opening in new tab:", err);
-            window.open(url, '_blank');
-        }
+    /* â”€â”€ Step 1 handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const handleCategoryChange = (cat) => {
+        setSelectedCategory(cat);
+        setSelectedProductId('');
+        setSelectedColors([]);
+        setPrimaryColor('');
+        setShowProductDetails(false);
+        setColorPlacements({});
     };
 
-    // Color toggle
+    const handleSelectProduct = (productId) => {
+        setSelectedProductId(productId);
+        setSelectedColors([]);
+        setPrimaryColor('');
+        setShowProductDetails(false);
+        setColorPlacements({});
+        setColorMockups({});
+        setSelectedSizes([]);
+    };
+
     const toggleColor = (colorName) => {
         setSelectedColors(prev => {
-            if (prev.includes(colorName)) {
-                return prev.filter(c => c !== colorName);
-            }
-            return [...prev, colorName];
+            const next = prev.includes(colorName)
+                ? prev.filter(c => c !== colorName)
+                : [...prev, colorName];
+            if (!next.includes(primaryColor)) setPrimaryColor(next[0] || '');
+            return next;
         });
     };
 
-    // Form add configuration handler
-    const handleAddConfig = (e) => {
-        e.preventDefault();
-        if (!formStyle || !formPlacement || !formDesignFile || !formMockupFile) {
-            showToast('Please select printing style, placement, design file, and mockup preview.', 'error');
-            return;
-        }
-        const placementsList = getPlacementsForStyle(formStyle);
-        const placementLabel = placementsList.find(x => x.id === formPlacement)?.label || formPlacement;
-        
-        const newConfig = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-            style: formStyle,
-            placementId: formPlacement,
-            placementLabel: placementLabel,
-            designFile: formDesignFile,
-            designPreview: formDesignPreview,
-            mockupFile: formMockupFile,
-            mockupPreview: formMockupPreview
-        };
+    /* â”€â”€ Step 2 helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const getPlacementsForStyle = useCallback((styleName) => {
+        if (!selectedProductObj) return [];
+        // Collect placements from ALL entries matching this style name (DB stores one row per category)
+        const matchingStyles = (selectedProductObj.printingStyles || []).filter(
+            x => x.style === styleName || x.style?.toLowerCase() === styleName?.toLowerCase()
+        );
+        if (matchingStyles.length === 0) return [];
 
-        setColorPlacements(prev => ({
-            ...prev,
-            [activePlacementColorTab]: [...(prev[activePlacementColorTab] || []), newConfig]
-        }));
+        const seenIds = new Set();
+        const allPlacements = [];
+        matchingStyles.forEach(ps => {
+            if (!Array.isArray(ps.placements)) return;
+            ps.placements.filter(pl => pl.active !== false).forEach(pl => {
+                const id = typeof pl === 'object' ? pl.id : pl;
+                if (seenIds.has(id)) return; // deduplicate
+                seenIds.add(id);
+                allPlacements.push(pl);
+            });
+        });
 
-        setFormDesignFile(null);
-        setFormDesignPreview('');
-        setFormMockupFile(null);
-        setFormMockupPreview('');
-        showToast('Placement specification added successfully!', 'success');
+        return allPlacements.map(pl => {
+            const id = typeof pl === 'object' ? pl.id : pl;
+            const label = typeof pl === 'object' ? (pl.label || pl.id) : pl;
+
+            // Extract category name from placement id and label
+            let categoryName = '';
+            if (typeof pl === 'object' && pl.id) {
+                const opt = pl.label || '';
+                if (opt && pl.id.endsWith('_' + opt)) {
+                    categoryName = pl.id.substring(0, pl.id.length - opt.length - 1);
+                } else if (pl.id.includes('_')) {
+                    const idx = pl.id.lastIndexOf('_');
+                    categoryName = pl.id.substring(0, idx);
+                } else {
+                    categoryName = pl.id;
+                }
+            }
+
+            const formattedCategory = categoryName
+                ? categoryName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                : '';
+            const formattedLabel = label ? label.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
+            const displayLabel = formattedCategory
+                ? `${formattedCategory} - ${formattedLabel}`
+                : formattedLabel;
+
+            return { id, label: displayLabel, refImage: typeof pl === 'object' ? pl.image : null };
+        });
+    }, [selectedProductObj]);
+
+    const getPlacementConfig = (colorName, techStyle, placementId) =>
+        (colorPlacements[colorName] || []).find(c => c.style === techStyle && c.placementId === placementId) || null;
+
+    const setPlacementFile = (colorName, techStyle, placementId, placementLabel, field, file) => {
+        const preview = file ? URL.createObjectURL(file) : '';
+        const previewField = field === 'designFile' ? 'designPreview' : 'mockupPreview';
+        setColorPlacements(prev => {
+            const list = [...(prev[colorName] || [])];
+            const idx = list.findIndex(c => c.style === techStyle && c.placementId === placementId);
+            if (idx >= 0) {
+                list[idx] = { ...list[idx], [field]: file, [previewField]: preview };
+            } else {
+                list.push({
+                    id: `${techStyle}_${placementId}_${Date.now()}`,
+                    style: techStyle, placementId, placementLabel,
+                    designFile: field === 'designFile' ? file : null,
+                    designPreview: field === 'designFile' ? preview : '',
+                    mockupFile: field === 'mockupFile' ? file : null,
+                    mockupPreview: field === 'mockupFile' ? preview : '',
+                });
+            }
+            return { ...prev, [colorName]: list };
+        });
     };
 
-    const handleRemoveConfig = (colorName, id) => {
-        setColorPlacements(prev => ({
+    /* â”€â”€ Step 4 handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const updateColorMockup = (colorName, field, file) => {
+        const previewField = field.replace('File', 'Preview');
+        const preview = file ? URL.createObjectURL(file) : '';
+        setColorMockups(prev => ({
             ...prev,
-            [colorName]: (prev[colorName] || []).filter(item => item.id !== id)
+            [colorName]: { ...(prev[colorName] || {}), [field]: file, [previewField]: preview }
         }));
     };
 
-    const handleAddMfgRef = (file) => {
-        if (!file) return;
-        const preview = URL.createObjectURL(file);
-        setManufacturerRefs(prev => ({
-            ...prev,
-            [activeMfgRefColorTab]: [...(prev[activeMfgRefColorTab] || []), { file, preview }]
-        }));
+    const toggleSize = (size) => {
+        setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
     };
 
-    const handleRemoveMfgRef = (colorName, index) => {
-        setManufacturerRefs(prev => ({
-            ...prev,
-            [colorName]: (prev[colorName] || []).filter((_, i) => i !== index)
-        }));
-    };
-
-    const handleAddCustomerImage = (file) => {
-        if (!file) return;
-        const preview = URL.createObjectURL(file);
-        setCustomerImages(prev => ({
-            ...prev,
-            [activeCustomerImgColorTab]: [...(prev[activeCustomerImgColorTab] || []), { file, preview }]
-        }));
-    };
-
-    const handleRemoveCustomerImage = (colorName, index) => {
-        setCustomerImages(prev => ({
-            ...prev,
-            [colorName]: (prev[colorName] || []).filter((_, i) => i !== index)
-        }));
-    };
-
-    // Validation per step
+    /* â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     const canProceed = () => {
-        if (step === 1) return selectedProductId && selectedColors.length > 0;
-        if (step === 2) {
-            return selectedColors.every(color => {
-                const list = colorPlacements[color] || [];
-                return list.length > 0;
-            });
-        }
-        if (step === 3) {
-            return selectedColors.every(color => {
-                const list = manufacturerRefs[color] || [];
-                return list.length > 0;
-            });
-        }
-        if (step === 4) {
-            const hasStorefrontImages = selectedColors.every(color => {
-                const list = customerImages[color] || [];
-                return list.length > 0;
-            });
-            return designTitle.trim() && designerCost !== '' && parseFloat(designerCost) >= 0 && description.trim() && hasStorefrontImages;
-        }
+        if (step === 1) return !!selectedProductId && selectedColors.length > 0 && !!primaryColor;
+        if (step === 2) return selectedColors.every(color =>
+            (colorPlacements[color] || []).some(c => c.designFile && c.mockupFile)
+        );
+        if (step === 3) return true;
+        if (step === 4) return !!coverImageFile && selectedSizes.length > 0;
+        if (step === 5) return designTitle.trim() && designerCost !== '' && parseFloat(designerCost) >= 0 && designerNote.trim();
         return true;
     };
 
+    /* â”€â”€ Price preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    const pricePreview = useMemo(() => {
+        const baseCost = Number(selectedProductObj?.cost) || 0;
+        // Sum the max printing cost across all selected placements for any color
+        const maxPrint = selectedColors.reduce((max, color) => {
+            const list = colorPlacements[color] || [];
+            const colorCost = list.reduce((sum, placement) => {
+                const ps = selectedProductObj?.printingStyles?.find(x => x.style === placement.style);
+                if (!ps) return sum;
+                // Find the specific placement's price within the placements array
+                const pl = (ps.placements || []).find(p => p.id === placement.placementId);
+                if (!pl) return sum; const plPrice = placement.style?.toLowerCase() === "dtg" ? (Number(pl.cost_dark) || 0) : (Number(pl.price) || 0); return sum + plPrice;
+            }, 0);
+            return Math.max(max, colorCost);
+        }, 0);
+        const dCost = Number(designerCost) || 0;
+        const rawTotal = baseCost + maxPrint + dCost;
+        return { baseCost, maxPrint, dCost, rawTotal };
+    }, [selectedProductObj, selectedColors, colorPlacements, designerCost]);
+
+    /* â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     const handleSubmit = async () => {
-        if (!user || !selectedProductObj) return;
+        if (!user || !selectedProductObj || isSubmitting) return;
+        setIsSubmitting(true);
         try {
-            showToast('Uploading customer images...', 'info');
-            const finalCustomerImages = {};
-            const allCustomerUrls = [];
+            showToast('Uploading cover image...', 'info');
+            let coverImageUrl = '';
+            if (coverImageFile) {
+                const ext = coverImageFile.name.split('.').pop() || 'jpg';
+                coverImageUrl = await uploadFile(coverImageFile, `designs/${user.id}/${Date.now()}_cover.${ext}`, 'asat-uploads');
+            }
+
+            showToast('Uploading color mockups...', 'info');
+            const finalColorMockups = {};
+            const allImageUrls = [coverImageUrl].filter(Boolean);
             for (const colorName of selectedColors) {
-                finalCustomerImages[colorName] = [];
-                const list = customerImages[colorName] || [];
-                for (const img of list) {
-                    if (img.file) {
-                        const ext = img.file.name.split('.').pop() || 'jpg';
-                        const filePath = `designs/${user.id}/${Date.now()}_customer_${colorName}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
-                        const url = await uploadFile('asat-uploads', filePath, img.file);
-                        finalCustomerImages[colorName].push(url);
-                        allCustomerUrls.push(url);
+                const m = colorMockups[colorName] || {};
+                const uploaded = {};
+                for (const field of ['frontFile', 'backFile', 'modelFile']) {
+                    if (m[field]) {
+                        const ext = m[field].name.split('.').pop() || 'jpg';
+                        const url = await uploadFile(m[field], `designs/${user.id}/${Date.now()}_${colorName}_${field}.${ext}`, 'asat-uploads');
+                        uploaded[field.replace('File', 'Url')] = url;
+                        allImageUrls.push(url);
                     }
                 }
-                // Automatically append the base product's size chart image if it exists
-                if (selectedProductObj.sizeChartImage) {
-                    finalCustomerImages[colorName].push(selectedProductObj.sizeChartImage);
-                }
+                finalColorMockups[colorName] = uploaded;
             }
 
-            // Also append the size chart image to the root images list if it exists
-            if (selectedProductObj.sizeChartImage && !allCustomerUrls.includes(selectedProductObj.sizeChartImage)) {
-                allCustomerUrls.push(selectedProductObj.sizeChartImage);
-            }
-
-            showToast('Uploading placement specifications...', 'info');
+            showToast('Uploading placement files...', 'info');
             const finalPlacements = {};
             for (const colorName of selectedColors) {
                 finalPlacements[colorName] = [];
-                const list = colorPlacements[colorName] || [];
-                for (const item of list) {
+                for (const item of (colorPlacements[colorName] || [])) {
                     let designUrl = '';
                     let mockupUrl = '';
                     if (item.designFile) {
-                        const ext = item.designFile.name.split('.').pop() || 'jpg';
-                        const filePath = `designs/${user.id}/${Date.now()}_design_${colorName}_${item.placementId}.${ext}`;
-                        designUrl = await uploadFile('asat-uploads', filePath, item.designFile);
+                        const ext = item.designFile.name.split('.').pop() || 'png';
+                        designUrl = await uploadFile(item.designFile, `designs/${user.id}/${Date.now()}_design_${colorName}_${item.placementId}.${ext}`, 'asat-uploads');
                     }
                     if (item.mockupFile) {
                         const ext = item.mockupFile.name.split('.').pop() || 'jpg';
-                        const filePath = `designs/${user.id}/${Date.now()}_mockup_${colorName}_${item.placementId}.${ext}`;
-                        mockupUrl = await uploadFile('asat-uploads', filePath, item.mockupFile);
+                        mockupUrl = await uploadFile(item.mockupFile, `designs/${user.id}/${Date.now()}_mockup_${colorName}_${item.placementId}.${ext}`, 'asat-uploads');
+                        allImageUrls.push(mockupUrl);
                     }
-                    finalPlacements[colorName].push({
-                        style: item.style,
-                        placementId: item.placementId,
-                        placementLabel: item.placementLabel,
-                        designUrl,
-                        mockupUrl
-                    });
+                    finalPlacements[colorName].push({ style: item.style, placementId: item.placementId, placementLabel: item.placementLabel, designUrl, mockupUrl });
                 }
             }
 
-            showToast('Uploading manufacturer references...', 'info');
-            const finalManufacturerRefs = {};
-            for (const colorName of selectedColors) {
-                finalManufacturerRefs[colorName] = [];
-                const list = manufacturerRefs[colorName] || [];
-                for (const img of list) {
-                    if (img.file) {
-                        const ext = img.file.name.split('.').pop() || 'jpg';
-                        const filePath = `designs/${user.id}/${Date.now()}_mfgRef_${colorName}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
-                        const url = await uploadFile('asat-uploads', filePath, img.file);
-                        finalManufacturerRefs[colorName].push(url);
-                    }
-                }
-            }
-
-            showToast('Saving design details...', 'info');
+            showToast('Saving design...', 'info');
             const mapGender = (g) => {
                 const gl = String(g || '').toLowerCase().trim();
-                if (gl === 'men' || gl === 'man' || gl === 'male') return 'male';
-                if (gl === 'women' || gl === 'woman' || gl === 'female') return 'female';
+                if (gl === 'men' || gl === 'male') return 'male';
+                if (gl === 'women' || gl === 'female') return 'female';
                 return 'unisex';
             };
 
-            const baseCost = Number(selectedProductObj?.cost) || 0;
-            const markup = 0;
+            const baseCost = Number(selectedProductObj.cost) || 0;
             const maxPrintingCost = selectedColors.reduce((max, color) => {
-                const list = colorPlacements[color] || [];
-                const colorCost = list.reduce((sum, placement) => {
-                    const ps = selectedProductObj?.printingStyles?.find(x => x.style === placement.style);
-                    return sum + (ps ? Number(ps.cost) || 0 : 0);
+                const colorCost = (colorPlacements[color] || []).reduce((sum, placement) => {
+                    // Find the specific placement entry by id to get its price
+                    const allStyles = (selectedProductObj.printingStyles || []).filter(
+                        x => x.style?.toLowerCase() === placement.style?.toLowerCase()
+                    );
+                    let plPrice = 0;
+                    for (const ps of allStyles) {
+                        const pl = (ps.placements || []).find(p => p.id === placement.placementId);
+                        if (pl) { plPrice = placement.style?.toLowerCase() === "dtg" ? (Number(pl.cost_dark) || 0) : (Number(pl.price) || 0); break; }
+                    }
+                    return sum + plPrice;
                 }, 0);
                 return Math.max(max, colorCost);
             }, 0);
             const dCost = Number(designerCost) || 0;
-            const calculatedTotalPrice = baseCost + maxPrintingCost + dCost + markup;
 
             const designData = {
                 designer_id: user.id,
                 designer_username: profile?.username || user.email?.split('@')[0] || 'designer',
                 title: designTitle.trim(),
-                price: calculatedTotalPrice,
+                price: baseCost + maxPrintingCost + dCost,
                 description: JSON.stringify({
-                    text: description,
+                    text: designerNote,
+                    productionComments,
                     baseProductId: selectedProductId,
+                    primaryColor,
                     placements: finalPlacements,
-                    manufacturerRefs: finalManufacturerRefs,
-                    customerImages: finalCustomerImages,
-                    pricing: {
-                        baseCost,
-                        printingCost: maxPrintingCost,
-                        designerCost: dCost,
-                        markup
-                    }
+                    customerImages: finalColorMockups,
+                    coverImage: coverImageUrl,
+                    pricing: { baseCost, printingCost: maxPrintingCost, designerCost: dCost },
                 }),
                 status: 'pending',
-                images: allCustomerUrls,
+                images: allImageUrls,
                 colors: selectedColors,
-                sizes: selectedProductObj.sizes || [],
+                sizes: selectedSizes,
                 gender: mapGender(selectedProductObj.gender),
-                collection: selectedProductObj.collection || 'Default',
+                collection: selectedProductObj.category || 'Default',
                 base_product_id: selectedProductId || null,
             };
 
-            await apiFetch('/api/designs', {
-                method: 'POST',
-                body: JSON.stringify(designData)
-            });
-
+            await apiFetch('/api/designs', { method: 'POST', body: JSON.stringify(designData) });
             showToast('Design submitted for review! Redirecting...', 'success');
             setTimeout(() => navigate('/designer/designs'), 2000);
         } catch (err) {
-            console.error("Error creating Supabase design document:", err);
-            showToast("Could not submit design. Please try again: " + err.message, 'error');
+            console.error('Error submitting design:', err);
+            showToast('Could not submit design: ' + err.message, 'error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    // Drop zone component
-    const DropZone = ({ label, preview, onFile, accept = 'image/*', isMfgBase = false }) => {
-        const [dragOver, setDragOver] = useState(false);
-        const fileInputRef = React.useRef(null);
-
-        const handleDownload = async (e) => {
-            if (e) e.stopPropagation();
-            if (!preview) return;
-            try {
-                const response = await fetch(preview);
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = `${label.replace(/\s+/g, '_')}_template.png`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(blobUrl);
-            } catch (err) {
-                console.error("Failed to download directly, opening in new tab:", err);
-                window.open(preview, '_blank');
-            }
-        };
-
-        const handleContainerClick = (e) => {
-            if (preview && isMfgBase) {
-                handleDownload(e);
-            } else {
-                fileInputRef.current.click();
-            }
-        };
-
-        const handleUploadClick = (e) => {
-            e.stopPropagation();
-            fileInputRef.current.click();
-        };
-
-        return (
-            <div
-                className={`dsn-upload__drop ${dragOver ? 'dsn-upload__drop--active' : ''} ${preview ? 'dsn-upload__drop--has' : ''}`}
-                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={e => { e.preventDefault(); setDragOver(false); onFile(e.dataTransfer.files[0]); }}
-                onClick={handleContainerClick}
-                style={{ cursor: 'pointer' }}
-            >
-                {preview ? (
-                    <div className="dsn-upload__drop-preview" style={{ backgroundImage: `url(${preview})` }}>
-                        {isMfgBase && (
-                            <>
-                                <span style={{
-                                    position: 'absolute',
-                                    top: '8px',
-                                    left: '8px',
-                                    background: 'var(--gold)',
-                                    color: '#111',
-                                    fontSize: '0.55rem',
-                                    fontWeight: '700',
-                                    padding: '2px 6px',
-                                    borderRadius: '2px',
-                                    letterSpacing: '1px',
-                                    textTransform: 'uppercase',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-                                    zIndex: 10
-                                }}>
-                                    Base Canvas
-                                </span>
-                                <button 
-                                    onClick={handleDownload}
-                                    style={{
-                                        position: 'absolute',
-                                        top: '8px',
-                                        right: '8px',
-                                        background: 'rgba(0, 0, 0, 0.75)',
-                                        color: 'var(--gold)',
-                                        width: '28px',
-                                        height: '28px',
-                                        borderRadius: '50%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '0.85rem',
-                                        cursor: 'pointer',
-                                        zIndex: 15,
-                                        border: '1px solid var(--gold)',
-                                        transition: 'all 0.2s ease',
-                                        padding: 0
-                                    }}
-                                    className="dsn-upload__download-btn"
-                                    title="Download Template"
-                                    type="button"
-                                >
-                                    <i className="fas fa-download"></i>
-                                </button>
-                            </>
-                        )}
-                        <span className="dsn-upload__drop-change" onClick={handleUploadClick}>Change</span>
-                    </div>
-                ) : (
-                    <div className="dsn-upload__drop-empty">
-                        <i className="fas fa-cloud-upload-alt"></i>
-                        <span>{label}</span>
-                    </div>
-                )}
-                <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    accept={accept} 
-                    onChange={e => e.target.files[0] && onFile(e.target.files[0])} 
-                    style={{ display: 'none' }}
-                />
-            </div>
-        );
-    };
-
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       RENDER
+    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     return (
         <main className="dsn-upload">
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />
             <BackButton />
 
-            {/* Progress Bar — 5 steps */}
+            {/* â”€â”€ Progress Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div className="dsn-upload__progress">
-                {['Product & Colors', 'Placement Specs', 'Mfg References', 'Customer Details', 'Review'].map((label, i) => (
-                    <div key={i} className={`dsn-upload__step ${step > i + 1 ? 'done' : ''} ${step === i + 1 ? 'active' : ''}`}>
-                        <div className="dsn-upload__step-dot">{step > i + 1 ? <i className="fas fa-check"></i> : i + 1}</div>
+                {STEP_LABELS.map(({ num, label }) => (
+                    <div key={num} className={`dsn-upload__step ${step > num ? 'done' : ''} ${step === num ? 'active' : ''}`}>
+                        <div className="dsn-upload__step-dot">
+                            {step > num ? <i className="fas fa-check" /> : num}
+                        </div>
                         <span className="dsn-upload__step-label">{label}</span>
                     </div>
                 ))}
             </div>
 
-            {/* ─── STEP 1: Product & Color ─── */}
+            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â• STEP 1: PRODUCT â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
             {step === 1 && (
                 <section className="dsn-upload__section">
-                    <h3 className="dsn-upload__heading">Select Base Product</h3>
-                    {productsLoading ? (
-                        <div style={{ color: '#888', padding: '12px 0', fontSize: '0.9rem' }}>
-                            <i className="fas fa-spinner fa-spin" style={{ marginRight: 8 }}></i>Loading available base products...
+                    <h3 className="dsn-upload__heading">Select Product</h3>
+
+                    {/* Category */}
+                    <div className="dsn-profile__group" style={{ marginBottom: 24 }}>
+                        <label>Select Category *</label>
+                        {productsLoading ? (
+                            <div style={{ color: '#888', fontSize: '0.85rem', padding: '10px 0' }}>
+                                <i className="fas fa-spinner fa-spin" style={{ marginRight: 8 }} />Loading categories...
+                            </div>
+                        ) : (
+                            <select className="dsn-upload__select" value={selectedCategory} onChange={e => handleCategoryChange(e.target.value)}>
+                                <option value="" disabled>Choose a category</option>
+                                {uniqueCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            </select>
+                        )}
+                    </div>
+
+                    {/* Products Under Category */}
+                    {selectedCategory && (
+                        <div style={{ marginBottom: 24 }}>
+                            <label style={SECTION_LABEL_ST}>Available Products</label>
+                            
+                            {/* Product Search Box */}
+                            {rawProductsInCategory.length > 0 && (
+                                <div style={{ marginBottom: 16 }}>
+                                    <input 
+                                        type="text" 
+                                        className="dsn-upload__input"
+                                        placeholder="Search products by title or manufacturer..."
+                                        value={productSearchQuery}
+                                        onChange={e => setProductSearchQuery(e.target.value)}
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+                            )}
+
+                            {productsInCategory.length === 0 ? (
+                                <div style={{ color: '#888', fontSize: '0.85rem', padding: '16px 0' }}>No products match your search or category selection.</div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    {productsInCategory.map(prod => {
+                                        const isActive = selectedProductId === prod.id;
+                                        const isExpanded = isActive && showProductDetails;
+                                        return (
+                                            <div key={prod.id} style={{
+                                                border: `1px solid ${isActive ? 'var(--gold)' : '#e5e5e5'}`,
+                                                borderRadius: 6, background: isActive ? 'rgba(212,175,55,0.05)' : '#ffffff',
+                                                transition: 'all 0.2s', overflow: 'hidden'
+                                            }}>
+                                                {/* Header row */}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
+                                                    <input type="checkbox" checked={isActive}
+                                                        onChange={() => handleSelectProduct(isActive ? '' : prod.id)}
+                                                        style={{ width: 16, height: 16, accentColor: 'var(--gold)', cursor: 'pointer', flexShrink: 0 }} />
+                                                    {prod.coverImage && (
+                                                        <img src={prod.coverImage} alt={prod.title}
+                                                            style={{ width: 44, height: 44, borderRadius: 4, objectFit: 'cover', border: '1px solid #eee', flexShrink: 0 }} />
+                                                    )}
+                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: isActive ? 'var(--gold)' : '#222', marginBottom: 2 }}>
+                                                            {prod.title}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.7rem', color: '#777' }}>
+                                                            by {prod.mfgName || 'Manufacturer'} &nbsp;Â·&nbsp; Base Cost: â‚¹{(prod.cost || 0).toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                    <button type="button"
+                                                        onClick={() => { if (!isActive) handleSelectProduct(prod.id); setShowProductDetails(v => isActive ? !v : true); }}
+                                                        style={{ fontSize: '0.72rem', color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                                        {isExpanded ? 'Hide Details' : 'Show Details'}
+                                                    </button>
+                                                </div>
+ 
+                                                {/* Details accordion */}
+                                                {isExpanded && (
+                                                    <div style={{ borderTop: '1px solid #f0f0f0', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12, background: '#fafafa' }}>
+                                                        {prod.details && prod.details.length > 0 && (
+                                                            <div>
+                                                                <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Product Details</div>
+                                                                {prod.details.map((d, i) => <div key={i} style={{ fontSize: '0.78rem', color: '#555', lineHeight: 1.6 }}>â€¢ {d}</div>)}
+                                                            </div>
+                                                        )}
+                                                        {prod.washCare && prod.washCare.length > 0 && (
+                                                            <div>
+                                                                <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Wash Care</div>
+                                                                {prod.washCare.map((w, i) => <div key={i} style={{ fontSize: '0.78rem', color: '#555', lineHeight: 1.6 }}>â€¢ {w}</div>)}
+                                                            </div>
+                                                        )}
+                                                        {prod.sizes && prod.sizes.length > 0 && (
+                                                            <div>
+                                                                <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Available Sizes</div>
+                                                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                                    {prod.sizes.map(s => (
+                                                                        <span key={s} style={{ padding: '2px 10px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: 4, fontSize: '0.72rem', color: '#444' }}>{s}</span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    ) : dbProducts.length === 0 ? (
-                        <div style={{ color: '#888', padding: '12px 0', fontSize: '0.9rem' }}>
-                            No base products available yet.
+                    )}
+
+                    {/* Colors */}
+                    {selectedProductObj && (
+                        <div style={{ marginBottom: 24 }}>
+                            <label style={SECTION_LABEL_ST}>Available Colors</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {(selectedProductObj.colors || []).filter(c => c.available !== false).map(c => {
+                                    const isChecked = selectedColors.includes(c.colorName);
+                                    return (
+                                        <label key={c.colorName} style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            padding: '10px 14px', border: `1px solid ${isChecked ? 'var(--gold)' : '#e5e5e5'}`,
+                                            borderRadius: 4, cursor: 'pointer', userSelect: 'none',
+                                            background: isChecked ? 'rgba(212,175,55,0.06)' : '#ffffff', transition: 'all 0.15s'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <input type="checkbox" checked={isChecked} onChange={() => toggleColor(c.colorName)}
+                                                    style={{ width: 16, height: 16, accentColor: 'var(--gold)', cursor: 'pointer' }} />
+                                                <span style={{
+                                                    width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                                                    background: c.color, border: `1px solid ${c.color === '#ffffff' || c.color?.toLowerCase() === '#fff' ? '#e0e0e0' : '#ccc'}`,
+                                                    display: 'inline-block'
+                                                }} />
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: isChecked ? 'var(--gold)' : '#333' }}>{c.colorName}</span>
+                                                {c.mode && (
+                                                    <span style={{
+                                                        fontSize: '0.6rem', padding: '1px 6px',
+                                                        background: c.mode === 'dark' ? '#333' : '#e8e8e8',
+                                                        color: c.mode === 'dark' ? '#fff' : '#333',
+                                                        borderRadius: 10, fontWeight: 600
+                                                    }}>{c.mode}</span>
+                                                )}
+                                            </div>
+                                            <span style={{ fontSize: '0.7rem', color: '#555' }}>Available</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    ) : (
-                        <div className="dsn-upload__product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-                            {uniqueProducts.map(prod => {
-                                const productCoverImage = prod.coverImage || prod.colors?.[0]?.frontImage || 'https://via.placeholder.com/200x250?text=No+Image';
-                                const isActive = selectedProductId === prod.id;
+                    )}
+
+                    {/* Primary Color */}
+                    {selectedColors.length > 0 && (
+                        <div className="dsn-profile__group">
+                            <label>Set Primary Color *</label>
+                            <select className="dsn-upload__select" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)}>
+                                <option value="" disabled>Choose Primary Color</option>
+                                {selectedColors.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        </div>
+                    )}
+                </section>
+            )}
+
+            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â• STEP 2: CONFIGURE â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {step === 2 && (
+                <section className="dsn-upload__section">
+                    <h3 className="dsn-upload__heading">Configure Your Design</h3>
+                    <p className="dsn-upload__hint">
+                        For each color, expand a print technique, then click a placement to upload your design file and reference mockup.
+                        At least one placement must be fully configured per color.
+                    </p>
+
+                    {/* Color Tabs */}
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '1px solid #e5e5e5', paddingBottom: 0, flexWrap: 'wrap' }}>
+                        {selectedColors.map(colorName => {
+                            const colorObj = selectedProductObj?.colors?.find(c => c.colorName === colorName);
+                            const isActive = activeColorTab === colorName;
+                            const hasConfig = (colorPlacements[colorName] || []).some(c => c.designFile && c.mockupFile);
+                            return (
+                                <button key={colorName} type="button"
+                                    onClick={() => { setActiveColorTab(colorName); setExpandedTechnique(''); setExpandedPlacement(''); }}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: 8,
+                                        padding: '9px 16px', border: 'none',
+                                        borderBottom: isActive ? '2px solid var(--gold)' : '2px solid transparent',
+                                        background: 'transparent', color: isActive ? 'var(--gold)' : '#666',
+                                        fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                                        marginBottom: '-1px'
+                                    }}>
+                                    <span style={{
+                                        width: 12, height: 12, borderRadius: '50%', flexShrink: 0,
+                                        background: colorObj?.color || '#888', border: '1px solid #ccc', display: 'inline-block'
+                                    }} />
+                                    {colorName}
+                                    {hasConfig && <i className="fas fa-check-circle" style={{ color: '#2ecc71', fontSize: '0.75rem' }} />}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Print Technique Accordions */}
+                    {activeColorTab && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {availableTechniques.length === 0 ? (
+                                <div style={{ color: '#888', fontSize: '0.85rem', padding: 20, border: '1px dashed #e0e0e0', borderRadius: 6, textAlign: 'center' }}>
+                                    No printing techniques configured for this product.
+                                </div>
+                            ) : availableTechniques.map(tech => {
+                                const techKey = tech.style;
+                                const isOpen = expandedTechnique === techKey;
+                                const placements = getPlacementsForStyle(techKey);
+                                const configuredCount = placements.filter(pl => {
+                                    const c = getPlacementConfig(activeColorTab, techKey, pl.id);
+                                    return c && c.designFile && c.mockupFile;
+                                }).length;
+                                const techLabel = techKey === 'dtf' ? 'Direct to Film (DTF)'
+                                    : techKey === 'dtg' ? 'Direct to Garment (DTG)'
+                                    : techKey === 'embrio' ? 'Embroidery'
+                                    : techKey.toUpperCase();
+
                                 return (
-                                    <div
-                                        key={prod.id}
-                                        className={`dsn-upload__product-btn ${isActive ? 'active' : ''}`}
-                                        onClick={() => {
-                                            setSelectedProductId(prod.id);
-                                            setSelectedColors([]);
-                                            setColorPlacements({});
-                                            setManufacturerRefs({});
-                                        }}
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            padding: '16px',
-                                            borderRadius: '8px',
-                                            background: isActive ? 'rgba(197,160,89,0.06)' : '#fafafa',
-                                            border: isActive ? '2px solid var(--gold)' : '1px solid #ddd',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease',
-                                            boxShadow: isActive ? '0 10px 25px rgba(197,160,89,0.12)' : 'none',
-                                            textAlign: 'center'
-                                        }}
-                                    >
-                                        {/* Product Cover Preview */}
+                                    <div key={techKey} style={{
+                                        border: `1px solid ${isOpen ? 'var(--gold)' : 'rgba(212,175,55,0.2)'}`,
+                                        borderRadius: 6, overflow: 'hidden', transition: 'all 0.2s',
+                                        boxShadow: isOpen ? '0 4px 15px rgba(212,175,55,0.06)' : 'none'
+                                    }}>
+                                        {/* Technique header */}
                                         <div
                                             style={{
-                                                width: '100%',
-                                                height: '220px',
-                                                background: `url(${productCoverImage}) center/cover no-repeat`,
-                                                borderRadius: '6px',
-                                                marginBottom: '12px',
-                                                border: '1px solid #eee'
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                padding: '13px 16px', cursor: 'pointer',
+                                                background: isOpen ? 'rgba(212,175,55,0.06)' : '#fafafa',
+                                                transition: 'background 0.2s'
                                             }}
-                                        ></div>
+                                            onClick={() => { setExpandedTechnique(isOpen ? '' : techKey); setExpandedPlacement(''); }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: isOpen ? 'var(--gold)' : '#222' }}>
+                                                    {techLabel}
+                                                </span>
+                                                {configuredCount > 0 && (
+                                                    <span style={{
+                                                        fontSize: '0.62rem', padding: '2px 8px',
+                                                        background: configuredCount === placements.length ? 'rgba(46,204,113,0.15)' : 'rgba(212,175,55,0.15)',
+                                                        color: configuredCount === placements.length ? '#27ae60' : 'var(--gold)',
+                                                        borderRadius: 12, fontWeight: 700
+                                                    }}>{configuredCount}/{placements.length} done</span>
+                                                )}
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <span style={{ fontSize: '0.7rem', color: '#777' }}>
+                                                    {isOpen ? 'Click to close' : `${placements.length} placements`}
+                                                </span>
+                                                <i className={`fas fa-chevron-${isOpen ? 'up' : 'down'}`} style={{ color: isOpen ? 'var(--gold)' : '#888', fontSize: '0.7rem' }} />
+                                            </div>
+                                        </div>
 
-                                        {/* Info */}
-                                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: isActive ? 'var(--gold)' : '#111', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                            {prod.title}
-                                        </span>
-                                        <span style={{ fontSize: '0.7rem', color: '#666', display: 'block' }}>
-                                            by {prod.mfgName || 'Manufacturer'}
-                                        </span>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--gold)', fontWeight: 600, display: 'block', marginTop: '6px' }}>
-                                            Base Cost: ₹{(prod.cost || 0).toLocaleString()}
-                                        </span>
+                                        {/* Placement rows */}
+                                        {isOpen && (
+                                            <div style={{
+                                                borderTop: '1px solid rgba(212,175,55,0.15)',
+                                                padding: '10px 14px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 8,
+                                                background: '#fdfdfd',
+                                                maxHeight: '480px',
+                                                overflowY: 'auto'
+                                            }}>
+                                                {placements.map(pl => {
+                                                    const config = getPlacementConfig(activeColorTab, techKey, pl.id);
+                                                    const isConfigured = !!(config?.designFile && config?.mockupFile);
+                                                    const plKey = `${techKey}_${pl.id}`;
+                                                    const isPlExpanded = expandedPlacement === plKey;
+                                                    return (
+                                                        <div key={pl.id} style={{
+                                                            border: `1px solid ${isConfigured ? 'rgba(46,204,113,0.45)' : '#e8e8e8'}`,
+                                                            borderRadius: 4, overflow: 'hidden'
+                                                        }}>
+                                                            {/* Placement row header */}
+                                                            <div
+                                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', background: isPlExpanded ? '#fbfaf8' : '#ffffff', cursor: 'pointer' }}
+                                                                onClick={() => setExpandedPlacement(isPlExpanded ? '' : plKey)}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                                                                    <div style={{
+                                                                        width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                                                                        border: `2px solid ${isConfigured ? '#2ecc71' : '#bbbbbb'}`,
+                                                                        background: isConfigured ? '#2ecc71' : 'transparent',
+                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                                    }}>
+                                                                        {isConfigured && <i className="fas fa-check" style={{ color: 'white', fontSize: '0.45rem' }} />}
+                                                                    </div>
+                                                                    <span style={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, textTransform: 'capitalize' }}>{pl.label}</span>
+                                                                </div>
+                                                                <i className={`fas fa-chevron-${isPlExpanded ? 'up' : 'down'}`} style={{ color: '#888', fontSize: '0.65rem' }} />
+                                                            </div>
+
+                                                            {/* Placement config area */}
+                                                            {isPlExpanded && (
+                                                                <div style={{ padding: '14px 12px', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: 14, borderTop: '1px solid #f0f0f0' }}>
+                                                                    {/* Reference boundary image */}
+                                                                    {pl.refImage ? (
+                                                                        <div>
+                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Print Position Reference</div>
+                                                                            <div style={{ border: '1px dashed rgba(212,175,55,0.25)', borderRadius: 4, padding: 8, textAlign: 'center', background: '#fafafa' }}>
+                                                                                <img src={pl.refImage} alt="print position" style={{ maxHeight: 80, objectFit: 'contain' }} />
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div style={{ border: '1px dashed #e0e0e0', borderRadius: 4, padding: '10px', textAlign: 'center', background: '#fafafa', fontSize: '0.72rem', color: '#777' }}>
+                                                                            [ Print Position Reference Boundary Area ]
+                                                                        </div>
+                                                                    )}
+
+                                                                    {/* Two upload zones side by side */}
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                                                        <div>
+                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Upload Design *</div>
+                                                                            <div style={{ height: 110 }}>
+                                                                                <DropZone
+                                                                                    label="Design File (PNG/AI/PDF)"
+                                                                                    preview={config?.designPreview || ''}
+                                                                                    onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'designFile', f)}
+                                                                                    accept=".png,.ai,.pdf,image/*"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div>
+                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Reference Mockup *</div>
+                                                                            <div style={{ height: 110 }}>
+                                                                                <DropZone
+                                                                                    label="Mockup Image"
+                                                                                    preview={config?.mockupPreview || ''}
+                                                                                    onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'mockupFile', f)}
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
                         </div>
                     )}
-
-                    {selectedProductId && selectedProductObj && (
-                        <>
-                            <h3 className="dsn-upload__heading" style={{ marginTop: '30px' }}>Select Colors</h3>
-                            <div className="dsn-upload__color-grid">
-                                {(selectedProductObj.colors || []).map(c => (
-                                    <button key={c.colorName} className={`dsn-upload__color-btn ${selectedColors.includes(c.colorName) ? 'active' : ''}`} onClick={() => toggleColor(c.colorName)}>
-                                        <span className="dsn-upload__color-swatch" style={{ background: c.color, border: c.color === '#FFFFFF' ? '1px solid #ddd' : 'none' }}></span>
-                                        <span>{c.colorName}</span>
-                                        {selectedColors.includes(c.colorName) && <i className="fas fa-check-circle"></i>}
-                                    </button>
-                                ))}
-                            </div>
-                        </>
-                    )}
-
-                    {selectedColors.length > 0 && selectedProductObj && (
-                        <>
-                            <h3 className="dsn-upload__heading" style={{ marginTop: '30px' }}>Download Color Reference Canvases</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px', marginBottom: '24px' }}>
-                                {selectedColors.map(colorName => {
-                                    const colorObj = selectedProductObj.colors?.find(c => c.colorName === colorName);
-                                    if (!colorObj) return null;
-                                    return (
-                                        <div key={colorName} style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '12px', background: 'white', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Montserrat', sans-serif" }}>
-                                                <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: colorObj.color, border: '1px solid #ccc' }}></span>
-                                                {colorName}
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '6px' }}>
-                                                {colorObj.frontImage && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDirectDownload(colorObj.frontImage, `${colorName}_Front_Canvas.jpg`)}
-                                                        style={{ flex: 1, padding: '6px 8px', fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Montserrat', sans-serif", background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#333' }}
-                                                    >
-                                                        <i className="fas fa-download" style={{ color: 'var(--gold)' }}></i> Front
-                                                    </button>
-                                                )}
-                                                {colorObj.backImage && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDirectDownload(colorObj.backImage, `${colorName}_Back_Canvas.jpg`)}
-                                                        style={{ flex: 1, padding: '6px 8px', fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Montserrat', sans-serif", background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#333' }}
-                                                    >
-                                                        <i className="fas fa-download" style={{ color: 'var(--gold)' }}></i> Back
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </>
-                    )}
                 </section>
             )}
 
-            {/* ─── STEP 2: Placement Specifications Per Color ─── */}
-            {step === 2 && (
-                <section className="dsn-upload__section">
-                    <h3 className="dsn-upload__heading">Configure Printing & Placements</h3>
-                    <p className="dsn-upload__hint">Add print and placement specifications for each selected color. You must add at least one configuration per color.</p>
-
-                    {/* Color Tabs */}
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                        {selectedColors.map(color => {
-                            const colorObj = selectedProductObj.colors?.find(c => c.colorName === color);
-                            const hexColor = colorObj ? colorObj.color : '#ffffff';
-                            const isActive = activePlacementColorTab === color;
-                            const hasConfig = (colorPlacements[color] || []).length > 0;
-                            return (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    onClick={() => setActivePlacementColorTab(color)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        padding: '8px 16px',
-                                        border: isActive ? '2px solid var(--gold)' : '1px solid #ddd',
-                                        borderRadius: '4px',
-                                        background: isActive ? 'rgba(197,160,89,0.06)' : 'white',
-                                        color: isActive ? 'var(--gold)' : '#333',
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '0.78rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: hexColor, border: '1px solid #ccc' }}></span>
-                                    {color}
-                                    {hasConfig && <i className="fas fa-check-circle" style={{ color: '#2ecc71', marginLeft: '4px' }}></i>}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {activePlacementColorTab && (
-                        <div>
-                            {/* List of current specs */}
-                            <h4 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', fontWeight: 700, marginBottom: '12px', color: '#111' }}>
-                                Specifications for {activePlacementColorTab} ({(colorPlacements[activePlacementColorTab] || []).length})
-                            </h4>
-                            
-                            {(colorPlacements[activePlacementColorTab] || []).length === 0 ? (
-                                <div style={{ padding: '20px', border: '1px dashed #ddd', borderRadius: '6px', textAlign: 'center', color: '#888', fontSize: '0.8rem', background: '#fafafa', marginBottom: '24px' }}>
-                                    No print or placement configurations added for this color yet. Fill out the form below to add one.
-                                </div>
-                            ) : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '15px', marginBottom: '24px' }}>
-                                    {(colorPlacements[activePlacementColorTab] || []).map(item => (
-                                        <div key={item.id} style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '16px', background: 'white', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
-                                            <button 
-                                                type="button" 
-                                                onClick={() => handleRemoveConfig(activePlacementColorTab, item.id)}
-                                                style={{ position: 'absolute', top: '10px', right: '10px', border: 'none', background: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '0.9rem' }}
-                                                title="Remove configuration"
-                                            >
-                                                <i className="fas fa-trash-alt"></i>
-                                            </button>
-                                            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#333' }}>
-                                                <i className="fas fa-print" style={{ color: 'var(--gold)', marginRight: '6px' }}></i> {item.style} — {item.placementLabel}
-                                            </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                                                <div>
-                                                    <div style={{ fontSize: '0.62rem', color: '#888', fontWeight: 600, marginBottom: '4px' }}>Design Artwork:</div>
-                                                    <div style={{ width: '100%', height: '80px', borderRadius: '4px', border: '1px solid #eee', background: `url(${item.designPreview}) center/contain no-repeat #f9f9f9` }}></div>
-                                                </div>
-                                                <div>
-                                                    <div style={{ fontSize: '0.62rem', color: '#888', fontWeight: 600, marginBottom: '4px' }}>Mockup View:</div>
-                                                    <div style={{ width: '100%', height: '80px', borderRadius: '4px', border: '1px solid #eee', background: `url(${item.mockupPreview}) center/contain no-repeat #f9f9f9` }}></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Form to add specification */}
-                            <form onSubmit={handleAddConfig} style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '20px', background: '#fafafa' }}>
-                                <h4 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', fontWeight: 700, margin: '0 0 16px 0', color: '#111', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
-                                    Add Placement Configuration
-                                </h4>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '16px' }}>
-                                    <div className="dsn-profile__group">
-                                        <label>Printing Style</label>
-                                        <select 
-                                            className="dsn-upload__select"
-                                            value={formStyle}
-                                            onChange={e => setFormStyle(e.target.value)}
-                                        >
-                                            {availableMethods.map(style => (
-                                                <option key={style} value={style}>{style}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="dsn-profile__group">
-                                        <label>Placement Zone</label>
-                                        <select
-                                            className="dsn-upload__select"
-                                            value={formPlacement}
-                                            onChange={e => setFormPlacement(e.target.value)}
-                                            disabled={getPlacementsForStyle(formStyle).length === 0}
-                                        >
-                                            {getPlacementsForStyle(formStyle).length === 0 ? (
-                                                <option value="">No zones allocated</option>
-                                            ) : (
-                                                getPlacementsForStyle(formStyle).map(pl => (
-                                                    <option key={pl.id} value={pl.id}>{pl.label}</option>
-                                                ))
-                                            )}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.72rem', color: '#555', fontWeight: 600, marginBottom: '6px' }}>Reference Design File (PNG/AI/PDF)</label>
-                                        <DropZone 
-                                            label="Design File (PNG/AI/PDF)" 
-                                            preview={formDesignPreview} 
-                                            onFile={f => { setFormDesignFile(f); setFormDesignPreview(URL.createObjectURL(f)); }} 
-                                            accept=".png,.ai,.pdf,image/*" 
-                                        />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.72rem', color: '#555', fontWeight: 600, marginBottom: '6px' }}>Image With Design Added (Mockup)</label>
-                                        <DropZone 
-                                            label="Mockup Preview Image" 
-                                            preview={formMockupPreview} 
-                                            onFile={f => { setFormMockupFile(f); setFormMockupPreview(URL.createObjectURL(f)); }} 
-                                        />
-                                    </div>
-                                </div>
-                                <button 
-                                    type="submit" 
-                                    className="dsn-auth__btn"
-                                    style={{ width: 'auto', padding: '10px 24px' }}
-                                >
-                                    <span>Add Configuration</span><i className="fas fa-plus"></i>
-                                </button>
-                            </form>
-                        </div>
-                    )}
-                </section>
-            )}
-
-            {/* ─── STEP 3: Manufacturer Reference Images ─── */}
+            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â• STEP 3: COMMENTS â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
             {step === 3 && (
                 <section className="dsn-upload__section">
-                    <h3 className="dsn-upload__heading">Manufacturer Reference Images</h3>
-                    <p className="dsn-upload__hint">Upload final finished references with all designs visible for manufacturer reference. Must upload at least one per color.</p>
-
-                    {/* Color Tabs */}
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                        {selectedColors.map(color => {
-                            const colorObj = selectedProductObj.colors?.find(c => c.colorName === color);
-                            const hexColor = colorObj ? colorObj.color : '#ffffff';
-                            const isActive = activeMfgRefColorTab === color;
-                            const hasRefs = (manufacturerRefs[color] || []).length > 0;
-                            return (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    onClick={() => setActiveMfgRefColorTab(color)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        padding: '8px 16px',
-                                        border: isActive ? '2px solid var(--gold)' : '1px solid #ddd',
-                                        borderRadius: '4px',
-                                        background: isActive ? 'rgba(197,160,89,0.06)' : 'white',
-                                        color: isActive ? 'var(--gold)' : '#333',
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '0.78rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: hexColor, border: '1px solid #ccc' }}></span>
-                                    {color}
-                                    {hasRefs && <i className="fas fa-check-circle" style={{ color: '#2ecc71', marginLeft: '4px' }}></i>}
-                                </button>
-                            );
-                        })}
+                    <h3 className="dsn-upload__heading">Production Comments</h3>
+                    <p className="dsn-upload__hint">
+                        Specify position coordinates, ink limits, density instructions, or any other special notes for the manufacturer.
+                        This field is optional but recommended for precision.
+                    </p>
+                    <div className="dsn-profile__group">
+                        <label>Comments <span style={{ color: '#555', fontWeight: 400 }}>(optional)</span></label>
+                        <textarea
+                            className="dsn-upload__textarea dsn-upload__textarea--lg"
+                            rows={6}
+                            placeholder="e.g. Place chest print 3 cm below collar Â· Keep ink density below 80% Â· Use Pantone match for brand colours..."
+                            value={productionComments}
+                            onChange={e => setProductionComments(e.target.value)}
+                        />
                     </div>
-
-                    {activeMfgRefColorTab && (
-                        <div>
-                            <h4 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', fontWeight: 700, marginBottom: '12px', color: '#111' }}>
-                                Reference Images for {activeMfgRefColorTab} ({(manufacturerRefs[activeMfgRefColorTab] || []).length})
-                            </h4>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px', marginBottom: '20px' }}>
-                                {(manufacturerRefs[activeMfgRefColorTab] || []).map((img, index) => (
-                                    <div key={index} style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px', background: 'white', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveMfgRef(activeMfgRefColorTab, index)}
-                                            style={{ position: 'absolute', top: '6px', right: '6px', border: 'none', background: 'rgba(0,0,0,0.6)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '0.65rem' }}
-                                        >
-                                            <i className="fas fa-times"></i>
-                                        </button>
-                                        <div style={{ width: '100%', height: '150px', background: `url(${img.preview}) center/contain no-repeat #f9f9f9`, borderRadius: '4px' }}></div>
-                                    </div>
-                                ))}
-                                
-                                <div style={{ height: '168px' }}>
-                                    <DropZone 
-                                        label="Add Reference Image" 
-                                        preview="" 
-                                        onFile={handleAddMfgRef} 
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </section>
             )}
 
-            {/* ─── STEP 4: Details & Customer Images ─── */}
+            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â• STEP 4: CUSTOMER DETAILS â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
             {step === 4 && (
                 <section className="dsn-upload__section">
-                    <h3 className="dsn-upload__heading">Details & Customer Images</h3>
-                    <p className="dsn-upload__hint">Enter design information and upload images that customers will see in the store.</p>
+                    <h3 className="dsn-upload__heading">Customer Details</h3>
+                    <p className="dsn-upload__hint">Upload storefront assets customers will see when browsing your design.</p>
 
-                    <div className="dsn-upload__details-grid" style={{ marginBottom: '24px' }}>
-                        <div className="dsn-profile__group">
-                            <label>Design Name *</label>
-                            <input 
-                                type="text" 
-                                className="dsn-upload__input"
-                                placeholder="e.g. Vintage Gold emblem Tee" 
-                                value={designTitle}
-                                onChange={e => setDesignTitle(e.target.value)}
-                            />
-                        </div>
-                        <div className="dsn-profile__group">
-                            <label>Designer Royalty / Cost (₹ INR) *</label>
-                            <div className="dsn-auth__field" style={{ background: 'white' }}>
-                                <span style={{ padding: '0 10px', color: 'var(--gold)', fontWeight: 700, fontSize: '1.1rem' }}>₹</span>
-                                <input type="number" placeholder="e.g. 200" value={designerCost} onChange={e => setDesignerCost(e.target.value)} min="0" style={{ border: 'none', background: 'transparent' }} />
+                    {/* Cover Image */}
+                    <div style={{ marginBottom: 28 }}>
+                        <label style={SECTION_LABEL_ST}>Cover Image *</label>
+                        <div style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '12px 16px', background: '#fafafa',
+                            border: `1px solid ${coverImageFile ? 'var(--gold)' : '#e0e0e0'}`, borderRadius: 6
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                {coverImagePreview && (
+                                    <img src={coverImagePreview} alt="cover"
+                                        style={{ width: 40, height: 40, borderRadius: 4, objectFit: 'cover', border: '1px solid #ddd' }} />
+                                )}
+                                <span style={{ fontSize: '0.82rem', color: coverImageFile ? '#333' : '#777' }}>
+                                    {coverImageFile ? coverImageFile.name : 'No file uploaded'}
+                                </span>
                             </div>
-                            
-                            {/* Live Pricing Breakdown for Designer */}
-                            {selectedProductObj && (
-                                <div style={{ marginTop: '15px', background: 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)', padding: '18px', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid rgba(197,160,89,0.25)' }}>
-                                    <h4 style={{ margin: '0 0 14px 0', fontSize: '0.88rem', color: '#C5A059', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: "'Montserrat', sans-serif" }}>💰 Price Preview</h4>
-                                    {(() => {
-                                        const baseCost = Number(selectedProductObj?.cost || 0);
-                                        const maxPrint = selectedColors.reduce((max, color) => {
-                                            const list = colorPlacements[color] || [];
-                                            const colorCost = list.reduce((sum, placement) => {
-                                                const ps = selectedProductObj?.printingStyles?.find(x => x.style === placement.style);
-                                                return sum + (ps ? Number(ps.cost) || 0 : 0);
-                                            }, 0);
-                                            return Math.max(max, colorCost);
-                                        }, 0);
-                                        const dCost = Number(designerCost) || 0;
-                                        const rawTotal = baseCost + maxPrint + dCost;
-                                        return (
-                                            <>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#aaa' }}>
-                                                    <span>Base Product:</span>
-                                                    <span>₹{baseCost.toLocaleString()}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#aaa' }}>
-                                                    <span>Max Printing Cost:</span>
-                                                    <span>₹{maxPrint.toLocaleString()}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', color: '#C5A059' }}>
-                                                    <span>Your Royalty:</span>
-                                                    <span>₹{dCost.toLocaleString()}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#666', fontSize: '0.75rem' }}>
-                                                    <span>Raw Sub-total:</span>
-                                                    <span>₹{rawTotal.toLocaleString()}</span>
-                                                </div>
-                                                <hr style={{ border: 'none', borderTop: '1px solid rgba(197,160,89,0.2)', margin: '8px 0' }} />
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1rem', color: '#fff' }}>
-                                                    <span>Customer Selling Price <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 400 }}>(excl. GST)</span></span>
-                                                    <span style={{ color: '#C5A059' }}>₹{Math.round(applyMarkup(rawTotal)).toLocaleString()}</span>
-                                                </div>
-                                                <p style={{ margin: '8px 0 0', color: '#666', fontSize: '0.72rem', fontFamily: "'Montserrat', sans-serif" }}>Master markup & GST are applied at checkout by ASAT. Your royalty is guaranteed regardless.</p>
-                                            </>
-                                        );
-                                    })()}
-                                </div>
-                            )}
-                        </div>
-                        <div className="dsn-profile__group dsn-profile__group--full">
-                            <label>Design Description *</label>
-                            <textarea className="dsn-upload__textarea dsn-upload__textarea--lg" rows="5" placeholder="Tell the story behind your design — inspiration, mood, and target audience..." value={description} onChange={e => setDescription(e.target.value)}></textarea>
+                            <label style={{
+                                padding: '7px 16px', border: '1px solid var(--gold)', color: 'var(--gold)',
+                                borderRadius: 4, cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, flexShrink: 0
+                            }}>
+                                Choose File
+                                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
+                                    if (e.target.files[0]) {
+                                        setCoverImageFile(e.target.files[0]);
+                                        setCoverImagePreview(URL.createObjectURL(e.target.files[0]));
+                                    }
+                                }} />
+                            </label>
                         </div>
                     </div>
 
-                    <h4 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', fontWeight: 700, marginBottom: '12px', color: '#111' }}>
-                        Customer Storefront Images
-                    </h4>
-                    <p className="dsn-upload__hint">Upload showcasing images for each color separately. Customers will see these when they select the color.</p>
-
-                    {/* Color Tabs */}
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                        {selectedColors.map(color => {
-                            const colorObj = selectedProductObj.colors?.find(c => c.colorName === color);
-                            const hexColor = colorObj ? colorObj.color : '#ffffff';
-                            const isActive = activeCustomerImgColorTab === color;
-                            const hasImages = (customerImages[color] || []).length > 0;
-                            return (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    onClick={() => setActiveCustomerImgColorTab(color)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        padding: '8px 16px',
-                                        border: isActive ? '2px solid var(--gold)' : '1px solid #ddd',
-                                        borderRadius: '4px',
-                                        background: isActive ? 'rgba(197,160,89,0.06)' : 'white',
-                                        color: isActive ? 'var(--gold)' : '#333',
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '0.78rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: hexColor, border: '1px solid #ccc' }}></span>
-                                    {color}
-                                    {hasImages && <i className="fas fa-check-circle" style={{ color: '#2ecc71', marginLeft: '4px' }}></i>}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {activeCustomerImgColorTab && (
-                        <div>
-                            <h5 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.78rem', fontWeight: 700, marginBottom: '12px', color: '#333' }}>
-                                Storefront Images for {activeCustomerImgColorTab} ({(customerImages[activeCustomerImgColorTab] || []).length})
-                            </h5>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px' }}>
-                                {(customerImages[activeCustomerImgColorTab] || []).map((img, index) => (
-                                    <div key={index} style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px', background: 'white', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveCustomerImage(activeCustomerImgColorTab, index)}
-                                            style={{ position: 'absolute', top: '6px', right: '6px', border: 'none', background: 'rgba(0,0,0,0.6)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '0.65rem' }}
-                                        >
-                                            <i className="fas fa-times"></i>
-                                        </button>
-                                        <div style={{ width: '100%', height: '150px', background: `url(${img.preview}) center/contain no-repeat #f9f9f9`, borderRadius: '4px' }}></div>
+                    {/* Color Mockup Assets */}
+                    <div style={{ marginBottom: 28 }}>
+                        <label style={SECTION_LABEL_ST}>Color Mockup Assets</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {selectedColors.map(colorName => {
+                                const colorObj = selectedProductObj?.colors?.find(c => c.colorName === colorName);
+                                const m = colorMockups[colorName] || {};
+                                const mockupSlots = [
+                                    { field: 'frontFile', previewField: 'frontPreview', label: 'Front View' },
+                                    { field: 'backFile', previewField: 'backPreview', label: 'Back View' },
+                                    { field: 'modelFile', previewField: 'modelPreview', label: 'Model View' },
+                                ];
+                                return (
+                                    <div key={colorName} style={{ border: '1px solid rgba(212,175,55,0.15)', borderRadius: 6, padding: 14, background: '#fafafa' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                                            <span style={{ width: 14, height: 14, borderRadius: '50%', background: colorObj?.color || '#888', border: '1px solid #ccc', display: 'inline-block', flexShrink: 0 }} />
+                                            <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#222' }}>{colorName} Assets</span>
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                            {mockupSlots.map(({ field, previewField, label }) => (
+                                                <div key={field} style={{
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                    padding: '8px 12px', background: '#ffffff',
+                                                    border: `1px solid ${m[field] ? 'rgba(212,175,55,0.45)' : '#e0e0e0'}`, borderRadius: 4
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        {m[previewField] && (
+                                                            <img src={m[previewField]} alt={label} style={{ width: 30, height: 30, borderRadius: 3, objectFit: 'cover', border: '1px solid #ddd' }} />
+                                                        )}
+                                                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: m[field] ? '#222' : '#777' }}>{label}:</span>
+                                                        <span style={{ fontSize: '0.7rem', color: '#555' }}>{m[field] ? m[field].name : 'No file'}</span>
+                                                    </div>
+                                                    <label style={{ padding: '4px 10px', border: '1px solid #ccc', color: '#777', borderRadius: 4, cursor: 'pointer', fontSize: '0.72rem', flexShrink: 0 }}
+                                                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.color = 'var(--gold)'; }}
+                                                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#777'; }}>
+                                                        Choose
+                                                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
+                                                            if (e.target.files[0]) updateColorMockup(colorName, field, e.target.files[0]);
+                                                        }} />
+                                                    </label>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                ))}
-                                <div style={{ height: '168px' }}>
-                                    <DropZone 
-                                        label="Add Customer Image" 
-                                        preview="" 
-                                        onFile={handleAddCustomerImage} 
-                                    />
-                                </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Sizes Configuration */}
+                    <div>
+                        <label style={SECTION_LABEL_ST}>Sizes Configuration *</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {(selectedProductObj?.sizes?.length ? selectedProductObj.sizes : STANDARD_SIZES).map(size => {
+                                const isSelected = selectedSizes.includes(size);
+                                return (
+                                    <label key={size} style={{
+                                        display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
+                                        border: `1px solid ${isSelected ? 'var(--gold)' : '#e0e0e0'}`,
+                                        borderRadius: 4, cursor: 'pointer', userSelect: 'none',
+                                        background: isSelected ? 'rgba(212,175,55,0.06)' : '#ffffff', transition: 'all 0.15s'
+                                    }}>
+                                        <input type="checkbox" checked={isSelected} onChange={() => toggleSize(size)}
+                                            style={{ width: 16, height: 16, accentColor: 'var(--gold)', cursor: 'pointer' }} />
+                                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: isSelected ? 'var(--gold)' : '#333' }}>{size}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â• STEP 5: DESIGN DETAILS â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {step === 5 && (
+                <section className="dsn-upload__section">
+                    <h3 className="dsn-upload__heading">Design Details</h3>
+
+                    <div className="dsn-profile__group">
+                        <label>Design Name *</label>
+                        <input type="text" className="dsn-upload__input"
+                            placeholder="Enter design catalog reference name"
+                            value={designTitle} onChange={e => setDesignTitle(e.target.value)} />
+                    </div>
+
+                    <div className="dsn-profile__group">
+                        <label>Your Royalty / Cost (â‚¹ INR) *</label>
+                        <div className="dsn-auth__field" style={{ background: '#fafafa', border: '1px solid #ddd', borderRadius: 4 }}>
+                            <span style={{ padding: '0 10px', color: 'var(--gold)', fontWeight: 700, fontSize: '1.1rem' }}>â‚¹</span>
+                            <input type="number" placeholder="e.g. 200" value={designerCost}
+                                onChange={e => setDesignerCost(e.target.value)} min="0"
+                                style={{ border: 'none', background: 'transparent', color: '#333', outline: 'none' }} />
+                        </div>
+                    </div>
+
+                    {/* Live Price Preview */}
+                    {selectedProductObj && (
+                        <div style={{ marginBottom: 20, background: 'linear-gradient(135deg,#ffffff 0%,#fdfbf7 100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(212,175,55,0.35)', boxShadow: '0 4px 20px rgba(212,175,55,0.06)' }}>
+                            <h4 style={{ margin: '0 0 14px', fontSize: '0.82rem', color: 'var(--gold)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
+                                ðŸ’° Price Preview
+                            </h4>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, color: '#555', fontSize: '0.85rem' }}>
+                                <span>Base Product:</span><span>â‚¹{pricePreview.baseCost.toLocaleString()}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, color: '#555', fontSize: '0.85rem' }}>
+                                <span>Max Printing Cost:</span><span>â‚¹{pricePreview.maxPrint.toLocaleString()}</span>
+                            </div>
+                            <hr style={{ border: 'none', borderTop: '1px solid rgba(212,175,55,0.15)', margin: '8px 0' }} />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8a6d3b', fontSize: '0.95rem', fontWeight: 700 }}>
+                                <span>Your Royalty:</span><span>â‚¹{pricePreview.dCost.toLocaleString()}</span>
                             </div>
                         </div>
                     )}
-                </section>
-            )}
 
-            {/* ─── STEP 5: Review & Submit ─── */}
-            {step === 5 && (
-                <section className="dsn-upload__section">
-                    <h3 className="dsn-upload__heading">Review Your Design</h3>
-
-                    <div className="dsn-upload__review-block">
-                        <h4>Product Details</h4>
-                        <div className="dsn-upload__review-grid">
-                            <div><strong>Design Title:</strong> {designTitle}</div>
-                            <div><strong>Base Product:</strong> {selectedProductObj?.title}</div>
-                            <div><strong>Final Retail Price:</strong> ₹{(
-                                (Number(selectedProductObj?.cost) || 0) + 
-                                selectedColors.reduce((max, color) => {
-                                    const list = colorPlacements[color] || [];
-                                    const colorCost = list.reduce((sum, placement) => {
-                                        const ps = selectedProductObj?.printingStyles?.find(x => x.style === placement.style);
-                                        return sum + (ps ? Number(ps.cost) || 0 : 0);
-                                    }, 0);
-                                    return Math.max(max, colorCost);
-                                }, 0) + 
-                                (Number(designerCost) || 0)
-                            ).toLocaleString()}</div>
-                            <div><strong>Selected Colors:</strong> {selectedColors.join(', ')}</div>
-                        </div>
-                    </div>
-
-                    <div className="dsn-upload__review-block">
-                        <h4>Description</h4>
-                        <p>{description || '—'}</p>
-                    </div>
-
-                    <div className="dsn-upload__review-block">
-                        <h4>Customer Storefront Images</h4>
-                        {selectedColors.map(color => {
-                            const list = customerImages[color] || [];
-                            return (
-                                <div key={color} style={{ marginBottom: '15px' }}>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#333', marginBottom: '8px' }}>
-                                        {color} Storefront Images ({list.length})
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                        {list.map((img, idx) => (
-                                            <div key={idx} style={{ width: '60px', height: '60px', borderRadius: '4px', border: '1px solid #ddd', background: `url(${img.preview}) center/cover no-repeat` }}></div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="dsn-upload__review-block">
-                        <h4>Printing & Placements Specs</h4>
-                        {selectedColors.map(color => {
-                            const list = colorPlacements[color] || [];
-                            return (
-                                <div key={color} style={{ marginBottom: '15px' }}>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#333', marginBottom: '8px' }}>
-                                        {color} Configurations ({list.length})
-                                    </div>
-                                    <div style={{ paddingLeft: '15px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                        {list.map((item, idx) => (
-                                            <div key={idx} style={{ fontSize: '0.72rem', color: '#555' }}>
-                                                • {item.style} on <strong>{item.placementLabel}</strong>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="dsn-upload__review-block">
-                        <h4>Manufacturer Reference Images</h4>
-                        {selectedColors.map(color => {
-                            const list = manufacturerRefs[color] || [];
-                            return (
-                                <div key={color} style={{ marginBottom: '15px' }}>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#333', marginBottom: '8px' }}>
-                                        {color} References ({list.length})
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                        {list.map((img, idx) => (
-                                            <div key={idx} style={{ width: '60px', height: '60px', borderRadius: '4px', border: '1px solid #ddd', background: `url(${img.preview}) center/cover no-repeat` }}></div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    <div className="dsn-profile__group">
+                        <label>
+                            Designer Note * &nbsp;
+                            <span style={{ fontSize: '0.65rem', color: '#666', fontWeight: 400 }}>(visible to customers â€” up to 3 lines)</span>
+                        </label>
+                        <textarea className="dsn-upload__textarea" rows={3}
+                            placeholder="Share the story behind your design â€” inspiration, mood, target audience..."
+                            value={designerNote} onChange={e => setDesignerNote(e.target.value)} />
                     </div>
                 </section>
             )}
 
-            {/* Navigation */}
+            {/* â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div className="dsn-upload__nav">
-                {step > 1 && <button className="dsn-upload__nav-btn dsn-upload__nav-btn--back" onClick={() => setStep(s => s - 1)}><i className="fas fa-arrow-left"></i> Back</button>}
-                <div className="dsn-upload__nav-spacer"></div>
+                {step > 1 && (
+                    <button className="dsn-upload__nav-btn dsn-upload__nav-btn--back" onClick={() => setStep(s => s - 1)}>
+                        <i className="fas fa-arrow-left" /> Back
+                    </button>
+                )}
+                <div className="dsn-upload__nav-spacer" />
+
                 {step < 5 ? (
-                    <button className="dsn-auth__btn" disabled={!canProceed()} onClick={() => setStep(s => s + 1)}>
-                        <span>Next</span><i className="fas fa-arrow-right"></i>
+                    <button
+                        className="dsn-auth__btn"
+                        disabled={!canProceed()}
+                        onClick={() => { if (canProceed()) setStep(s => s + 1); }}
+                        title={!canProceed() ? 'Please complete all required fields' : ''}
+                    >
+                        <span>Next</span><i className="fas fa-arrow-right" />
                     </button>
                 ) : (
-                    <button className="dsn-auth__btn dsn-auth__btn--submit" onClick={handleSubmit}>
-                        <span>Submit for Review</span><i className="fas fa-paper-plane"></i>
+                    <button
+                        className="dsn-auth__btn dsn-auth__btn--submit"
+                        disabled={!canProceed() || isSubmitting}
+                        onClick={handleSubmit}
+                    >
+                        {isSubmitting
+                            ? <><i className="fas fa-circle-notch fa-spin" /><span>Submitting...</span></>
+                            : <><span>Submit for Review</span><i className="fas fa-paper-plane" /></>}
                     </button>
                 )}
             </div>
@@ -1215,3 +1044,4 @@ function DesignerUpload() {
 }
 
 export default DesignerUpload;
+

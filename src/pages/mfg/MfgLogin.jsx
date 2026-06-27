@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase';
-import { apiFetch, setAuthToken } from '../../api';
+import { apiFetch } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 
 const styles = `
     .auth-split-layout {
@@ -160,6 +161,47 @@ function MfgLogin() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const { user, role, loading: authLoading, logout } = useAuth();
+    const [justLoggedIn, setJustLoggedIn] = useState(false);
+
+    useEffect(() => {
+        // Wait until login was attempted AND auth is no longer loading
+        if (!justLoggedIn || authLoading) return;
+
+        if (user === null) {
+            setError('Authentication failed. Please try again.');
+            setJustLoggedIn(false);
+            return;
+        }
+
+        // role is still resolving from the backend — wait for it
+        if (role === null) return;
+
+        if (role === 'mfg') {
+            // Verify manufacturer profile exists
+            const verifyManufacturer = async () => {
+                try {
+                    const mfgData = await apiFetch('/api/manufacturers/me');
+                    if (mfgData) {
+                        navigate('/mfg', { replace: true });
+                    } else {
+                        logout();
+                        setError('Access denied. This account is not a manufacturer.');
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch manufacturer profile:', err);
+                    logout();
+                    setError('Unable to verify manufacturer profile. Please try again.');
+                }
+            };
+            verifyManufacturer();
+        } else {
+            // User is logged in but not a manufacturer
+            logout();
+            setError('Access denied. This account is not a manufacturer.');
+        }
+        setJustLoggedIn(false);
+    }, [justLoggedIn, authLoading, user, role, logout, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -183,33 +225,11 @@ function MfgLogin() {
                 password,
             });
             if (signInError) throw signInError;
-            if (session) {
-                setAuthToken(session.access_token);
-            }
-            const uid = supabaseUser.id;
-
-            // Verify this UID exists in the 'manufacturers' table
-            let mfgData = null;
-            for (let i = 0; i < 3; i++) {
-                try {
-                    const profile = await apiFetch('/api/manufacturers/me');
-                    mfgData = profile;
-                    break;
-                } catch (err) {
-                    if (i === 2) throw err;
-                    await new Promise(r => setTimeout(r, 100));
-                }
-            }
-            if (!mfgData) {
-                await supabase.auth.signOut();
-                setAuthToken(null);
-                setError('Access denied. This account is not a manufacturer.');
-                return;
-            }
-            navigate('/mfg');
+            // Note: we do NOT set the auth token here; AuthContext will handle it via onAuthStateChange
+            setJustLoggedIn(true);
         } catch (err) {
             console.error('Sign in error:', err);
-            setError(err.message || 'Sign in failed.');
+            setError(err.message || 'Sign in failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -253,7 +273,7 @@ function MfgLogin() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter password"
                                 />
-                                <button 
+                                <button
                                     type="button"
                                     onClick={() => setShowPassword(prev => !prev)}
                                     style={{

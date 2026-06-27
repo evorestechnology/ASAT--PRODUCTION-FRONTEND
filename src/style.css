@@ -1571,16 +1571,53 @@ footer {
 }
 
 /* Hide greeting on mobile */
+/* Hide greeting on mobile and adjust Navbar */
 @media (max-width: 768px) {
     .nav-greeting {
-        display: none;
+        display: none !important;
+    }
+    .nav-container {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .nav-desktop-links {
+        flex-wrap: wrap !important;
+        gap: 15px !important;
+        justify-content: center !important;
     }
     .logo {
         font-size: 1.3rem;
         letter-spacing: 2.5px;
+        margin: 0 !important;
     }
     header {
         padding: 14px 4%;
+    }
+    .nav-icons {
+        margin-top: 5px;
+    }
+    .nav-icon-wrapper i {
+        margin-left: 15px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-desktop-links {
+        font-size: 0.65rem !important;
+        gap: 10px !important;
+    }
+    .logo {
+        font-size: 1.1rem !important;
+    }
+    .nav-icon-wrapper i {
+        margin-left: 10px !important;
+    }
+    .currency-select-btn {
+        font-size: 0.7rem !important;
+        padding: 4px 8px !important;
     }
 }
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../supabase';
-import { apiFetch, setAuthToken } from '../../api';
+import { apiFetch } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 
 const authImages = [
     'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?auto=format&fit=crop&w=1000&q=80',
@@ -211,6 +212,8 @@ function DesignerLogin() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const { user, role, loading: authLoading, logout } = useAuth();
+    const [justLoggedIn, setJustLoggedIn] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -218,6 +221,45 @@ function DesignerLogin() {
         }, 5000);
         return () => clearInterval(timer);
     }, []);
+
+    useEffect(() => {
+        // Wait until login was attempted AND auth is no longer loading
+        if (!justLoggedIn || authLoading) return;
+
+        if (user === null) {
+            setError('Authentication failed. Please try again.');
+            setJustLoggedIn(false);
+            return;
+        }
+
+        // role is still resolving from the backend — wait for it
+        if (role === null) return;
+
+        if (role === 'designer') {
+            // Verify designer profile exists
+            const verifyDesigner = async () => {
+                try {
+                    const designerData = await apiFetch('/api/designers/me');
+                    if (designerData) {
+                        navigate('/designer', { replace: true });
+                    } else {
+                        logout();
+                        setError('Access denied. This account is not a designer.');
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch designer profile:', err);
+                    logout();
+                    setError('Unable to verify designer profile. Please try again.');
+                }
+            };
+            verifyDesigner();
+        } else {
+            // User is logged in but not a designer
+            logout();
+            setError('Access denied. This account is not a designer.');
+        }
+        setJustLoggedIn(false);
+    }, [justLoggedIn, authLoading, user, role, logout, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -242,40 +284,8 @@ function DesignerLogin() {
                 password,
             });
             if (signInError) throw signInError;
-            if (session) {
-                setAuthToken(session.access_token);
-            }
-            const uid = supabaseUser.id;
-
-            // Verify this UID exists in the 'designers' table
-            let designerData = null;
-            for (let i = 0; i < 3; i++) {
-                try {
-                    const profile = await apiFetch('/api/designers/me');
-                    designerData = profile;
-                    break;
-                } catch (err) {
-                    if (i === 2) throw err;
-                    await new Promise(r => setTimeout(r, 100));
-                }
-            }
-            if (!designerData) {
-                await supabase.auth.signOut();
-                setAuthToken(null);
-                setError('Access denied. This account is not registered as a designer. Please use the correct login portal.');
-                return;
-            }
-
-            // Check if status is blocked or suspended
-            if (designerData.status === 'blocked' || designerData.status === 'suspended') {
-                await supabase.auth.signOut();
-                setAuthToken(null);
-                setError('Access denied. Your designer account has been suspended or blocked.');
-                return;
-            }
-
-            // AuthContext resolves designer role — ProtectedRoute redirects
-            navigate('/designer');
+            // Note: we do NOT set the auth token here; AuthContext will handle it via onAuthStateChange
+            setJustLoggedIn(true);
         } catch (err) {
             console.error('Sign in error:', err);
             setError(err.message || 'Sign in failed. Please try again.');
@@ -287,7 +297,7 @@ function DesignerLogin() {
     return (
         <div className="auth-split-layout">
             <style>{styles}</style>
-            
+
             {/* Left Side: Form */}
             <div className="auth-form-side">
                 <Link to="/" className="auth-back-home">
@@ -297,15 +307,15 @@ function DesignerLogin() {
                 <div className="auth-form-container">
                     <h2 className="auth-title">As Simple as That</h2>
                     <p className="auth-subtitle">**A Designer Paradise** — sign in to your studio.</p>
-                    
+
                     {successMsg && (
-                        <div style={{ 
-                            color: '#1e7e34', 
-                            fontFamily: 'Montserrat, sans-serif', 
-                            fontSize: '0.82rem', 
-                            marginBottom: '24px', 
-                            padding: '12px 16px', 
-                            background: '#eafaf1', 
+                        <div style={{
+                            color: '#1e7e34',
+                            fontFamily: 'Montserrat, sans-serif',
+                            fontSize: '0.82rem',
+                            marginBottom: '24px',
+                            padding: '12px 16px',
+                            background: '#eafaf1',
                             borderLeft: '4px solid #28a745',
                             borderRadius: '4px',
                             boxShadow: '0 2px 10px rgba(40, 167, 69, 0.05)',
@@ -317,7 +327,7 @@ function DesignerLogin() {
 
                     <form onSubmit={handleSubmit}>
                         <div className="auth-input-group">
-                            <label>Email</label>
+                            <label>Username or Email</label>
                             <input
                                 type="text"
                                 className="auth-input"
@@ -327,7 +337,7 @@ function DesignerLogin() {
                                 placeholder="Enter your username or email"
                             />
                         </div>
-                        
+
                         <div className="auth-input-group">
                             <label>Password</label>
                             <div style={{ position: 'relative' }}>
@@ -340,7 +350,7 @@ function DesignerLogin() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter your password"
                                 />
-                                <button 
+                                <button
                                     type="button"
                                     onClick={() => setShowPassword(prev => !prev)}
                                     style={{
@@ -370,7 +380,7 @@ function DesignerLogin() {
                             </label>
                             <a href="#" className="auth-forgot-link">Forgot Password?</a>
                         </div>
-                        
+
                         {error && (
                             <div style={{ color: '#c0392b', fontFamily: 'Montserrat,sans-serif', fontSize: '0.8rem', marginBottom: '16px', padding: '10px 12px', background: '#fef0ee', borderLeft: '3px solid #c0392b' }}>
                                 {error}

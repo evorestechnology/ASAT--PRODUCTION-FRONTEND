@@ -216,7 +216,7 @@
 .dsn-upload__drop-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #555; pointer-events: none; }
 .dsn-upload__drop-empty i { font-size: 1.6rem; color: var(--gold); }
 .dsn-upload__drop-empty span { font-family: 'Montserrat', sans-serif; font-size: 0.68rem; text-align: center; letter-spacing: 0.5px; font-weight: 500; color: #666; }
-.dsn-upload__drop-preview { width: 100%; height: 100%; background: center/cover no-repeat; position: relative; }
+.dsn-upload__drop-preview { width: 100%; height: 100%; background: center/contain no-repeat; background-color: #fafafa; position: relative; }
 .dsn-upload__drop-change { position: absolute; inset: 0; background: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 0.7rem; letter-spacing: 1px; opacity: 0; transition: opacity 0.3s; }
 .dsn-upload__drop:hover .dsn-upload__drop-change { opacity: 1; }
 .dsn-upload__size-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
@@ -231,8 +231,8 @@
 .dsn-upload__zone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 .dsn-upload__zone-files { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .dsn-upload__zone-files .dsn-upload__drop { aspect-ratio: 16/9; }
-.dsn-upload__select { width: 100%; padding: 10px 12px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; outline: none; background: white; }
-.dsn-upload__select:focus { border-color: var(--gold); }
+.dsn-upload__select, .dsn-upload__input { width: 100%; padding: 11px 14px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; outline: none; background: white; box-sizing: border-box; transition: all 0.25s ease; }
+.dsn-upload__select:focus, .dsn-upload__input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1); }
 .dsn-upload__textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; outline: none; resize: vertical; box-sizing: border-box; }
 .dsn-upload__textarea:focus { border-color: var(--gold); }
 .dsn-upload__textarea--lg { min-height: 120px; }

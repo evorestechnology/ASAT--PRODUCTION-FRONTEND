@@ -264,6 +264,7 @@ function Navbar() {
                     <Link to="/rankings" style={{ color: 'var(--dark)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }} className="nav-link-item">
                         <i className="fas fa-trophy" style={{ color: 'var(--gold)', fontSize: '0.8rem', margin: 0 }}></i> Rankings
                     </Link>
+                    <Link to="/terms" style={{ color: 'var(--dark)', textDecoration: 'none' }} className="nav-link-item">Terms &amp; Conditions</Link>
                     
                     <form onSubmit={handleSearchSubmit} style={{
                         display: 'flex',

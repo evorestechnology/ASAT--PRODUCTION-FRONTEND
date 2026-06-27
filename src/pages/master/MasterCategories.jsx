@@ -63,7 +63,7 @@ function MasterCategories() {
                 let downloadUrl = editingCategory.image;
                 if (categoryFile) {
                     const path = `categories/${Date.now()}_${categoryFile.name}`;
-                    downloadUrl = await uploadFile('asat-uploads', path, categoryFile);
+                    downloadUrl = await uploadFile(categoryFile, path, 'asat-uploads');
                 }
 
                 await apiFetch(`/api/categories/${editingCategory.id}`, {
@@ -84,7 +84,7 @@ function MasterCategories() {
                 }
 
                 const path = `categories/${Date.now()}_${categoryFile.name}`;
-                const downloadUrl = await uploadFile('asat-uploads', path, categoryFile);
+                const downloadUrl = await uploadFile(categoryFile, path, 'asat-uploads');
 
                 await apiFetch('/api/categories', {
                     method: 'POST',

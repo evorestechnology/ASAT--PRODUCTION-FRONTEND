@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../supabase';
-import { apiFetch, setAuthToken } from '../../api';
+import { apiFetch } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 
 const styles = `
     .auth-split-layout {
@@ -155,11 +156,43 @@ const styles = `
 
 function MasterLogin() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const successMsg = location.state?.successMessage;
     const [adminId, setAdminId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const { user, role, loading: authLoading, logout } = useAuth();
+    const [justLoggedIn, setJustLoggedIn] = useState(false);
+
+    useEffect(() => {
+        // Wait until we have attempted a login AND auth is no longer loading
+        if (!justLoggedIn || authLoading) return;
+
+        if (user === null) {
+            // Supabase session gone — auth failed entirely (bad credentials etc.)
+            setError('Authentication failed. Please try again.');
+            setJustLoggedIn(false);
+            return;
+        }
+
+        // user exists but role is still null → AuthContext is still resolving the role
+        // from the backend. Stay in this state — the effect will re-run once role populates.
+        if (role === null) return;
+
+        // Role fully resolved — now we can make a decision
+        if (role === 'admin') {
+            // GuestRoute will redirect to /master automatically since user+role are set.
+            // Explicit navigate as a fallback in case GuestRoute already rendered.
+            navigate('/master', { replace: true });
+        } else {
+            // Authenticated but not an admin
+            logout();
+            setError('Access denied. This account does not have admin privileges.');
+            setJustLoggedIn(false);
+        }
+    }, [justLoggedIn, authLoading, user, role, logout, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -171,32 +204,9 @@ function MasterLogin() {
                 password,
             });
             if (signInError) throw signInError;
-            if (session) {
-                setAuthToken(session.access_token);
-            }
-            const uid = supabaseUser.id;
-
-            // Verify this user actually exists in the 'admins' table
-            let adminData = null;
-            for (let i = 0; i < 3; i++) {
-                try {
-                    const res = await apiFetch('/api/auth/resolve-role');
-                    if (res && res.role === 'admin') {
-                        adminData = res.profile;
-                        break;
-                    }
-                } catch (err) {
-                    if (i === 2) throw err;
-                    await new Promise(r => setTimeout(r, 100));
-                }
-            }
-            if (!adminData) {
-                await supabase.auth.signOut();
-                setAuthToken(null);
-                setError('Access denied. This account is not an admin.');
-                return;
-            }
-            navigate('/master');
+            // Note: we do not set the auth token here; the AuthContext will handle it via the onAuthStateChange listener.
+            // Mark that we have just logged in so we can wait for the auth context to update.
+            setJustLoggedIn(true);
         } catch (err) {
             console.error('Sign in error:', err);
             setError(err.message || 'Sign in failed. Please try again.');
@@ -225,6 +235,23 @@ function MasterLogin() {
                     <h2 className="auth-title">Master Access</h2>
                     <p className="auth-subtitle">Authorize to access the admin dashboard.</p>
 
+                    {successMsg && (
+                        <div style={{
+                            color: '#1e7e34',
+                            fontFamily: 'Montserrat, sans-serif',
+                            fontSize: '0.82rem',
+                            marginBottom: '24px',
+                            padding: '12px 16px',
+                            background: '#eafaf1',
+                            borderLeft: '4px solid #28a745',
+                            borderRadius: '4px',
+                            boxShadow: '0 2px 10px rgba(40, 167, 69, 0.05)',
+                            lineHeight: '1.5'
+                        }}>
+                            ✦ {successMsg}
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit}>
                         <div className="auth-input-group">
                             <label>Admin Email</label>
@@ -243,7 +270,7 @@ function MasterLogin() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter master password"
                                 />
-                                <button 
+                                <button
                                     type="button"
                                     onClick={() => setShowPassword(prev => !prev)}
                                     style={{

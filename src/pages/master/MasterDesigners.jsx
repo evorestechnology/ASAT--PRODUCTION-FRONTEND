@@ -196,7 +196,6 @@ function MasterDesigners() {
     };
 
     return (
-        <br /> ||
         <main className="adm-page">
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />

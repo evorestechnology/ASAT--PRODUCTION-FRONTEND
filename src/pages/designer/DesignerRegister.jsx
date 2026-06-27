@@ -739,8 +739,8 @@ function DesignerRegister() {
                 // 3. Upload avatar image if selected (user is now authenticated, so storage policy matches!)
                 if (avatarFile) {
                     try {
-                        const avatarUrl = await uploadFile('asat-uploads', `avatars/${uid}/${avatarFile.name}`, avatarFile);
-                        
+                        const avatarUrl = await uploadFile(avatarFile, `avatars/${uid}/${avatarFile.name}`, 'asat-uploads');
+
                         // 4. Update the avatar_url in the designers profile
                         await apiFetch('/api/designers/me', {
                             method: 'PUT',
