@@ -32,7 +32,7 @@ const heroSlides = [
 
 const STATIC_FEATURES = [
   { icon: 'fa-gem',           title: 'Designer’s best',    desc: 'Every piece crafted from premium fabrics with meticulous attention to detail.' },
-  { icon: 'fa-truck-fast',    title: 'Pan-World Delivery', desc: 'Free shipping above â‚¹2,000 with real-time tracking and hassle-free returns.' },
+  { icon: 'fa-truck-fast',    title: 'Pan-World Delivery', desc: 'Free shipping above ₹2,000 with real-time tracking and hassle-free returns.' },
   { icon: 'fa-shield-halved', title: 'Certified Quality',  desc: 'Every garment quality-tested and inspected before shipping to you.' },
 ];
 

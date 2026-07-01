@@ -520,19 +520,19 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                                                                     {category === 'DTG' ? (
                                                                         <>
                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                                <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Dark Garment (â‚¹):</label>
+                                                                                <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Dark Garment (₹):</label>
                                                                                 <input type="number" min="0" value={opt.darkPrice} onChange={e => updateOption(pc.category, optName, 'darkPrice', e.target.value)}
                                                                                     style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
                                                                             </div>
                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                                <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Light Garment (â‚¹):</label>
+                                                                                <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Light Garment (₹):</label>
                                                                                 <input type="number" min="0" value={opt.lightPrice} onChange={e => updateOption(pc.category, optName, 'lightPrice', e.target.value)}
                                                                                     style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
                                                                             </div>
                                                                         </>
                                                                     ) : (
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                            <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Set Price (â‚¹):</label>
+                                                                            <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Set Price (₹):</label>
                                                                             <input type="number" min="0" value={opt.price} onChange={e => updateOption(pc.category, optName, 'price', e.target.value)}
                                                                                 style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
                                                                         </div>

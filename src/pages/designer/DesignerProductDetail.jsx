@@ -186,7 +186,7 @@ function DesignerProductDetail() {
                         <div style={{ borderTop: '1px solid #eee', paddingTop: 16, display: 'flex', alignItems: 'baseline', gap: 10 }}>
                             <span style={{ fontSize: '0.72rem', color: '#888', textTransform: 'uppercase', letterSpacing: 0.5 }}>Manufacturer Base Cost</span>
                             <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--gold)' }}>
-                                â‚¹{(product.cost || 0).toLocaleString()}
+                                ₹{(product.cost || 0).toLocaleString()}
                             </span>
                         </div> */}
                     </div>
@@ -361,7 +361,7 @@ function DesignerProductDetail() {
                                                                 background: '#fafafa', border: '1px solid #eee',
                                                                 color: '#666', borderRadius: 12, textTransform: 'capitalize'
                                                             }}>
-                                                                {displayLabel} (â‚¹{pl.price || 0})
+                                                                {displayLabel} (₹{pl.price || 0})
                                                             </span>
                                                         );
                                                     })}

@@ -51,6 +51,8 @@ import DesignerDesigns  from './pages/designer/DesignerDesigns';
 import DesignerUpload   from './pages/designer/DesignerUpload';
 import DesignerBaseProducts from './pages/designer/DesignerBaseProducts';
 import DesignerProductDetail from './pages/designer/DesignerProductDetail';
+import DesignerDesignDetail from './pages/designer/DesignerDesignDetail';
+
 
 // Master pages
 import MasterDashboard    from './pages/master/MasterDashboard';
@@ -60,6 +62,8 @@ import MasterWallets      from './pages/master/MasterWallets';
 import MasterDesigners    from './pages/master/MasterDesigners';
 import MasterManufacturers from './pages/master/MasterManufacturers';
 import MasterDesigns      from './pages/master/MasterDesigns';
+import MasterDesignReview from './pages/master/MasterDesignReview';
+
 import MasterCatalogue    from './pages/master/MasterCatalogue';
 import MasterProducts     from './pages/master/MasterProducts';
 import MasterSettings     from './pages/master/MasterSettings';
@@ -131,7 +135,9 @@ function App() {
           <Route path="about"    element={<DesignerAbout />} />
           <Route path="terms"    element={<DesignerTerms />} />
           <Route path="designs"  element={<DesignerDesigns />} />
+          <Route path="designs/:id" element={<DesignerDesignDetail />} />
           <Route path="designs/upload" element={<DesignerUpload />} />
+
           <Route path="base-products" element={<DesignerBaseProducts />} />
           <Route path="base-products/:id" element={<DesignerProductDetail />} />
         </Route>
@@ -151,6 +157,8 @@ function App() {
           <Route path="designers" element={<MasterDesigners />} />
           <Route path="manufacturers" element={<MasterManufacturers />} />
           <Route path="designs"   element={<MasterDesigns />} />
+          <Route path="designs/:id" element={<MasterDesignReview />} />
+
           <Route path="catalogue" element={<MasterCatalogue />} />
           <Route path="products"  element={<MasterProducts />} />
            <Route path="tickets"   element={<MasterTickets />} />

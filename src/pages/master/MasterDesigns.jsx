@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { apiFetch } from '../../api';
 import '../../styles/admin.css';
 import BackButton from '../../components/BackButton';
@@ -429,7 +431,9 @@ function DesignDrawer({ design, onClose, onAction, actionLoading, rejectComment,
 
 /* ══════════════════════════════════════════════════════════ */
 function MasterDesigns() {
+    const navigate = useNavigate();
     const [tab, setTab] = useState('pending');
+
     const [allDesigns, setAllDesigns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -550,6 +554,7 @@ function MasterDesigns() {
 
             <BackButton />
             <h1 className="adm-page__title">DESIGNS</h1>
+
             <p className="adm-page__subtitle">Approve, reject, or restrict designer submissions</p>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
@@ -594,7 +599,8 @@ function MasterDesigns() {
                             {designs.length === 0 ? (
                                 <tr><td colSpan={7} className="adm-table__empty"><i className="fas fa-palette" />No {tab} designs found.</td></tr>
                             ) : designs.map(d => (
-                                <tr key={d.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedDesign(d)}>
+                                <tr key={d.id} style={{ cursor: 'pointer' }} onClick={() => navigate('/master/designs/' + d.id)}>
+
                                     <td>
                                         {getImages(d)[0] ? (
                                             <div style={{ width: 48, height: 48, background: `url(${getImages(d)[0]}) center/cover`, borderRadius: 6, border: '1px solid #2a2a2a' }} />
@@ -618,10 +624,11 @@ function MasterDesigns() {
                                     <td>
                                         <button
                                             style={{ padding: '6px 14px', background: 'transparent', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 4, fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Montserrat', sans-serif" }}
-                                            onClick={e => { e.stopPropagation(); setSelectedDesign(d); }}>
+                                            onClick={e => { e.stopPropagation(); navigate('/master/designs/' + d.id); }}>
                                             View →
                                         </button>
                                     </td>
+
                                 </tr>
                             ))}
                         </tbody>

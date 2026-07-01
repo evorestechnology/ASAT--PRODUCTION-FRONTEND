@@ -179,6 +179,7 @@ function DesignerUpload() {
         return Object.values(merged).filter(ps => ps.placements.length > 0);
     }, [selectedProductObj]);
 
+
     /* â”€â”€ Active tab follows color selection â”€â”€â”€ */
     useEffect(() => {
         if (selectedColors.length > 0 && (!activeColorTab || !selectedColors.includes(activeColorTab))) {
@@ -269,6 +270,37 @@ function DesignerUpload() {
         });
     }, [selectedProductObj]);
 
+    // visibleTechniques: for primary color shows ALL techniques;
+    // for secondary colors shows ONLY the techniques/placements already configured on the primary.
+    const visibleTechniques = useMemo(() => {
+        if (!activeColorTab) return availableTechniques;
+        if (activeColorTab === primaryColor) return availableTechniques;
+
+        // Collect placements that have been fully configured on the primary color
+        const primaryConfigs = (colorPlacements[primaryColor] || []).filter(
+            c => c.designFile && c.mockupFile
+        );
+        if (primaryConfigs.length === 0) return [];
+
+        // Build a filtered copy of the technique list, keeping only configured placements
+        const techniqueMap = {};
+        primaryConfigs.forEach(pc => {
+            const styleKey = pc.style;
+            if (!techniqueMap[styleKey]) {
+                const origTech = availableTechniques.find(t => t.style === styleKey);
+                if (origTech) techniqueMap[styleKey] = { ...origTech, placements: [] };
+            }
+            if (techniqueMap[styleKey]) {
+                const allPlacementsForStyle = getPlacementsForStyle(styleKey);
+                const matchedPl = allPlacementsForStyle.find(pl => pl.id === pc.placementId);
+                if (matchedPl && !techniqueMap[styleKey].placements.some(p => p.id === matchedPl.id)) {
+                    techniqueMap[styleKey].placements.push(matchedPl);
+                }
+            }
+        });
+        return Object.values(techniqueMap).filter(t => t.placements.length > 0);
+    }, [activeColorTab, primaryColor, availableTechniques, colorPlacements, getPlacementsForStyle]);
+
     const getPlacementConfig = (colorName, techStyle, placementId) =>
         (colorPlacements[colorName] || []).find(c => c.style === techStyle && c.placementId === placementId) || null;
 
@@ -311,9 +343,26 @@ function DesignerUpload() {
     /* â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     const canProceed = () => {
         if (step === 1) return !!selectedProductId && selectedColors.length > 0 && !!primaryColor;
-        if (step === 2) return selectedColors.every(color =>
-            (colorPlacements[color] || []).some(c => c.designFile && c.mockupFile)
-        );
+        if (step === 2) {
+            // 1. Primary color must have at least one fully-configured placement
+            const primaryConfigs = (colorPlacements[primaryColor] || []).filter(
+                c => c.designFile && c.mockupFile
+            );
+            if (primaryConfigs.length === 0) return false;
+
+            // 2. Every OTHER selected color must configure EVERY placement that was
+            //    configured on the primary color (those are mandatory)
+            const otherColors = selectedColors.filter(c => c !== primaryColor);
+            return otherColors.every(color => {
+                const colorConfigs = colorPlacements[color] || [];
+                return primaryConfigs.every(pc => {
+                    const match = colorConfigs.find(
+                        cc => cc.style === pc.style && cc.placementId === pc.placementId
+                    );
+                    return match && match.designFile && match.mockupFile;
+                });
+            });
+        }
         if (step === 3) return true;
         if (step === 4) return !!coverImageFile && selectedSizes.length > 0;
         if (step === 5) return designTitle.trim() && designerCost !== '' && parseFloat(designerCost) >= 0 && designerNote.trim();
@@ -537,7 +586,7 @@ function DesignerUpload() {
                                                             {prod.title}
                                                         </div>
                                                         <div style={{ fontSize: '0.7rem', color: '#777' }}>
-                                                            by {prod.mfgName || 'Manufacturer'} &nbsp;Â·&nbsp; Base Cost: â‚¹{(prod.cost || 0).toLocaleString()}
+                                                            by {prod.mfgName || 'Manufacturer'} &nbsp;Â·&nbsp; Base Cost: ₹{(prod.cost || 0).toLocaleString()}
                                                         </div>
                                                     </div>
                                                     <button type="button"
@@ -639,50 +688,86 @@ function DesignerUpload() {
             {step === 2 && (
                 <section className="dsn-upload__section">
                     <h3 className="dsn-upload__heading">Configure Your Design</h3>
-                    <p className="dsn-upload__hint">
-                        For each color, expand a print technique, then click a placement to upload your design file and reference mockup.
-                        At least one placement must be fully configured per color.
-                    </p>
+                    {activeColorTab === primaryColor ? (
+                        <p className="dsn-upload__hint">
+                            <strong>Step 1 of 2 (Primary Color):</strong> Expand a print technique and upload your design file + reference mockup for each placement you want to use.
+                            The placements you configure here will become <strong>mandatory</strong> for all other selected colors.
+                        </p>
+                    ) : (
+                        <p className="dsn-upload__hint">
+                            <strong>Step 2 of 2 (Secondary Color):</strong> The placements below are inherited from your primary color and are <strong>mandatory</strong>. Upload a design file and mockup for each one.
+                        </p>
+                    )}
 
                     {/* Color Tabs */}
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '1px solid #e5e5e5', paddingBottom: 0, flexWrap: 'wrap' }}>
-                        {selectedColors.map(colorName => {
-                            const colorObj = selectedProductObj?.colors?.find(c => c.colorName === colorName);
-                            const isActive = activeColorTab === colorName;
-                            const hasConfig = (colorPlacements[colorName] || []).some(c => c.designFile && c.mockupFile);
-                            return (
-                                <button key={colorName} type="button"
-                                    onClick={() => { setActiveColorTab(colorName); setExpandedTechnique(''); setExpandedPlacement(''); }}
-                                    style={{
-                                        display: 'flex', alignItems: 'center', gap: 8,
-                                        padding: '9px 16px', border: 'none',
-                                        borderBottom: isActive ? '2px solid var(--gold)' : '2px solid transparent',
-                                        background: 'transparent', color: isActive ? 'var(--gold)' : '#666',
-                                        fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-                                        marginBottom: '-1px'
-                                    }}>
-                                    <span style={{
-                                        width: 12, height: 12, borderRadius: '50%', flexShrink: 0,
-                                        background: colorObj?.color || '#888', border: '1px solid #ccc', display: 'inline-block'
-                                    }} />
-                                    {colorName}
-                                    {hasConfig && <i className="fas fa-check-circle" style={{ color: '#2ecc71', fontSize: '0.75rem' }} />}
-                                </button>
-                            );
-                        })}
-                    </div>
+                    {(() => {
+                        const isPrimaryConfigured = (colorPlacements[primaryColor] || []).some(
+                            c => c.designFile && c.mockupFile
+                        );
+                        return (
+                            <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '1px solid #e5e5e5', paddingBottom: 0, flexWrap: 'wrap' }}>
+                                {selectedColors.map(colorName => {
+                                    const colorObj = selectedProductObj?.colors?.find(c => c.colorName === colorName);
+                                    const isActive = activeColorTab === colorName;
+                                    const isPrimary = colorName === primaryColor;
+                                    const isDisabled = !isPrimary && !isPrimaryConfigured;
+                                    const hasConfig = !isDisabled && (colorPlacements[colorName] || []).some(
+                                        c => c.designFile && c.mockupFile
+                                    );
+                                    return (
+                                        <button
+                                            key={colorName}
+                                            type="button"
+                                            disabled={isDisabled}
+                                            title={isDisabled ? `Configure "${primaryColor}" first` : (isPrimary ? 'Primary color' : 'Secondary color')}
+                                            onClick={() => {
+                                                if (isDisabled) return;
+                                                setActiveColorTab(colorName);
+                                                setExpandedTechnique('');
+                                                setExpandedPlacement('');
+                                            }}
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: 8,
+                                                padding: '9px 16px', border: 'none',
+                                                borderBottom: isActive ? '2px solid var(--gold)' : '2px solid transparent',
+                                                background: 'transparent',
+                                                color: isDisabled ? '#bbb' : (isActive ? 'var(--gold)' : '#666'),
+                                                fontSize: '0.82rem', fontWeight: 600,
+                                                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                                transition: 'all 0.2s',
+                                                marginBottom: '-1px',
+                                                opacity: isDisabled ? 0.5 : 1,
+                                            }}>
+                                            <span style={{
+                                                width: 12, height: 12, borderRadius: '50%', flexShrink: 0,
+                                                background: colorObj?.color || '#888', border: '1px solid #ccc', display: 'inline-block'
+                                            }} />
+                                            {colorName}
+                                            {isPrimary && (
+                                                <span style={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: 0.5, color: isActive ? 'var(--gold)' : '#aaa', textTransform: 'uppercase' }}>Primary</span>
+                                            )}
+                                            {isDisabled && <i className="fas fa-lock" style={{ color: '#ccc', fontSize: '0.65rem' }} />}
+                                            {hasConfig && <i className="fas fa-check-circle" style={{ color: '#2ecc71', fontSize: '0.75rem' }} />}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })()}
 
                     {/* Print Technique Accordions */}
                     {activeColorTab && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {availableTechniques.length === 0 ? (
+                            {visibleTechniques.length === 0 ? (
                                 <div style={{ color: '#888', fontSize: '0.85rem', padding: 20, border: '1px dashed #e0e0e0', borderRadius: 6, textAlign: 'center' }}>
-                                    No printing techniques configured for this product.
+                                    {activeColorTab === primaryColor
+                                        ? 'No printing techniques configured for this product.'
+                                        : 'Configure the primary color first to unlock placements for this color.'}
                                 </div>
-                            ) : availableTechniques.map(tech => {
+                            ) : visibleTechniques.map(tech => {
                                 const techKey = tech.style;
                                 const isOpen = expandedTechnique === techKey;
-                                const placements = getPlacementsForStyle(techKey);
+                                const placements = tech.placements;
                                 const configuredCount = placements.filter(pl => {
                                     const c = getPlacementConfig(activeColorTab, techKey, pl.id);
                                     return c && c.designFile && c.mockupFile;
@@ -763,7 +848,12 @@ function DesignerUpload() {
                                                                     }}>
                                                                         {isConfigured && <i className="fas fa-check" style={{ color: 'white', fontSize: '0.45rem' }} />}
                                                                     </div>
-                                                                    <span style={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, textTransform: 'capitalize' }}>{pl.label}</span>
+                                                                    <span style={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, textTransform: 'capitalize' }}>
+                                                                        {pl.label}
+                                                                        {activeColorTab !== primaryColor && (
+                                                                            <span style={{ marginLeft: 6, fontSize: '0.6rem', fontWeight: 800, color: '#e67e22', textTransform: 'uppercase', letterSpacing: 0.5 }}>Mandatory</span>
+                                                                        )}
+                                                                    </span>
                                                                 </div>
                                                                 <i className={`fas fa-chevron-${isPlExpanded ? 'up' : 'down'}`} style={{ color: '#888', fontSize: '0.65rem' }} />
                                                             </div>
@@ -969,9 +1059,9 @@ function DesignerUpload() {
                     </div>
 
                     <div className="dsn-profile__group">
-                        <label>Your Royalty / Cost (â‚¹ INR) *</label>
+                        <label>Your Royalty / Cost (₹ INR) *</label>
                         <div className="dsn-auth__field" style={{ background: '#fafafa', border: '1px solid #ddd', borderRadius: 4 }}>
-                            <span style={{ padding: '0 10px', color: 'var(--gold)', fontWeight: 700, fontSize: '1.1rem' }}>â‚¹</span>
+                            <span style={{ padding: '0 10px', color: 'var(--gold)', fontWeight: 700, fontSize: '1.1rem' }}>₹</span>
                             <input type="number" placeholder="e.g. 200" value={designerCost}
                                 onChange={e => setDesignerCost(e.target.value)} min="0"
                                 style={{ border: 'none', background: 'transparent', color: '#333', outline: 'none' }} />
@@ -985,14 +1075,14 @@ function DesignerUpload() {
                                 ðŸ’° Price Preview
                             </h4>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, color: '#555', fontSize: '0.85rem' }}>
-                                <span>Base Product:</span><span>â‚¹{pricePreview.baseCost.toLocaleString()}</span>
+                                <span>Base Product:</span><span>₹{pricePreview.baseCost.toLocaleString()}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, color: '#555', fontSize: '0.85rem' }}>
-                                <span>Max Printing Cost:</span><span>â‚¹{pricePreview.maxPrint.toLocaleString()}</span>
+                                <span>Max Printing Cost:</span><span>₹{pricePreview.maxPrint.toLocaleString()}</span>
                             </div>
                             <hr style={{ border: 'none', borderTop: '1px solid rgba(212,175,55,0.15)', margin: '8px 0' }} />
                             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8a6d3b', fontSize: '0.95rem', fontWeight: 700 }}>
-                                <span>Your Royalty:</span><span>â‚¹{pricePreview.dCost.toLocaleString()}</span>
+                                <span>Your Royalty:</span><span>₹{pricePreview.dCost.toLocaleString()}</span>
                             </div>
                         </div>
                     )}
