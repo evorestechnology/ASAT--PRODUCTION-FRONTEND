@@ -34,10 +34,10 @@ function PopupModal() {
                 </p>
                 <p className="popup-body">
                     For the best experience, switch to a larger screen and explore the full collection.
-                    This fashion-tech platform is built for a real-time big screen experience.
+                    This premium designer edition platform is built for a real-time big screen shopping experience.
                 </p>
                 <p className="popup-body popup-body--highlight">
-                    We believe you deserve nothing but the best ✨
+                    We believe you deserve nothing but the best 😇
                 </p>
                 <button className="popup-cta-btn" onClick={closeModal}>
                     START EXPLORING

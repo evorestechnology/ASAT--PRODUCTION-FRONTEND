@@ -293,8 +293,8 @@ function UserTracking() {
                                     <span className="details-label">Items:</span>
                                     <span className="details-value">
                                         {Array.isArray(order.items)
-                                            ? order.items.map(item => `${item.name} (${item.size}) × ${item.qty}`).join(', ')
-                                            : 'Premium Garment'}
+                                             ? order.items.map(item => `${item.name} (${item.size} / ${item.colorName || item.color || 'Standard'}) × ${item.qty}`).join(', ')
+                                             : 'Premium Garment'}
                                     </span>
                                 </div>
                                 <div className="details-row">

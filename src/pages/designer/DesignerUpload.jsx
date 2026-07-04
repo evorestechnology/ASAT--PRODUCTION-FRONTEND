@@ -1090,10 +1090,10 @@ function DesignerUpload() {
                     <div className="dsn-profile__group">
                         <label>
                             Designer Note * &nbsp;
-                            <span style={{ fontSize: '0.65rem', color: '#666', fontWeight: 400 }}>(visible to customers â€” up to 3 lines)</span>
+                            <span style={{ fontSize: '0.65rem', color: '#666', fontWeight: 400 }}>(visible to customers — up to 3 lines)</span>
                         </label>
                         <textarea className="dsn-upload__textarea" rows={3}
-                            placeholder="Share the story behind your design â€” inspiration, mood, target audience..."
+                            placeholder="Share the story behind your design , inspiration, mood, target audience..."
                             value={designerNote} onChange={e => setDesignerNote(e.target.value)} />
                     </div>
                 </section>

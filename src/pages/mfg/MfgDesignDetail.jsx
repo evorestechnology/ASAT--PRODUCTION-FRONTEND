@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import BackButton from '../../components/BackButton';
 import { useToast, ToastContainer } from '../../components/useToast';
@@ -8,7 +8,11 @@ import '../../styles/admin.css';
 export default function MfgDesignDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { toasts, showToast } = useToast();
+    
+    const bookedColor = searchParams.get('color') || '';
+    const bookedSize = searchParams.get('size') || '';
     
     const [design, setDesign] = useState(null);
     const [baseProduct, setBaseProduct] = useState(null);
@@ -40,10 +44,22 @@ export default function MfgDesignDetail() {
                     }
                 }
 
-                // Set initial active color tab
+                // Set initial active color tab (match bookedColor if passed)
                 const colors = designData.colors || [];
                 if (colors.length > 0) {
-                    setActiveColorTab(colors[0]?.colorName || colors[0] || '');
+                    let matchedColor = colors[0]?.colorName || colors[0] || '';
+                    if (bookedColor) {
+                        const found = colors.find(c => {
+                            const cName = (c?.colorName || c || '').toString().toLowerCase();
+                            const cVal = (c?.color || '').toString().toLowerCase();
+                            const target = bookedColor.toLowerCase();
+                            return cName === target || cVal === target;
+                        });
+                        if (found) {
+                            matchedColor = found.colorName || found || '';
+                        }
+                    }
+                    setActiveColorTab(matchedColor);
                 }
 
                 // 2. Fetch base product if linked
@@ -132,7 +148,12 @@ export default function MfgDesignDetail() {
     
     const activePlacements = parsedDesc.placements?.[colorKey] || [];
     const activeRefs = parsedDesc.manufacturerRefs?.[colorKey] || [];
-    const customerMockups = parsedDesc.customerImages?.[colorKey] || [];
+    const rawCustomerMockups = parsedDesc.customerImages?.[colorKey] || [];
+    const customerMockups = Array.isArray(rawCustomerMockups)
+        ? rawCustomerMockups.filter(Boolean)
+        : (typeof rawCustomerMockups === 'object' && rawCustomerMockups !== null)
+            ? Object.values(rawCustomerMockups).filter(Boolean)
+            : [];
     
     // Size list
     const sizeList = design.sizes || (baseProduct ? baseProduct.sizes : []) || [];
@@ -154,6 +175,36 @@ export default function MfgDesignDetail() {
                     <div style={{ marginTop: 4 }}>Status: <span style={{ fontWeight: 600, color: design.status === 'approved' ? '#2ecc71' : '#f39c12' }}>{design.status?.toUpperCase()}</span></div>
                 </div>
             </div>
+
+            {(bookedColor || bookedSize) && (
+                <div style={{
+                    background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
+                    color: '#fff',
+                    padding: '15px 20px',
+                    borderRadius: 8,
+                    marginBottom: 25,
+                    boxShadow: '0 4px 12px rgba(59,130,246,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontFamily: "'Montserrat', sans-serif"
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <i className="fas fa-shopping-bag" style={{ fontSize: '1.5rem', color: '#60a5fa' }}></i>
+                        <div>
+                            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, color: '#93c5fd' }}>Customer Order Specifications</div>
+                            <div style={{ fontSize: '1.05rem', fontWeight: 700, marginTop: 2 }}>
+                                Size Booked: <span style={{ color: '#facc15' }}>{bookedSize || 'N/A'}</span>
+                                <span style={{ margin: '0 10px', color: '#93c5fd' }}>|</span>
+                                Color Booked: <span style={{ color: '#facc15', textTransform: 'capitalize' }}>{bookedColor || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: 4, fontWeight: 600 }}>
+                        <i className="fas fa-info-circle" style={{ marginRight: 4 }}></i> Showing specs for "{activeColorTab}"
+                    </div>
+                </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 30, alignItems: 'start' }}>
                 
@@ -240,26 +291,87 @@ export default function MfgDesignDetail() {
                         <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#111', borderBottom: '2px solid #C5A059', paddingBottom: 8, marginBottom: 15, textTransform: 'uppercase' }}>
                             <i className="fas fa-palette" style={{ marginRight: 8, color: '#C5A059' }}></i> Design Colors & Sizing
                         </h2>
-                        <div style={{ marginBottom: 15 }}>
+                        <div style={{ marginBottom: 20 }}>
                             <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600, display: 'block', marginBottom: 8 }}>Available Size Ranges:</span>
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                {sizeList.map((sz, index) => (
-                                    <span key={index} style={{ padding: '4px 10px', border: '1px solid #ddd', borderRadius: 4, fontSize: '0.75rem', background: '#f9f9f9', fontWeight: 600 }}>
-                                        {sz}
-                                    </span>
-                                ))}
+                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', paddingTop: 4 }}>
+                                {sizeList.map((sz, index) => {
+                                    const isBooked = bookedSize && sz.trim().toLowerCase() === bookedSize.trim().toLowerCase();
+                                    return (
+                                        <span 
+                                            key={index} 
+                                            style={{ 
+                                                padding: '6px 14px', 
+                                                border: isBooked ? '2px solid #C5A059' : '1px solid #ddd', 
+                                                borderRadius: 6, 
+                                                fontSize: '0.8rem', 
+                                                background: isBooked ? 'rgba(197, 160, 89, 0.1)' : '#f9f9f9', 
+                                                color: isBooked ? '#C5A059' : '#333',
+                                                fontWeight: isBooked ? 700 : 600,
+                                                position: 'relative',
+                                                boxShadow: isBooked ? '0 2px 6px rgba(197, 160, 89, 0.15)' : 'none'
+                                            }}
+                                        >
+                                            {sz}
+                                            {isBooked && (
+                                                <span style={{
+                                                    position: 'absolute',
+                                                    top: -10,
+                                                    right: -10,
+                                                    background: '#C5A059',
+                                                    color: '#fff',
+                                                    fontSize: '0.55rem',
+                                                    padding: '2px 4px',
+                                                    borderRadius: 10,
+                                                    fontWeight: 800,
+                                                    boxShadow: '0 1px 4px rgba(0,0,0,0.2)'
+                                                }}>
+                                                    BOOKED
+                                                </span>
+                                            )}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         </div>
                         <div>
                             <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600, display: 'block', marginBottom: 8 }}>Design Colors:</span>
-                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', paddingTop: 4 }}>
                                 {colors.map((col, index) => {
                                     const colHex = col.color || (typeof col === 'string' ? col : '');
                                     const colName = col.colorName || (typeof col === 'string' ? col : '');
+                                    const isBooked = bookedColor && (colName.trim().toLowerCase() === bookedColor.trim().toLowerCase() || colHex.trim().toLowerCase() === bookedColor.trim().toLowerCase());
                                     return (
-                                        <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', border: '1px solid #ddd', borderRadius: 6, background: '#fcfcfc' }}>
+                                        <div 
+                                            key={index} 
+                                            style={{ 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                gap: 8, 
+                                                padding: '6px 14px', 
+                                                border: isBooked ? '2px solid #C5A059' : '1px solid #ddd', 
+                                                borderRadius: 8, 
+                                                background: isBooked ? 'rgba(197, 160, 89, 0.1)' : '#fcfcfc',
+                                                position: 'relative'
+                                            }}
+                                        >
                                             <span style={{ width: 14, height: 14, borderRadius: '50%', backgroundColor: colHex, border: '1px solid #bbb', display: 'inline-block' }}></span>
-                                            <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>{colName}</span>
+                                            <span style={{ fontSize: '0.8rem', fontWeight: isBooked ? 700 : 500, color: isBooked ? '#C5A059' : '#333' }}>{colName}</span>
+                                            {isBooked && (
+                                                <span style={{
+                                                    position: 'absolute',
+                                                    top: -10,
+                                                    right: -10,
+                                                    background: '#C5A059',
+                                                    color: '#fff',
+                                                    fontSize: '0.55rem',
+                                                    padding: '2px 4px',
+                                                    borderRadius: 10,
+                                                    fontWeight: 800,
+                                                    boxShadow: '0 1px 4px rgba(0,0,0,0.2)'
+                                                }}>
+                                                    BOOKED
+                                                </span>
+                                            )}
                                         </div>
                                     );
                                 })}

@@ -31,15 +31,16 @@ const heroSlides = [
 ];
 
 const STATIC_FEATURES = [
-  { icon: 'fa-gem',           title: 'Designer’s best',    desc: 'Every piece crafted from premium fabrics with meticulous attention to detail.' },
+  { icon: 'fa-gem',           title: 'Designer’s choice ',    desc: 'Get Direct access to Designer’s behind brands.' },
   { icon: 'fa-truck-fast',    title: 'Pan-World Delivery', desc: 'Free shipping above ₹2,000 with real-time tracking and hassle-free returns.' },
   { icon: 'fa-shield-halved', title: 'Certified Quality',  desc: 'Every garment quality-tested and inspected before shipping to you.' },
 ];
 
 const STATIC_MARQUEE = [
-  "world’s first platform made for designers",
+  "World’s first marketplace for designers and fashion enthusiast",
   "your born to wear designer edition",
-  "streetwear season is live now"
+  "streetwear season is live now",
+  "we serve nothing but luxury" 
 ];
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•

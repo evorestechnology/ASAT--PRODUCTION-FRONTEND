@@ -49,7 +49,7 @@ function MfgOrderHistory() {
         }
 
         if (designId) {
-            navigate(`/mfg/designs/${designId}`);
+            navigate(`/mfg/designs/${designId}?color=${encodeURIComponent(item.colorName || item.color || '')}&size=${encodeURIComponent(item.size || '')}`);
         } else {
             showToast("Design details are unavailable for this item.", "error");
         }
@@ -92,7 +92,7 @@ function MfgOrderHistory() {
                     country: o.country || 'India',
                     status: o.status,
                     customerName: o.customer_name,
-                    customerEmail: o.items?.[0]?.customerEmail || '',
+                    customerEmail: o.users?.email || o.contact || 'N/A',
                     phone: o.phone || o.contact,
                     address: o.address,
                     totalAmount: Number(o.total_amount) || 0,
@@ -218,12 +218,14 @@ function MfgOrderHistory() {
                                                         <span style={{ fontWeight: 600 }}>{item.name} ({item.size}) x {item.qty}</span>
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: item.image ? 30 : 0, color: '#666', fontSize: '0.7rem' }}>
-                                                        {item.color && (
-                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #ccc' }}></span>
-                                                                {item.colorName || 'Selected'}
-                                                            </span>
-                                                        )}
+                                                         {(item.color || item.colorName) && (
+                                                             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                 {item.color && (
+                                                                     <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #ccc' }}></span>
+                                                                 )}
+                                                                 {item.colorName || item.color}
+                                                             </span>
+                                                         )}
                                                         {item.printStyle && (
                                                             <span>• Print: {item.printStyle}</span>
                                                         )}
@@ -345,6 +347,21 @@ function MfgOrderHistory() {
                                         <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: '0 0 4px 0' }}>{item.name}</h4>
                                         <p style={{ fontSize: '0.8rem', color: '#666', margin: '2px 0' }}>Size: {item.size} | Qty: {item.qty}</p>
                                         <p style={{ fontSize: '0.8rem', color: '#666', margin: '2px 0' }}>Unit Price: ₹{item.price?.toLocaleString('en-IN')}</p>
+                                        
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6, fontSize: '0.75rem', color: '#555' }}>
+                                            {(item.color || item.colorName) && (
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                    <strong>Color:</strong>
+                                                    {item.color && (
+                                                        <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #ccc', verticalAlign: 'middle' }}></span>
+                                                    )}
+                                                    {item.colorName || item.color}
+                                                </span>
+                                            )}
+                                            {item.printStyle && (
+                                                <span><strong>Printing:</strong> {item.printStyle} (+₹{item.printCost || 0})</span>
+                                            )}
+                                        </div>
                                         {item.designerId && (
                                             <>
                                                 <p style={{ fontSize: '0.75rem', color: '#999', margin: '4px 0 0 0' }}>Designer ID: {item.designerId}</p>

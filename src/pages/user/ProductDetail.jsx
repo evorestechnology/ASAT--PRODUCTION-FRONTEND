@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import BackButton from '../../components/BackButton';
@@ -7,7 +7,7 @@ import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 import { useAuth } from '../../context/AuthContext';
 
 const styles = `
-    /* â•â•â•â•â•â•â• Product Detail â€” Full Width Split Layout â•â•â•â•â•â•â• */
+    /* â•â•â•â•â•â•â• Product Detail  Full Width Split Layout â•â•â•â•â•â•â• */
     .pdp-page { background: var(--light); }
 
     .pdp-breadcrumb {
@@ -25,7 +25,7 @@ const styles = `
     .pdp-breadcrumb a:hover { color: var(--gold); }
     .pdp-breadcrumb span { color: var(--dark); font-weight: 600; }
 
-    /* Split layout â€” gallery left, info right */
+    /* Split layout — gallery left, info right */
     .pdp-split {
         display: grid;
         grid-template-columns: 55% 45%;
@@ -353,7 +353,7 @@ const styles = `
         opacity: 1;
     }
 
-    /* â”€â”€ Info panel â€” sticky â”€â”€ */
+    /* â”€â”€ Info panel — sticky â”€â”€ */
     .pdp-info {
         padding: 0 5% 60px 40px;
         position: sticky;
@@ -470,6 +470,44 @@ const styles = `
         transition: 0.3s; font-size: 1.3rem; flex-shrink: 0;
     }
     .pdp-wishlist-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .pdp-share-btn {
+        width: 54px; height: 54px; border: 1px solid #ddd; background: white;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: 0.3s; font-size: 1.15rem; flex-shrink: 0;
+    }
+    .pdp-share-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .pdp-share-dropdown {
+        position: absolute;
+        bottom: 60px;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+        width: 160px;
+    }
+    .pdp-share-item {
+        padding: 10px 14px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.76rem;
+        color: var(--dark);
+        border: none;
+        background: none;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.2s;
+        width: 100%;
+    }
+    .pdp-share-item:hover {
+        background: #f8f9fa;
+        color: var(--gold);
+    }
 
     /* Tabs */
     .pdp-tabs { display: flex; border-bottom: 1px solid #e5e5e5; margin-bottom: 20px; flex-wrap: wrap; }
@@ -517,6 +555,8 @@ const styles = `
         .pdp-price { font-size: 1.2rem; }
         .pdp-actions { flex-direction: column; }
         .pdp-actions .pdp-wishlist-btn { width: 100%; height: auto; padding: 14px; }
+        .pdp-actions > div { width: 100%; }
+        .pdp-actions .pdp-share-btn { width: 100%; height: auto; padding: 14px; }
         .pdp-thumb { width: 60px; height: 75px; }
         .pdp-tab { padding: 10px 14px; font-size: 0.68rem; }
     }
@@ -673,6 +713,7 @@ function ProductDetail() {
     const [activeTab, setActiveTab] = useState('description');
     const [added, setAdded] = useState(false);
     const [wishlisted, setWishlisted] = useState(false);
+    const [showShareMenu, setShowShareMenu] = useState(false);
 
     useEffect(() => {
         const checkWishlist = () => {
@@ -683,6 +724,32 @@ function ProductDetail() {
         window.addEventListener('wishlist_updated', checkWishlist);
         return () => window.removeEventListener('wishlist_updated', checkWishlist);
     }, [productId]);
+
+    useEffect(() => {
+        if (!showShareMenu) return;
+        const handleOutsideClick = () => setShowShareMenu(false);
+        window.addEventListener('click', handleOutsideClick);
+        return () => window.removeEventListener('click', handleOutsideClick);
+    }, [showShareMenu]);
+
+    const handleShareAction = async (type) => {
+        const shareUrl = window.location.href;
+        const shareText = `Check out this design on ASAT: ${product?.name}`;
+        
+        if (type === 'copy') {
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                showToast('Link copied to clipboard!', 'success');
+            } catch (err) {
+                showToast('Failed to copy link.', 'error');
+            }
+        } else if (type === 'whatsapp') {
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+        } else if (type === 'twitter') {
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        }
+        setShowShareMenu(false);
+    };
 
     const activeImages = React.useMemo(() => {
         if (!product) return [];
@@ -1238,7 +1305,15 @@ function ProductDetail() {
                     <div className="pdp-info">
                         <span className="pdp-collection-tag">{product.collection}</span>
                         <h1 className="pdp-product-name">{product.name}</h1>
-                        <p className="pdp-designer">By {product.designer}</p>
+                        <p className="pdp-designer">
+                            By{' '}
+                            <span 
+                                onClick={() => navigate(`/designers/${product.designerId}`)} 
+                                style={{ color: 'var(--gold)', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }}
+                            >
+                                {product.designer}
+                            </span>
+                        </p>
                         <div className="pdp-price">
                             {formatPrice(applyMarkup((product.price) + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0)))}
                             <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Montserrat', sans-serif", letterSpacing: '1.5px', color: '#888', fontWeight: 400, marginTop: '4px' }}>excl. GST &amp; shipping</span>
@@ -1250,12 +1325,12 @@ function ProductDetail() {
                             COLOR{(() => {
                                 if (product.isMfgProduct) {
                                     return product.colors[selectedColor]?.colorName
-                                        ? ` â€” ${product.colors[selectedColor].colorName.toUpperCase()}`
+                                        ? ` — ${product.colors[selectedColor].colorName.toUpperCase()}`
                                         : '';
                                 }
-                                // Designer product â€” colors are plain strings
+                                // Designer product — colors are plain strings
                                 const c = product.colors?.[selectedColor];
-                                return c ? ` â€” ${String(c).toUpperCase()}` : '';
+                                return c ? ` — ${String(c).toUpperCase()}` : '';
                             })()}
                         </span>
                         <div className="pdp-colors">
@@ -1306,7 +1381,7 @@ function ProductDetail() {
                         <span className="pdp-section-label">QUANTITY</span>
                         <div className="pdp-qty-row">
                             <div className="pdp-qty-control">
-                                <button className="pdp-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>âˆ’</button>
+                                <button className="pdp-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
                                 <div className="pdp-qty-value">{quantity}</div>
                                 <button className="pdp-qty-btn" onClick={() => setQuantity(quantity + 1)}>+</button>
                             </div>
@@ -1320,7 +1395,7 @@ function ProductDetail() {
                             ) : (
                                 <>
                                     <button className="pdp-add-bag" onClick={handleAddToBag}>
-                                        {isAlreadyInCart() ? 'VIEW CART' : (added ? 'âœ“ ADDED TO BAG' : 'ADD TO BAG')}
+                                        {isAlreadyInCart() ? 'VIEW CART' : (added ? '✓ ADDED TO BAG' : 'ADD TO BAG')}
                                     </button>
                                     <button className="pdp-buy-now" onClick={() => { 
                                         // Guard check for Login
@@ -1357,8 +1432,31 @@ function ProductDetail() {
                                 title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
                                 style={{ color: wishlisted ? 'var(--gold)' : 'var(--dark)', borderColor: wishlisted ? 'var(--gold)' : '#ddd' }}
                             >
-                                {wishlisted ? 'â™¥' : 'â™¡'}
+                                {wishlisted ? '♥' : '♡'}
                             </button>
+                            <div style={{ position: 'relative' }}>
+                                <button 
+                                    className="pdp-share-btn" 
+                                    onClick={(e) => { e.stopPropagation(); setShowShareMenu(!showShareMenu); }}
+                                    title="Share this product"
+                                    style={{ color: 'var(--dark)' }}
+                                >
+                                    <i className="fa-solid fa-share-nodes"></i>
+                                </button>
+                                {showShareMenu && (
+                                    <div className="pdp-share-dropdown" onClick={(e) => e.stopPropagation()}>
+                                        <button className="pdp-share-item" onClick={() => handleShareAction('copy')}>
+                                            <i className="fa-solid fa-copy"></i> Copy Link
+                                        </button>
+                                        <button className="pdp-share-item" onClick={() => handleShareAction('whatsapp')}>
+                                            <i className="fa-brands fa-whatsapp"></i> WhatsApp
+                                        </button>
+                                        <button className="pdp-share-item" onClick={() => handleShareAction('twitter')}>
+                                            <i className="fa-brands fa-x-twitter"></i> Twitter / X
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="pdp-divider" />

@@ -11,7 +11,6 @@ function MasterFooter() {
                 </div>
                 <div className="footer-socials">
                     <a href="#" style={{ color: 'white', margin: '0 10px' }}><i className="fab fa-instagram"></i></a>
-                    <a href="#" style={{ color: 'white', margin: '0 10px' }}><i className="fab fa-facebook-f"></i></a>
                     <a href="#" style={{ color: 'white', margin: '0 10px' }}><i className="fab fa-x-twitter"></i></a>
                 </div>
             </div>
