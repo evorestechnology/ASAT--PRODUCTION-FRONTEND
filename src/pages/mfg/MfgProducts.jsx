@@ -294,11 +294,11 @@ function MfgProducts() {
             showToast('Please provide a color name.', 'error');
             return;
         }
-        if (!pickerFrontFile && !editProductId) {
+        if (!pickerFrontFile) {
             showToast('Please upload a front reference image.', 'error');
             return;
         }
-        if (!pickerBackFile && !editProductId) {
+        if (!pickerBackFile) {
             showToast('Please upload a back reference image.', 'error');
             return;
         }
@@ -314,7 +314,8 @@ function MfgProducts() {
             frontFile: pickerFrontFile,
             frontPreview: frontPrev,
             backFile: pickerBackFile,
-            backPreview: backPrev
+            backPreview: backPrev,
+            available: true
         }]);
 
         // Reset picker

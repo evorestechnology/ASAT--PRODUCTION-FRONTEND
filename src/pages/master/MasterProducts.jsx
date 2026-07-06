@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { apiFetch } from "../../api";
 import "../../styles/admin.css";
 import BackButton from "../../components/BackButton";
@@ -145,10 +145,10 @@ export default function MasterProducts() {
                                 {p.sizes?.length > 0 && <div className="bp-card__sizes"><strong>Sizes:</strong> {p.sizes.join(", ")}</div>}
                                 {p.printing_styles?.length > 0 && (
                                     <div className="bp-printing-styles">
-                                        <strong>Print:</strong> {p.printing_styles.map((ps,i) => <span key={i}>{ps.style} +?{ps.cost}</span>)}
+                                        <strong>Print:</strong> {p.printing_styles.map((ps,i) => <span key={i}>{ps.style}{ps.cost ? ` — ₹${ps.cost}` : ""}</span>)}
                                     </div>
                                 )}
-                                <div className="bp-card__cost">Base Cost: ?{p.cost}</div>
+                                <div className="bp-card__cost">Base Cost: &#8377;{p.cost}</div>
                             </div>
                         </div>
                     ))}
@@ -161,14 +161,19 @@ export default function MasterProducts() {
                         <button className="bp-modal__close" onClick={() => setSelected(null)}><i className="fas fa-times" /></button>
                         <h2 style={{ marginTop:0, textTransform:"uppercase" }}>{selected.title}</h2>
                         <p style={{ color:"#888", fontSize:"0.85rem", marginBottom:16 }}>
-                            <i className="fas fa-industry" style={{ marginRight:6 }} />{selected.mfg_name} &nbsp;|&nbsp; {selected.category} &nbsp;|&nbsp; {selected.gender} &nbsp;|&nbsp; <strong>?{selected.cost}</strong> base cost
+                            <i className="fas fa-industry" style={{ marginRight:6 }} />{selected.mfg_name} &nbsp;|&nbsp; {selected.category} &nbsp;|&nbsp; {selected.gender} &nbsp;|&nbsp; <strong>&#8377;{selected.cost}</strong> base cost
                         </p>
                         <h4 style={{ marginBottom:10, fontSize:"0.9rem" }}>Colours ({selected.colors?.length || 0})</h4>
                         {(selected.colors || []).map((c,i) => (
                             <div key={i} className="bp-color-row">
                                 <div className="bp-color-swatch" style={{ background:c.color, width:30, height:30, flexShrink:0 }} title={c.colorName} />
-                                <div>
-                                    <div style={{ fontWeight:700, fontSize:"0.85rem", marginBottom:6 }}>{c.colorName}</div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                        <div style={{ fontWeight:700, fontSize:"0.85rem" }}>{c.colorName}</div>
+                                        <span style={{ fontSize: "0.7rem", fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: c.available !== false ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: c.available !== false ? "#16a34a" : "#dc2626" }}>
+                                            {c.available !== false ? "Available" : "Unavailable"}
+                                        </span>
+                                    </div>
                                     <div className="bp-color-images">
                                         {c.frontImage && <img src={c.frontImage} alt="Front" />}
                                         {c.backImage && <img src={c.backImage} alt="Back" />}
@@ -176,6 +181,18 @@ export default function MasterProducts() {
                                 </div>
                             </div>
                         ))}
+                        {selected.details?.length > 0 && (<>
+                            <h4 style={{ marginTop:16, marginBottom:8, fontSize:"0.9rem" }}>Fabric / Details</h4>
+                            <ul style={{ paddingLeft:18, margin:0, fontSize:"0.85rem", color:"#444" }}>
+                                {(Array.isArray(selected.details) ? selected.details : [selected.details]).map((d,i) => <li key={i}>{d}</li>)}
+                            </ul>
+                        </>)}
+                        {selected.wash_care?.length > 0 && (<>
+                            <h4 style={{ marginTop:16, marginBottom:8, fontSize:"0.9rem" }}>Wash Care Instructions</h4>
+                            <ul style={{ paddingLeft:18, margin:0, fontSize:"0.85rem", color:"#444" }}>
+                                {(Array.isArray(selected.wash_care) ? selected.wash_care : [selected.wash_care]).map((w,i) => <li key={i}>{w}</li>)}
+                            </ul>
+                        </>)}
                         <h4 style={{ marginTop:16, marginBottom:8, fontSize:"0.9rem" }}>Sizes</h4>
                         <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                             {(selected.sizes || []).map(s => <span key={s} className="bp-tag">{s}</span>)}
@@ -184,7 +201,7 @@ export default function MasterProducts() {
                         {!(selected.printing_styles?.length) ? <p style={{ color:"#aaa", fontSize:"0.85rem" }}>None defined.</p>
                             : selected.printing_styles.map((ps,i) => (
                                 <div key={i} style={{ marginBottom:10 }}>
-                                    <span className="bp-tag bp-tag--gold">{ps.style} � ?{ps.cost}</span>
+                                    <span className="bp-tag bp-tag--gold">{ps.style}{ps.cost ? ` — INR${ps.cost}` : ""}</span>
                                     {ps.placements?.length > 0 && (
                                         <div style={{ marginTop:6, display:"flex", gap:6, flexWrap:"wrap" }}>
                                             {ps.placements.map((pl,j) => <span key={j} className="bp-tag" style={{ background:"#f9f9f9" }}>{pl.label}</span>)}

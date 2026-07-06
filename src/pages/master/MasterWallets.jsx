@@ -214,7 +214,7 @@ function MasterWallets() {
 
             <BackButton />
             <h1 className="adm-page__title">WALLET</h1>
-            <p className="adm-page__subtitle">Platform income, payouts, and withdrawal requests</p>
+            <p className="adm-page__subtitle">Platform income, earnings, and withdrawal requests</p>
 
             <div className="adm-wallet-cards">
                 <div className="adm-wallet-card">
@@ -222,11 +222,11 @@ function MasterWallets() {
                     <div className="adm-wallet-card__value">₹{wallet.totalIncome.toLocaleString()}</div>
                 </div>
                 <div className="adm-wallet-card">
-                    <div className="adm-wallet-card__label">Designer Payouts</div>
+                    <div className="adm-wallet-card__label">Designer Earnings</div>
                     <div className="adm-wallet-card__value">₹{wallet.designerPayouts.toLocaleString()}</div>
                 </div>
                 <div className="adm-wallet-card">
-                    <div className="adm-wallet-card__label">Mfg Payouts</div>
+                    <div className="adm-wallet-card__label">Mfg Earnings</div>
                     <div className="adm-wallet-card__value">₹{wallet.mfgPayouts.toLocaleString()}</div>
                 </div>
                 <div className="adm-wallet-card">
@@ -320,10 +320,10 @@ function MasterWallets() {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h3>Approve Payout</h3>
+                            <h3>Approve Earnings Withdrawal</h3>
                         </div>
                         <div className="modal-body">
-                            Are you sure you want to approve the payout of <strong>₹{pendingApprove.amount.toLocaleString()}</strong> to <strong>@{pendingApprove.username || pendingApprove.userId}</strong>? This action is immediate and will deduct funds from their balance.
+                            Are you sure you want to approve the earnings withdrawal of <strong>₹{pendingApprove.amount.toLocaleString()}</strong> to <strong>@{pendingApprove.username || pendingApprove.userId}</strong>? This action is immediate and will deduct funds from their balance.
                         </div>
                         <div className="modal-footer">
                             <button className="adm-settings__btn" style={{ background: '#3a3a3c', marginTop: 0 }} onClick={() => setPendingApprove(null)}>Cancel</button>
@@ -341,7 +341,7 @@ function MasterWallets() {
                             <h3>Reject Withdrawal</h3>
                         </div>
                         <div className="modal-body">
-                            Specify the reason for rejecting the payout of <strong>₹{pendingReject.amount.toLocaleString()}</strong> requested by <strong>@{pendingReject.username || pendingReject.userId}</strong>:
+                            Specify the reason for rejecting the earnings withdrawal of <strong>₹{pendingReject.amount.toLocaleString()}</strong> requested by <strong>@{pendingReject.username || pendingReject.userId}</strong>:
                             <textarea 
                                 placeholder="Enter rejection reason..."
                                 value={rejectionReason}
@@ -351,7 +351,7 @@ function MasterWallets() {
                         </div>
                         <div className="modal-footer">
                             <button className="adm-settings__btn" style={{ background: '#3a3a3c', marginTop: 0 }} onClick={() => { setPendingReject(null); setRejectionReason(''); }}>Cancel</button>
-                            <button className="adm-settings__btn" style={{ background: '#dc3545', color: '#fff', marginTop: 0 }} onClick={executeReject}>Reject Payout</button>
+                            <button className="adm-settings__btn" style={{ background: '#dc3545', color: '#fff', marginTop: 0 }} onClick={executeReject}>Reject Withdrawal</button>
                         </div>
                     </div>
                 </div>

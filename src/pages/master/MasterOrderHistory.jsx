@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import '../../styles/admin.css';
 import BackButton from '../../components/BackButton';
 
 function MasterOrderHistory() {
+    const navigate = useNavigate();
     const [filter, setFilter] = useState('all');
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,6 +61,30 @@ function MasterOrderHistory() {
         if (!createdAt) return '—';
         const date = new Date(createdAt);
         return date.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
+    const formatItemsAsLinks = (items) => {
+        if (!Array.isArray(items)) return <span>{items || '—'}</span>;
+        return (
+            <span style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {items.map((item, idx) => {
+                    const name = item.title || item.name || 'Garment';
+                    const designId = item.id;
+                    return designId ? (
+                        <span
+                            key={idx}
+                            onClick={() => navigate(`/master/designs/${designId}`)}
+                            style={{ color: '#C5A059', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontSize: '0.8rem' }}
+                            title={`View design: ${name}`}
+                        >
+                            {name}{idx < items.length - 1 ? ',' : ''}
+                        </span>
+                    ) : (
+                        <span key={idx} style={{ fontSize: '0.8rem' }}>{name}{idx < items.length - 1 ? ',' : ''}</span>
+                    );
+                })}
+            </span>
+        );
     };
 
     const formatItems = (items) => {
@@ -213,10 +239,20 @@ function MasterOrderHistory() {
                                     <tr key={o.id}>
                                         <td>{o.orderId || o.id}</td>
                                         <td>{formatDate(o.createdAt)}</td>
-                                        <td>{formatItems(o.items)}</td>
+                                        <td>{formatItemsAsLinks(o.items)}</td>
                                         <td>{getQty(o)}</td>
                                         <td>₹{(o.totalAmount || o.revenue || 0).toLocaleString()}</td>
-                                        <td>@{o.designerUsername || o.designer || '—'}</td>
+                                        <td>
+                                            {o.designerUsername ? (
+                                                <span
+                                                    onClick={() => navigate(`/master/designers?search=${encodeURIComponent(o.designerUsername)}`)}
+                                                    style={{ color: '#C5A059', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}
+                                                    title={`View designer profile: @${o.designerUsername}`}
+                                                >
+                                                    @{o.designerUsername}
+                                                </span>
+                                            ) : '—'}
+                                        </td>
                                         <td>₹{(o.designerEarnings || 0).toLocaleString()}</td>
                                         <td>₹{(o.mfgEarnings || 0).toLocaleString()}</td>
                                         <td>{o.userId || o.user || '—'}</td>

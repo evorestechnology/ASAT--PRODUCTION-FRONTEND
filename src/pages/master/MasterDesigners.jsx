@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../api';
 import '../../styles/admin.css';
@@ -8,6 +9,7 @@ import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 function MasterDesigners() {
     const { toasts, showToast } = useToast();
     const { idToken } = useAuth();
+    const [searchParams] = useSearchParams();
     const [designers, setDesigners] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -16,7 +18,7 @@ function MasterDesigners() {
     const [selectedDesignerId, setSelectedDesignerId] = useState(null);
     const [selectedDesignerDetails, setSelectedDesignerDetails] = useState(null);
     const [detailsLoading, setDetailsLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
     // Delete confirmation state
     const [pendingDeleteDesigner, setPendingDeleteDesigner] = useState(null);

@@ -773,8 +773,26 @@ function MfgOrders() {
                                                                                 {placements.map((p, pIdx) => (
                                                                                     <div key={pIdx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 8, padding: 8, border: '1px solid #eee', borderRadius: 4, background: 'white' }}>
                                                                                         <div>
-                                                                                            <div style={{ fontSize: '0.62rem', color: '#888', fontWeight: 600 }}>Style & Zone:</div>
-                                                                                            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#111' }}>{p.style} on {p.placementLabel}</div>
+                                                                                            <div style={{ fontSize: '0.62rem', color: '#888', fontWeight: 600 }}>Print Style & Zone:</div>
+                                                                                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#111' }}>{p.style} on {p.placementLabel}</div>
+                                                                                            {/* Print Price */}
+                                                                                            <div style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                                                                {p.price != null && p.price !== '' && (
+                                                                                                    <span style={{ background: 'rgba(197,160,89,0.12)', border: '1px solid rgba(197,160,89,0.4)', borderRadius: 4, padding: '2px 7px', fontSize: '0.68rem', fontWeight: 700, color: '#a07820' }}>
+                                                                                                        ₹{Number(p.price).toLocaleString('en-IN')}
+                                                                                                    </span>
+                                                                                                )}
+                                                                                                {p.darkPrice != null && p.darkPrice !== '' && (
+                                                                                                    <span style={{ background: '#1c1c1c', border: '1px solid #333', borderRadius: 4, padding: '2px 7px', fontSize: '0.68rem', fontWeight: 700, color: '#fff' }}>
+                                                                                                        Dark ₹{Number(p.darkPrice).toLocaleString('en-IN')}
+                                                                                                    </span>
+                                                                                                )}
+                                                                                                {p.lightPrice != null && p.lightPrice !== '' && (
+                                                                                                    <span style={{ background: '#f5f5f5', border: '1px solid #ccc', borderRadius: 4, padding: '2px 7px', fontSize: '0.68rem', fontWeight: 700, color: '#333' }}>
+                                                                                                        Light ₹{Number(p.lightPrice).toLocaleString('en-IN')}
+                                                                                                    </span>
+                                                                                                )}
+                                                                                            </div>
                                                                                             
                                                                                             <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
                                                                                                 {p.designUrl && (

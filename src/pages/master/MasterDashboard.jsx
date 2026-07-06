@@ -28,7 +28,10 @@ function MasterDashboard() {
         countryColors: ['#e0e0e0'],
         domesticLabels: ['No Data'],
         domesticData: [1],
-        domesticColors: ['#e0e0e0']
+        domesticColors: ['#e0e0e0'],
+        stateLabels: ['No Data'],
+        stateData: [1],
+        stateColors: ['#e0e0e0']
     });
 
     // 1. Fetch real-time data from Supabase
@@ -216,6 +219,46 @@ function MasterDashboard() {
                     domesticColors = ['#C5A059', '#121212'];
                 }
 
+                // Bar Chart — earnings by Indian state
+                const extractState = (address) => {
+                    if (!address) return null;
+                    // Try to extract state from address like "123 Street, City, State 400001" or "City, State, Country"
+                    const parts = address.split(',').map(p => p.trim()).filter(Boolean);
+                    if (parts.length >= 3) {
+                        // State is typically second-to-last before pincode/country
+                        // Find last part that looks like a state name (not all digits, not too short)
+                        for (let i = parts.length - 1; i >= 1; i--) {
+                            const part = parts[i].replace(/\d+/g, '').trim();
+                            if (part.length > 3 && !/^\d+$/.test(parts[i])) {
+                                return part;
+                            }
+                        }
+                    }
+                    if (parts.length >= 2) return parts[parts.length - 1].replace(/\d+/g, '').trim();
+                    return null;
+                };
+
+                const stateEarnings = {};
+                const domesticOrdersOnly = orders.filter(o => o.country?.toLowerCase() === 'india');
+                domesticOrdersOnly.forEach(o => {
+                    const state = extractState(o.address);
+                    if (state && state.length > 2) {
+                        const normalized = state.charAt(0).toUpperCase() + state.slice(1).toLowerCase();
+                        stateEarnings[normalized] = (stateEarnings[normalized] || 0) + (o.totalAmount || 0);
+                    }
+                });
+
+                const stateLabelsRaw = Object.keys(stateEarnings).sort((a, b) => stateEarnings[b] - stateEarnings[a]).slice(0, 12);
+                let stateLabels = ['No Data'];
+                let stateData = [1];
+                let stateColors = ['#e0e0e0'];
+                if (stateLabelsRaw.length > 0) {
+                    stateLabels = stateLabelsRaw;
+                    stateData = stateLabelsRaw.map(s => stateEarnings[s]);
+                    const palette = ['#C5A059', '#A8803C', '#E5C180', '#564426', '#D4A849', '#8B6914', '#F0D080', '#7A5C20', '#C8963A', '#9B7030', '#E0B050', '#6B4F1A'];
+                    stateColors = stateLabels.map((_, idx) => palette[idx % palette.length]);
+                }
+
                 setChartData({
                     lineLabels,
                     lineData,
@@ -224,7 +267,10 @@ function MasterDashboard() {
                     countryColors,
                     domesticLabels,
                     domesticData,
-                    domesticColors
+                    domesticColors,
+                    stateLabels,
+                    stateData,
+                    stateColors
                 });
 
                 setError(null);
@@ -446,6 +492,53 @@ function MasterDashboard() {
             }));
         }
 
+        // Bar Chart — earnings by Indian state
+        const ctx4 = document.getElementById('admChartStates');
+        if (ctx4) {
+            instances.push(new window.Chart(ctx4.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.stateLabels,
+                    datasets: [{
+                        label: 'Earnings (₹)',
+                        data: chartData.stateData,
+                        backgroundColor: chartData.stateColors,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ₹${context.raw.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + (value >= 1000 ? (value / 1000).toFixed(0) + 'K' : value);
+                                },
+                                font: { size: 9 }
+                            },
+                            grid: { color: 'rgba(0,0,0,0.04)' }
+                        },
+                        y: {
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            }));
+        }
+
         return () => instances.forEach(c => c.destroy());
     }, [loading, chartData]);
 
@@ -568,8 +661,12 @@ function MasterDashboard() {
                     <div className="adm-dash__chart-wrap"><canvas id="admChartCountry"></canvas></div>
                 </div>
                 <div className="adm-dash__chart-card">
-                    <div className="adm-dash__chart-title">Earnings By Domestic</div>
+                    <div className="adm-dash__chart-title">Earnings By Domestic vs Global</div>
                     <div className="adm-dash__chart-wrap"><canvas id="admChartDomestic"></canvas></div>
+                </div>
+                <div className="adm-dash__chart-card" style={{ gridColumn: 'span 3' }}>
+                    <div className="adm-dash__chart-title">Earnings By Indian State (Domestic Breakdown)</div>
+                    <div className="adm-dash__chart-wrap" style={{ height: 280 }}><canvas id="admChartStates"></canvas></div>
                 </div>
             </div>
         </main>
