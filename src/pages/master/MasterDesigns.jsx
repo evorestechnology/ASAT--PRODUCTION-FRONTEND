@@ -318,10 +318,14 @@ function DesignDrawer({ design, onClose, onAction, actionLoading, rejectComment,
                                 <div className="dsn-drawer__section-title">Selected Colors</div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                                     {d.colors.map((c, i) => {
-                                        const cName = typeof c === 'object' ? (c.name || c.color || '') : c;
+                                        const cName = typeof c === 'object' ? (c.name || c.colorName || c.color || '') : c;
+                                        const cHex = (() => {
+                                            if (typeof c === 'object' && c.color) return c.color;
+                                            return getColorHexByName(cName);
+                                        })();
                                         return (
                                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: '#1a1a1a', border: '1px solid #252525', borderRadius: 20 }}>
-                                                <div style={{ width: 14, height: 14, borderRadius: '50%', background: cName.toLowerCase() === 'white' ? '#f0f0f0' : cName.toLowerCase() === 'black' ? '#111' : cName, border: '1px solid #444' }} />
+                                                <div style={{ width: 14, height: 14, borderRadius: '50%', background: cHex, border: '1px solid #444' }} />
                                                 <span style={{ fontSize: '0.8rem', color: '#ccc', textTransform: 'capitalize' }}>{cName}</span>
                                             </div>
                                         );
@@ -640,3 +644,27 @@ function MasterDesigns() {
 }
 
 export default MasterDesigns;
+
+const getColorHexByName = (name, fallback = '#ccc') => {
+    if (!name || typeof name !== 'string') return fallback;
+    const lower = name.toLowerCase().trim();
+    if (lower.startsWith('#') || lower.startsWith('rgb') || lower.startsWith('hsl')) return name;
+    
+    if (lower.includes('jet black') || lower === 'black' || lower === 'blk') return '#000000';
+    if (lower.includes('off white') || lower.includes('cream') || lower.includes('ivory')) return '#faf6ee';
+    if (lower === 'white' || lower === 'wht') return '#ffffff';
+    if (lower.includes('navy') || lower.includes('dark blue')) return '#000080';
+    if (lower.includes('royal blue')) return '#4169e1';
+    if (lower.includes('blue')) return '#1a73e8';
+    if (lower.includes('grey') || lower.includes('gray') || lower.includes('melange')) return '#808080';
+    if (lower.includes('olive')) return '#556b2f';
+    if (lower.includes('green') || lower.includes('khaki')) return '#008000';
+    if (lower.includes('red') || lower.includes('maroon') || lower.includes('burgundy')) return '#800000';
+    if (lower.includes('yellow') || lower.includes('gold')) return '#ffd700';
+    if (lower.includes('orange')) return '#ffa500';
+    if (lower.includes('pink') || lower.includes('rose')) return '#ffc0cb';
+    if (lower.includes('purple') || lower.includes('lavender') || lower.includes('violet')) return '#800080';
+    if (lower.includes('brown') || lower.includes('tan') || lower.includes('beige')) return '#d2b48c';
+    
+    return name;
+};

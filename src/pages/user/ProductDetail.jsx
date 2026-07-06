@@ -418,7 +418,7 @@ const styles = `
     .pdp-colors { display: flex; gap: 12px; margin-bottom: 24px; }
     .pdp-color-swatch {
         width: 32px; height: 32px; border-radius: 50%;
-        border: 2px solid transparent; cursor: pointer;
+        border: 2px solid rgba(0, 0, 0, 0.12); cursor: pointer;
         transition: 0.3s; position: relative;
     }
     .pdp-color-swatch:hover { transform: scale(1.15); }
@@ -1335,7 +1335,14 @@ function ProductDetail() {
                         </span>
                         <div className="pdp-colors">
                             {product.colors.map((c, i) => {
-                                const swatchBg = product.isMfgProduct ? c.color : c;
+                                const swatchBg = (() => {
+                                    if (product.isMfgProduct) return c.color;
+                                    if (product.colorDetails && Array.isArray(product.colorDetails)) {
+                                        const found = product.colorDetails.find(bc => bc.colorName === c);
+                                        if (found) return found.color;
+                                    }
+                                    return getColorHexByName(c);
+                                })();
                                 const swatchTitle = product.isMfgProduct ? c.colorName : c;
                                 return (
                                     <div 
@@ -1680,4 +1687,28 @@ function ProductDetail() {
 }
 
 export default ProductDetail;
+
+const getColorHexByName = (name, fallback = '#ccc') => {
+    if (!name || typeof name !== 'string') return fallback;
+    const lower = name.toLowerCase().trim();
+    if (lower.startsWith('#') || lower.startsWith('rgb') || lower.startsWith('hsl')) return name;
+    
+    if (lower.includes('jet black') || lower === 'black' || lower === 'blk') return '#000000';
+    if (lower.includes('off white') || lower.includes('cream') || lower.includes('ivory')) return '#faf6ee';
+    if (lower === 'white' || lower === 'wht') return '#ffffff';
+    if (lower.includes('navy') || lower.includes('dark blue')) return '#000080';
+    if (lower.includes('royal blue')) return '#4169e1';
+    if (lower.includes('blue')) return '#1a73e8';
+    if (lower.includes('grey') || lower.includes('gray') || lower.includes('melange')) return '#808080';
+    if (lower.includes('olive')) return '#556b2f';
+    if (lower.includes('green') || lower.includes('khaki')) return '#008000';
+    if (lower.includes('red') || lower.includes('maroon') || lower.includes('burgundy')) return '#800000';
+    if (lower.includes('yellow') || lower.includes('gold')) return '#ffd700';
+    if (lower.includes('orange')) return '#ffa500';
+    if (lower.includes('pink') || lower.includes('rose')) return '#ffc0cb';
+    if (lower.includes('purple') || lower.includes('lavender') || lower.includes('violet')) return '#800080';
+    if (lower.includes('brown') || lower.includes('tan') || lower.includes('beige')) return '#d2b48c';
+    
+    return name;
+};
 

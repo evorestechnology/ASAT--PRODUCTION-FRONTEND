@@ -337,8 +337,15 @@ export default function MfgDesignDetail() {
                             <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600, display: 'block', marginBottom: 8 }}>Design Colors:</span>
                             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', paddingTop: 4 }}>
                                 {colors.map((col, index) => {
-                                    const colHex = col.color || (typeof col === 'string' ? col : '');
                                     const colName = col.colorName || (typeof col === 'string' ? col : '');
+                                    const colHex = (() => {
+                                        if (col && col.color) return col.color;
+                                        if (baseProduct && baseProduct.colors && Array.isArray(baseProduct.colors)) {
+                                            const found = baseProduct.colors.find(bc => bc.colorName === colName);
+                                            if (found) return found.color;
+                                        }
+                                        return getColorHexByName(colName);
+                                    })();
                                     const isBooked = bookedColor && (colName.trim().toLowerCase() === bookedColor.trim().toLowerCase() || colHex.trim().toLowerCase() === bookedColor.trim().toLowerCase());
                                     return (
                                         <div 
@@ -601,3 +608,27 @@ export default function MfgDesignDetail() {
         </div>
     );
 }
+
+const getColorHexByName = (name, fallback = '#ccc') => {
+    if (!name || typeof name !== 'string') return fallback;
+    const lower = name.toLowerCase().trim();
+    if (lower.startsWith('#') || lower.startsWith('rgb') || lower.startsWith('hsl')) return name;
+    
+    if (lower.includes('jet black') || lower === 'black' || lower === 'blk') return '#000000';
+    if (lower.includes('off white') || lower.includes('cream') || lower.includes('ivory')) return '#faf6ee';
+    if (lower === 'white' || lower === 'wht') return '#ffffff';
+    if (lower.includes('navy') || lower.includes('dark blue')) return '#000080';
+    if (lower.includes('royal blue')) return '#4169e1';
+    if (lower.includes('blue')) return '#1a73e8';
+    if (lower.includes('grey') || lower.includes('gray') || lower.includes('melange')) return '#808080';
+    if (lower.includes('olive')) return '#556b2f';
+    if (lower.includes('green') || lower.includes('khaki')) return '#008000';
+    if (lower.includes('red') || lower.includes('maroon') || lower.includes('burgundy')) return '#800000';
+    if (lower.includes('yellow') || lower.includes('gold')) return '#ffd700';
+    if (lower.includes('orange')) return '#ffa500';
+    if (lower.includes('pink') || lower.includes('rose')) return '#ffc0cb';
+    if (lower.includes('purple') || lower.includes('lavender') || lower.includes('violet')) return '#800080';
+    if (lower.includes('brown') || lower.includes('tan') || lower.includes('beige')) return '#d2b48c';
+    
+    return name;
+};
