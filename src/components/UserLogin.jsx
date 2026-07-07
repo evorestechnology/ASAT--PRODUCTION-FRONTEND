@@ -310,12 +310,13 @@ function UserLogin() {
                 console.error('Role resolution error:', err);
             }
 
-            if (!roleInfo || roleInfo.role !== 'user') {
+            const resolvedRole = roleInfo?.data?.role ?? roleInfo?.role;
+            if (!roleInfo || resolvedRole !== 'user') {
                 await supabase.auth.signOut();
                 setAuthToken(null);
-                const roleLabel = roleInfo?.role === 'admin' ? 'Admin' :
-                                  roleInfo?.role === 'designer' ? 'Designer' :
-                                  roleInfo?.role === 'mfg' ? 'Manufacturer' : null;
+                const roleLabel = resolvedRole === 'admin' ? 'Admin' :
+                                  resolvedRole === 'designer' ? 'Designer' :
+                                  resolvedRole === 'mfg' ? 'Manufacturer' : null;
                 if (roleLabel) {
                     setError(`This account belongs to a ${roleLabel}. Please use the ${roleLabel} login portal instead.`);
                 } else {
