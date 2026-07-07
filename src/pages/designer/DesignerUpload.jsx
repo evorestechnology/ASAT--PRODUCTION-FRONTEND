@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { apiFetch, uploadFile } from '../../api';
@@ -862,11 +862,11 @@ function DesignerUpload() {
                                                             {isPlExpanded && (
                                                                 <div style={{ padding: '14px 12px', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: 14, borderTop: '1px solid #f0f0f0' }}>
                                                                     {/* Reference boundary image */}
-                                                                    {pl.refImage ? (
+                                                                    {(pl.refImage || pl.image) ? (
                                                                         <div>
                                                                             <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Print Position Reference</div>
                                                                             <div style={{ border: '1px dashed rgba(212,175,55,0.25)', borderRadius: 4, padding: 8, textAlign: 'center', background: '#fafafa' }}>
-                                                                                <img src={pl.refImage} alt="print position" style={{ maxHeight: 80, objectFit: 'contain' }} />
+                                                                                <img src={pl.refImage || pl.image} alt="print position" style={{ maxHeight: 80, objectFit: 'contain' }} />
                                                                             </div>
                                                                         </div>
                                                                     ) : (
