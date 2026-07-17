@@ -310,14 +310,14 @@ const styles = `
     }
 `;
 
-function DesignerSupport() {
-    const { user, profile } = useAuth();
+function UserSupport() {
+    const { user } = useAuth();
     const { toasts, showToast } = useToast();
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTicket, setActiveTicket] = useState(null);
     const [chatMessages, setChatMessages] = useState([]);
-    const [category, setCategory] = useState('Withdrawal request failed');
+    const [category, setCategory] = useState('Product not yet received');
     const [message, setMessage] = useState('');
     const [replyText, setReplyText] = useState('');
     const chatEndRef = useRef(null);
@@ -326,16 +326,13 @@ function DesignerSupport() {
         if (!user) return;
         try {
             const data = await apiFetch('/api/tickets');
-
-            const list = (data || []).map(t => {
-                return {
-                    id: t.id,
-                    subject: t.subject,
-                    text: t.description || '',
-                    status: t.status || 'open',
-                    date: t.created_at ? new Date(t.created_at).getTime() : Date.now()
-                };
-            });
+            const list = (data || []).map(t => ({
+                id: t.id,
+                subject: t.subject,
+                text: t.description || '',
+                status: t.status || 'open',
+                date: t.created_at ? new Date(t.created_at).getTime() : Date.now()
+            }));
             setTickets(list);
             setLoading(false);
         } catch (err) {
@@ -348,18 +345,14 @@ function DesignerSupport() {
         if (!activeTicket) return;
         try {
             const data = await apiFetch(`/api/tickets/${activeTicket.id}/messages`);
-
-            const list = (data || []).map(m => {
-                return {
-                    id: m.id,
-                    senderId: m.sender_id,
-                    senderRole: m.sender_role,
-                    text: m.text,
-                    date: m.created_at ? new Date(m.created_at).getTime() : Date.now()
-                };
-            });
+            const list = (data || []).map(m => ({
+                id: m.id,
+                senderId: m.sender_id,
+                senderRole: m.sender_role,
+                text: m.text,
+                date: m.created_at ? new Date(m.created_at).getTime() : Date.now()
+            }));
             setChatMessages(list);
-            // Scroll to bottom
             setTimeout(() => {
                 chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
@@ -368,13 +361,11 @@ function DesignerSupport() {
         }
     };
 
-    // 1. Fetch tickets real-time
     useEffect(() => {
         if (!user) return;
         fetchTickets();
     }, [user]);
 
-    // 2. Fetch ticket messages real-time
     useEffect(() => {
         if (!activeTicket) return;
         fetchChatMessages();
@@ -387,17 +378,15 @@ function DesignerSupport() {
             showToast("Please describe your issue.", 'warning');
             return;
         }
-
         try {
             await apiFetch('/api/tickets', {
                 method: 'POST',
                 body: JSON.stringify({
                     subject: category,
                     category: category,
-                    description: message // Note: description is subject here
+                    description: message
                 })
             });
-
             setMessage('');
             showToast("Ticket raised successfully!", 'success');
             fetchTickets();
@@ -409,13 +398,11 @@ function DesignerSupport() {
 
     const handleSendReply = async () => {
         if (!replyText.trim() || !activeTicket) return;
-
         try {
             await apiFetch(`/api/tickets/${activeTicket.id}/messages`, {
                 method: 'POST',
                 body: JSON.stringify({ text: replyText })
             });
-
             setReplyText('');
             fetchChatMessages();
         } catch (err) {
@@ -445,16 +432,14 @@ function DesignerSupport() {
             <div className="support-page">
                 <div className="support-container">
                     <BackButton />
-                    <h1 className="support-title">SUPPORT TICKET CENTER</h1>
-                    <p className="support-subtitle">Raise a support case or chat with admin live in real-time</p>
+                    <h1 className="support-title">SUPPORT CENTER</h1>
+                    <p className="support-subtitle">Raise a support case or chat with our team in real-time</p>
 
                     <div className="support-layout">
-                        {/* Previous tickets pane */}
                         <div className="glass-card">
                             <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.2rem', marginBottom: '20px', letterSpacing: '1px' }}>
                                 PREVIOUS TICKETS
                             </h3>
-                            
                             {loading ? (
                                 <div className="spinner" />
                             ) : tickets.length === 0 ? (
@@ -480,7 +465,6 @@ function DesignerSupport() {
                             )}
                         </div>
 
-                        {/* Raise New Ticket Form */}
                         <div className="glass-card">
                             <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.2rem', marginBottom: '20px', letterSpacing: '1px' }}>
                                 RAISE NEW TICKET
@@ -493,9 +477,11 @@ function DesignerSupport() {
                                         value={category} 
                                         onChange={e => setCategory(e.target.value)}
                                     >
-                                        <option>Withdrawal request failed</option>
-                                        <option>Withdrawal amount mismatch</option>
-                                        <option>Payment not received yet</option>
+                                        <option>Product not yet received</option>
+                                        <option>Order cancellation issue</option>
+                                        <option>Wrong item received</option>
+                                        <option>Damaged/Broken product received</option>
+                                        <option>Missing item(s) in order</option>
                                         <option>Technical issue</option>
                                         <option>Other</option>
                                     </select>
@@ -517,7 +503,6 @@ function DesignerSupport() {
                 </div>
             </div>
 
-            {/* Chat side drawer overlay */}
             {activeTicket && (
                 <div className="drawer-overlay" onClick={() => setActiveTicket(null)}>
                     <div className="drawer-content" onClick={e => e.stopPropagation()}>
@@ -533,9 +518,7 @@ function DesignerSupport() {
                             </button>
                         </div>
 
-                        {/* Message log */}
                         <div className="chat-messages">
-                            {/* Original ticket issue as the first message */}
                             <div className="chat-bubble-wrap other">
                                 <div className="chat-bubble" style={{ background: '#f5f5f5', borderLeft: '3px solid var(--gold)' }}>
                                     {activeTicket.text}
@@ -557,7 +540,6 @@ function DesignerSupport() {
                             <div ref={chatEndRef} />
                         </div>
 
-                        {/* Reply box if the ticket is open */}
                         {activeTicket.status?.toLowerCase() !== 'closed' ? (
                             <div className="chat-input-area">
                                 <input 
@@ -585,4 +567,4 @@ function DesignerSupport() {
     );
 }
 
-export default DesignerSupport;
+export default UserSupport;

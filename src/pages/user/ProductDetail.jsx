@@ -1466,6 +1466,43 @@ function ProductDetail() {
                             </div>
                         </div>
 
+                        {/* Certified Quality Badge */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '14px',
+                            background: 'rgba(197, 160, 89, 0.05)',
+                            border: '1px solid rgba(197, 160, 89, 0.22)',
+                            borderRadius: '8px',
+                            padding: '12px 16px',
+                            marginTop: '20px',
+                            fontFamily: "'Montserrat', sans-serif"
+                        }}>
+                            <div style={{
+                                width: '38px',
+                                height: '38px',
+                                borderRadius: '50%',
+                                background: 'var(--gold)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyCenter: 'center',
+                                justifyContent: 'center',
+                                color: '#000',
+                                fontSize: '1.15rem',
+                                flexShrink: 0
+                            }}>
+                                <i className="fa-solid fa-award"></i>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--dark)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                                    ASAT Certified Quality
+                                </div>
+                                <div style={{ fontSize: '0.7rem', color: '#666', marginTop: '2px', lineHeight: '1.35' }}>
+                                    100% premium fabric construction. Hand-inspected and printed with trade-certified durability.
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="pdp-divider" />
 
                         <div className="pdp-tabs">

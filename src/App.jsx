@@ -28,6 +28,7 @@ import UserOrders   from './pages/user/UserOrders';
 import UserAddress  from './pages/user/UserAddress';
 import UserTracking from './pages/user/UserTracking';
 import UserTerms    from './pages/user/UserTerms';
+import UserSupport  from './pages/user/UserSupport';
 import Products      from './pages/user/Products';
 import ProductDetail from './pages/user/ProductDetail';
 import Cart                   from './pages/user/Cart';
@@ -84,6 +85,7 @@ import MfgWallets      from './pages/mfg/MfgWallets';
 import MfgProducts     from './pages/mfg/MfgProducts';
 import MfgPrintStyles  from './pages/mfg/MfgPrintStyles';
 import MfgDesignDetail from './pages/mfg/MfgDesignDetail';
+import MfgSupport      from './pages/mfg/MfgSupport';
 
 
 function App() {
@@ -113,6 +115,7 @@ function App() {
           <Route path="/tracking" element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><UserTracking /></ProtectedRoute>} />
           <Route path="/cart"     element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><Cart /></ProtectedRoute>} />
           <Route path="/wishlist" element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><Wishlist /></ProtectedRoute>} />
+          <Route path="/support"  element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><UserSupport /></ProtectedRoute>} />
         </Route>
 
         {/* ─── Designer Auth (standalone — no header) ─── */}
@@ -188,6 +191,7 @@ function App() {
           <Route path="wallet"   element={<MfgWallets />} />
           <Route path="profile"  element={<MfgProfile />} />
           <Route path="designs/:id" element={<MfgDesignDetail />} />
+          <Route path="support"  element={<MfgSupport />} />
         </Route>
 
       </Routes>

@@ -16,6 +16,7 @@ function MfgHeader() {
         { to: '/mfg/history', label: 'Order History', icon: 'fas fa-history' },
         { to: '/mfg/wallet', label: 'Wallet', icon: 'fas fa-wallet' },
         { to: '/mfg/profile', label: 'Profile', icon: 'fas fa-industry' },
+        { to: '/mfg/support', label: 'Support', icon: 'fas fa-headset' },
     ];
 
 

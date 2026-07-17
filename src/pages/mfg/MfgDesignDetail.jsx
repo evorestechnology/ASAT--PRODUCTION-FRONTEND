@@ -20,6 +20,33 @@ export default function MfgDesignDetail() {
     const [activeColorTab, setActiveColorTab] = useState('');
     const [downloadingAll, setDownloadingAll] = useState(false);
     const [enlargedImage, setEnlargedImage] = useState(null);
+    const [financeRules, setFinanceRules] = useState(null);
+
+    useEffect(() => {
+        apiFetch('/api/settings')
+            .then(data => setFinanceRules(data))
+            .catch(() => {});
+    }, []);
+
+    const resolvePlacementCost = (p) => {
+        if (!baseProduct || !baseProduct.colors) return 0;
+        const styleObj = (baseProduct.printing_styles || []).find(
+            x => x.style?.toLowerCase() === p.style?.toLowerCase()
+        );
+        if (!styleObj || !styleObj.placements) return 0;
+        const plObj = styleObj.placements.find(
+            x => x.label?.toLowerCase() === p.placementLabel?.toLowerCase()
+        );
+        if (!plObj) return 0;
+
+        const activeColorObj = baseProduct.colors.find(c => c.colorName === activeColorTab);
+        const mode = activeColorObj?.mode || 'dark';
+        if (mode === 'dark') {
+            return plObj.cost_dark || plObj.price || 0;
+        } else {
+            return plObj.cost_light || plObj.price || 0;
+        }
+    };
 
     useEffect(() => {
         const loadDetails = async () => {
@@ -158,6 +185,12 @@ export default function MfgDesignDetail() {
     // Size list
     const sizeList = design.sizes || (baseProduct ? baseProduct.sizes : []) || [];
 
+    const totalPrintingPrice = activePlacements.reduce((sum, p) => sum + resolvePlacementCost(p), 0);
+    const packingCost = financeRules?.general?.packing_cost ?? 50;
+    const shippingMumbai = financeRules?.finance_shipping_rules?.mumbai ?? 100;
+    const shippingIndia = financeRules?.finance_shipping_rules?.india ?? 200;
+    const shippingRow = financeRules?.finance_shipping_rules?.row ?? 5000;
+
     return (
         <div style={{ padding: '30px 5%', fontFamily: "'Montserrat', sans-serif", background: '#fcfcfc', minHeight: '100vh' }}>
             <ToastContainer toasts={toasts} />
@@ -285,6 +318,64 @@ export default function MfgDesignDetail() {
                             </div>
                         )}
                     </div>
+
+                    {/* Production Costs & Pricing */}
+                    {baseProduct && (
+                        <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: 8, padding: 24, marginBottom: 25, boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#111', borderBottom: '2px solid #C5A059', paddingBottom: 8, marginBottom: 15, textTransform: 'uppercase' }}>
+                                <i className="fas fa-coins" style={{ marginRight: 8, color: '#C5A059' }}></i> Production Cost Details
+                            </h2>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f5f5f5', paddingBottom: 8 }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: 600 }}>Fabric / Material Cost:</span>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>₹{baseProduct.cost?.toLocaleString('en-IN')}</span>
+                                </div>
+                                
+                                {activePlacements.length > 0 && (
+                                    <div style={{ borderBottom: '1px solid #f5f5f5', paddingBottom: 8 }}>
+                                        <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600, display: 'block', marginBottom: 6 }}>Printing Placements Breakdown:</span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                            {activePlacements.map((p, idx) => {
+                                                const cost = resolvePlacementCost(p);
+                                                return (
+                                                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#333', paddingLeft: 10 }}>
+                                                        <span>• {p.placementLabel} ({p.style.toUpperCase()})</span>
+                                                        <span style={{ fontWeight: 600 }}>₹{cost.toLocaleString('en-IN')}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f5f5f5', paddingBottom: 8 }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: 600 }}>Total Printing Price:</span>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>₹{totalPrintingPrice.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f5f5f5', paddingBottom: 8 }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: 600 }}>Packing Cost:</span>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>₹{packingCost.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div>
+                                    <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600, display: 'block', marginBottom: 6 }}>Shipping Rates Reference:</span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 10, fontSize: '0.78rem', color: '#555' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>Mumbai Local:</span>
+                                            <span style={{ fontWeight: 600 }}>₹{shippingMumbai.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>India (Domestic):</span>
+                                            <span style={{ fontWeight: 600 }}>₹{shippingIndia.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>International (Rest of World):</span>
+                                            <span style={{ fontWeight: 600 }}>₹{shippingRow.toLocaleString('en-IN')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Sizing & Colors Specifications */}
                     <div style={{ background: '#fff', border: '1px solid #eaeaea', borderRadius: 8, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
@@ -441,7 +532,11 @@ export default function MfgDesignDetail() {
                                         <div key={idx} style={{ border: '1px solid #eee', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 12, background: '#fafafa' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eaeaea', paddingBottom: 8 }}>
                                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>{p.placementLabel}</div>
-                                                <div style={{ fontSize: '0.72rem', color: '#666' }}>Print Style: <span style={{ fontWeight: 600, color: '#C5A059' }}>{p.style || 'Printed'}</span></div>
+                                                <div style={{ fontSize: '0.72rem', color: '#666' }}>
+                                                    Print Style: <span style={{ fontWeight: 600, color: '#C5A059', textTransform: 'uppercase' }}>{p.style || 'Printed'}</span>
+                                                    {' | '}
+                                                    Price: <span style={{ fontWeight: 600, color: '#C5A059' }}>₹{resolvePlacementCost(p).toLocaleString('en-IN')}</span>
+                                                </div>
                                             </div>
                                             
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

@@ -61,11 +61,27 @@ export const MUMBAI_CITIES = [
   'Mira Road', 'Bhayandar', 'Vasai', 'Virar', 'Panvel',
 ];
 
+export function getMergedCountries(customCountries = []) {
+  const merged = [...COUNTRIES];
+  if (Array.isArray(customCountries)) {
+    customCountries.forEach(cc => {
+      if (cc && cc.name && !merged.some(c => c.name.toLowerCase() === cc.name.toLowerCase() || c.code.toLowerCase() === cc.code.toLowerCase())) {
+        merged.push({
+          name: cc.name,
+          code: cc.code?.toUpperCase() || 'XX',
+          zone: cc.zone || 'row'
+        });
+      }
+    });
+  }
+  return merged;
+}
+
 /**
  * Determine shipping zone string from country name + city name.
  * Returns: 'mumbai' | 'india' | 'usa' | 'row'
  */
-export function getShippingZone(countryName, cityName = '') {
+export function getShippingZone(countryName, cityName = '', customCountries = []) {
   if (countryName === 'India') {
     const city = (cityName || '').trim();
     const isMumbai = MUMBAI_CITIES.some(
@@ -73,6 +89,7 @@ export function getShippingZone(countryName, cityName = '') {
     );
     return isMumbai ? 'mumbai' : 'india';
   }
-  const c = COUNTRIES.find(c => c.name === countryName);
+  const allCountries = getMergedCountries(customCountries);
+  const c = allCountries.find(c => c.name === countryName);
   return c ? c.zone : 'row';
 }

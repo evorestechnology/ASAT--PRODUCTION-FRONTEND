@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../../api';
-import { COUNTRIES } from '../../constants/countries';
+import { COUNTRIES, getMergedCountries } from '../../constants/countries';
 import '../../styles/admin.css';
 
 // ─── Toast ───────────────────────────────────────────────────────────────────
@@ -45,6 +45,13 @@ export default function MasterDelivery() {
     const [search, setSearch]     = useState('');
     const [filterZone, setFilterZone] = useState('all');
 
+    // Custom countries list
+    const [customCountries, setCustomCountries] = useState([]);
+    // Country form states
+    const [newCountryName, setNewCountryName] = useState('');
+    const [newCountryCode, setNewCountryCode] = useState('');
+    const [newCountryZone, setNewCountryZone] = useState('row');
+
     // Restricted country names set
     const [restricted, setRestricted] = useState(new Set());
     // Custom message
@@ -59,6 +66,9 @@ export default function MasterDelivery() {
         setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
     }, []);
 
+    // Get merged list of static + custom countries
+    const allCountries = getMergedCountries(customCountries);
+
     // ── Load ─────────────────────────────────────────────────────────────────
     useEffect(() => {
         apiFetch('/api/settings')
@@ -67,6 +77,7 @@ export default function MasterDelivery() {
                 if (dr) {
                     setRestricted(new Set(dr.restricted_countries || []));
                     if (dr.message) setRestrictMsg(dr.message);
+                    if (dr.custom_countries) setCustomCountries(dr.custom_countries);
                 }
             })
             .catch(() => toast('Failed to load delivery restrictions', 'error'))
@@ -83,6 +94,7 @@ export default function MasterDelivery() {
                     value: {
                         restricted_countries: [...restricted],
                         message: restrictMsg,
+                        custom_countries: customCountries
                     }
                 })
             });
@@ -107,7 +119,7 @@ export default function MasterDelivery() {
     function restrictZone(zone) {
         setRestricted(p => {
             const next = new Set(p);
-            COUNTRIES.filter(c => c.zone === zone).forEach(c => next.add(c.name));
+            allCountries.filter(c => c.zone === zone).forEach(c => next.add(c.name));
             return next;
         });
     }
@@ -115,17 +127,58 @@ export default function MasterDelivery() {
     function allowZone(zone) {
         setRestricted(p => {
             const next = new Set(p);
-            COUNTRIES.filter(c => c.zone === zone).forEach(c => next.delete(c.name));
+            allCountries.filter(c => c.zone === zone).forEach(c => next.delete(c.name));
             return next;
         });
     }
 
-    function restrictAll() { setRestricted(new Set(COUNTRIES.map(c => c.name))); }
+    function restrictAll() { setRestricted(new Set(allCountries.map(c => c.name))); }
     function allowAll()    { setRestricted(new Set()); }
 
+    function handleAddCountry() {
+        if (!newCountryName.trim()) {
+            toast('Please enter a country name', 'error');
+            return;
+        }
+        if (!newCountryCode.trim() || newCountryCode.trim().length !== 2) {
+            toast('Please enter a valid 2-letter country code', 'error');
+            return;
+        }
+
+        const name = newCountryName.trim();
+        const code = newCountryCode.trim().toUpperCase();
+        const zone = newCountryZone;
+
+        // Check if country already exists
+        const exists = allCountries.some(
+            c => c.name.toLowerCase() === name.toLowerCase() || c.code.toUpperCase() === code
+        );
+        if (exists) {
+            toast('Country with this name or code already exists', 'error');
+            return;
+        }
+
+        const nextCustom = [...customCountries, { name, code, zone }];
+        setCustomCountries(nextCustom);
+        setNewCountryName('');
+        setNewCountryCode('');
+        setNewCountryZone('row');
+        toast(`Added country: ${name}. Click "Save Restrictions" to persist.`, 'success');
+    }
+
+    function handleRemoveCustomCountry(name) {
+        setCustomCountries(p => p.filter(cc => cc.name !== name));
+        setRestricted(p => {
+            const next = new Set(p);
+            next.delete(name);
+            return next;
+        });
+        toast(`Removed country: ${name}. Click "Save Restrictions" to persist.`, 'success');
+    }
+
     // ── Filtered list ─────────────────────────────────────────────────────────
-    const filtered = COUNTRIES.filter(c => {
-        const matchSearch = c.name.toLowerCase().includes(search.toLowerCase());
+    const filtered = allCountries.filter(c => {
+        const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) || c.code.toLowerCase().includes(search.toLowerCase());
         const matchZone   = filterZone === 'all' || c.zone === filterZone ||
                             (filterZone === 'restricted' && restricted.has(c.name)) ||
                             (filterZone === 'allowed'    && !restricted.has(c.name));
@@ -133,7 +186,7 @@ export default function MasterDelivery() {
     });
 
     const restrictedCount = restricted.size;
-    const allowedCount    = COUNTRIES.length - restrictedCount;
+    const allowedCount    = allCountries.length - restrictedCount;
 
     if (loading) {
         return (
@@ -178,7 +231,7 @@ export default function MasterDelivery() {
                     </div>
                 </div>
                 <div className="delv-stat delv-stat--total">
-                    <div className="delv-stat__num">{COUNTRIES.length}</div>
+                    <div className="delv-stat__num">{allCountries.length}</div>
                     <div className="delv-stat__label">
                         <i className="fas fa-globe"></i> Total Countries
                     </div>
@@ -244,6 +297,7 @@ export default function MasterDelivery() {
                         )}
                         {filtered.map(c => {
                             const isRestricted = restricted.has(c.name);
+                            const isCustom = customCountries.some(cc => cc.name.toLowerCase() === c.name.toLowerCase());
                             return (
                                 <div
                                     key={c.code}
@@ -253,16 +307,37 @@ export default function MasterDelivery() {
                                 >
                                     <div className="delv-country-card__left">
                                         <div className={`delv-zone-dot`} style={{ background: ZONE_COLORS[c.zone] }} />
-                                        <span className="delv-country-name">{c.name}</span>
+                                        <span className="delv-country-name">
+                                            {c.name}
+                                            {isCustom && (
+                                                <span style={{ fontSize: '0.62rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: 4, marginLeft: 8, fontWeight: 700, display: 'inline-block', verticalAlign: 'middle' }}>
+                                                    CUSTOM
+                                                </span>
+                                            )}
+                                        </span>
                                         <span className="delv-zone-badge" style={{ color: ZONE_COLORS[c.zone] }}>
                                             {c.zone.toUpperCase()}
                                         </span>
                                     </div>
-                                    <div className={`delv-toggle ${isRestricted ? 'delv-toggle--off' : 'delv-toggle--on'}`}>
-                                        {isRestricted
-                                            ? <><i className="fas fa-ban"></i> Restricted</>
-                                            : <><i className="fas fa-check"></i> Allowed</>
-                                        }
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <div className={`delv-toggle ${isRestricted ? 'delv-toggle--off' : 'delv-toggle--on'}`}>
+                                            {isRestricted
+                                                ? <><i className="fas fa-ban"></i> Restricted</>
+                                                : <><i className="fas fa-check"></i> Allowed</>
+                                            }
+                                        </div>
+                                        {isCustom && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemoveCustomCountry(c.name);
+                                                }}
+                                                style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '0.9rem', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                title="Delete Custom Country"
+                                            >
+                                                <i className="fas fa-trash-alt"></i>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -272,6 +347,61 @@ export default function MasterDelivery() {
 
                 {/* ── RIGHT: Message + Restricted List ── */}
                 <div className="delv-col delv-col--side">
+
+                    {/* Add Custom Country */}
+                    <div className="delv-section">
+                        <div className="delv-section__title">➕ Add Custom Country</div>
+                        <p className="delv-section__desc" style={{ marginBottom: 12 }}>
+                            Add a country that is not in the default list. Specify its shipping/tax zone.
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div>
+                                <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 4 }}>Country Name</label>
+                                <input
+                                    type="text"
+                                    className="delv-input"
+                                    style={{ width: '100%' }}
+                                    placeholder="e.g. Greece"
+                                    value={newCountryName}
+                                    onChange={e => setNewCountryName(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 4 }}>Country Code (ISO 2)</label>
+                                    <input
+                                        type="text"
+                                        className="delv-input"
+                                        style={{ width: '100%', textTransform: 'uppercase' }}
+                                        placeholder="e.g. GR"
+                                        maxLength={2}
+                                        value={newCountryCode}
+                                        onChange={e => setNewCountryCode(e.target.value.toUpperCase())}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 4 }}>Shipping Zone</label>
+                                    <select
+                                        className="delv-filter"
+                                        style={{ width: '100%', height: '36px', padding: '0 8px' }}
+                                        value={newCountryZone}
+                                        onChange={e => setNewCountryZone(e.target.value)}
+                                    >
+                                        <option value="row">Rest of World (ROW)</option>
+                                        <option value="usa">United States (USA)</option>
+                                        <option value="india">India</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button
+                                className="delv-btn delv-btn--allow"
+                                style={{ width: '100%', padding: '10px', marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                                onClick={handleAddCountry}
+                            >
+                                <i className="fas fa-plus-circle"></i> Add Country
+                            </button>
+                        </div>
+                    </div>
 
                     {/* Restriction Message */}
                     <div className="delv-section">

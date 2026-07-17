@@ -4,6 +4,23 @@ import { apiFetch } from '../../api';
 import '../../styles/admin.css';
 import BackButton from '../../components/BackButton';
 
+const parseEvidence = (text) => {
+    if (!text) return [];
+    const lines = text.split('\n');
+    const links = [];
+    lines.forEach(line => {
+        const match = line.match(/(https?:\/\/[^\s]+)/);
+        if (match) {
+            const url = match[1];
+            let label = 'Evidence File';
+            if (line.toLowerCase().includes('video')) label = 'Unboxing Video';
+            else if (line.toLowerCase().includes('photo') || line.toLowerCase().includes('image')) label = 'Product Image';
+            links.push({ url, label });
+        }
+    });
+    return links;
+};
+
 function MasterTickets() {
     const { user } = useAuth();
     const [filter, setFilter] = useState('all');
@@ -17,6 +34,8 @@ function MasterTickets() {
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [messages, setMessages] = useState([]);
     const [replyText, setReplyText] = useState('');
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [loadingOrder, setLoadingOrder] = useState(false);
     const chatEndRef = useRef(null);
 
     const fetchTickets = async () => {
@@ -76,10 +95,29 @@ function MasterTickets() {
     useEffect(() => {
         if (!selectedTicket) {
             setMessages([]);
+            setSelectedOrder(null);
             return;
         }
 
         fetchMessages();
+
+        if (selectedTicket.orderId || selectedTicket.order_id) {
+            const fetchOrderDetails = async () => {
+                setLoadingOrder(true);
+                try {
+                    const data = await apiFetch(`/api/orders/${selectedTicket.orderId || selectedTicket.order_id}`);
+                    setSelectedOrder(data);
+                } catch (err) {
+                    console.error('Error fetching order details for ticket:', err);
+                    setSelectedOrder(null);
+                } finally {
+                    setLoadingOrder(false);
+                }
+            };
+            fetchOrderDetails();
+        } else {
+            setSelectedOrder(null);
+        }
     }, [selectedTicket]);
 
     // Scroll to bottom on new message
@@ -371,8 +409,61 @@ function MasterTickets() {
                         }}>
                             <strong>Subject:</strong> {selectedTicket.subject || selectedTicket.issue || selectedTicket.text || '—'}
                             {selectedTicket.orderId && (
-                                <div style={{ marginTop: 4, color: '#aaa' }}>
-                                    <strong>Associated Order:</strong> {selectedTicket.orderId}
+                                <div style={{ marginTop: 8, padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div><strong>Associated Order:</strong> {selectedTicket.orderId}</div>
+                                    {loadingOrder ? (
+                                        <div style={{ fontSize: '0.75rem', color: '#888' }}>Loading order details...</div>
+                                    ) : selectedOrder ? (
+                                        <div style={{ fontSize: '0.75rem', color: '#bbb', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <div>Status: <span style={{ textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 600 }}>{selectedOrder.status}</span></div>
+                                            <div>Total: {selectedOrder.total_amount ? `$${selectedOrder.total_amount}` : '—'}</div>
+                                            {selectedOrder.items && (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px' }}>
+                                                    <strong>Items:</strong>
+                                                    {selectedOrder.items.map((item, idx) => (
+                                                        <div key={idx} style={{ paddingLeft: '8px', color: '#999' }}>
+                                                            - {item.name} (Qty: {item.qty || 1}, Size: {item.size})
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div style={{ fontSize: '0.75rem', color: '#d32f2f' }}>Failed to load order details.</div>
+                                    )}
+                                    
+                                    {/* Evidence Previews */}
+                                    {(() => {
+                                        const evidence = parseEvidence(selectedTicket.text || selectedTicket.description || '');
+                                        if (evidence.length > 0) {
+                                            return (
+                                                <div style={{ marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px' }}>
+                                                    <strong>Uploaded Evidence:</strong>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '5px' }}>
+                                                        {evidence.map((ev, idx) => {
+                                                            const isImage = ev.url.match(/\.(jpeg|jpg|gif|png)/i) || ev.label === 'Product Image';
+                                                            const isVideo = ev.url.match(/\.(mp4|webm|ogg|mov)/i) || ev.label === 'Unboxing Video';
+                                                            return (
+                                                                <div key={idx} style={{ background: 'rgba(0,0,0,0.2)', padding: '6px', borderRadius: '4px' }}>
+                                                                    <div style={{ fontSize: '0.72rem', color: 'var(--gold)', marginBottom: '4px' }}>{ev.label}</div>
+                                                                    {isImage ? (
+                                                                        <img src={ev.url} alt="Evidence" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                                                    ) : isVideo ? (
+                                                                        <video src={ev.url} controls style={{ width: '100%', maxHeight: '180px', borderRadius: '4px', background: '#000' }} />
+                                                                    ) : (
+                                                                        <a href={ev.url} target="_blank" rel="noopener noreferrer" style={{ color: '#4fc3f7', textDecoration: 'underline', fontSize: '0.75rem' }}>
+                                                                            View File
+                                                                        </a>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
                             )}
                         </div>

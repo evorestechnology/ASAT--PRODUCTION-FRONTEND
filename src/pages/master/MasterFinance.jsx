@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../../api';
-import { COUNTRIES } from '../../constants/countries';
+import { COUNTRIES, getMergedCountries } from '../../constants/countries';
 import '../../styles/admin.css';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -68,6 +68,8 @@ export default function MasterFinance() {
   const [shippingRules, setShippingRules] = useState({
     mumbai: 100, india: 200, row: 5000, country_overrides: []
   });
+  const [customCountries, setCustomCountries] = useState([]);
+  const allCountries = getMergedCountries(customCountries);
 
   // ── Calculator ──
   const [calc, setCalc] = useState({
@@ -99,6 +101,9 @@ export default function MasterFinance() {
         }
         if (data.finance_tax_rules)      setTaxRules(data.finance_tax_rules);
         if (data.finance_shipping_rules) setShippingRules(data.finance_shipping_rules);
+        if (data.delivery_restrictions && data.delivery_restrictions.custom_countries) {
+          setCustomCountries(data.delivery_restrictions.custom_countries);
+        }
       } catch {
         toast('Failed to load finance settings', 'error');
       } finally {
@@ -347,7 +352,7 @@ export default function MasterFinance() {
                     <select className="fin-input" value={o.country}
                       onChange={e => updateTaxOverride(o.id, 'country', e.target.value)}>
                       <option value="">— Select Country —</option>
-                      {COUNTRIES.filter(c => c.code !== 'IN').map(c => (
+                      {allCountries.filter(c => c.code !== 'IN').map(c => (
                         <option key={c.code} value={c.name}>{c.name}</option>
                       ))}
                     </select>
@@ -403,7 +408,7 @@ export default function MasterFinance() {
                     <select className="fin-input" value={o.country}
                       onChange={e => updateShippingOverride(o.id, 'country', e.target.value)}>
                       <option value="">— Select Country —</option>
-                      {COUNTRIES.filter(c => c.code !== 'IN').map(c => (
+                      {allCountries.filter(c => c.code !== 'IN').map(c => (
                         <option key={c.code} value={c.name}>{c.name}</option>
                       ))}
                     </select>

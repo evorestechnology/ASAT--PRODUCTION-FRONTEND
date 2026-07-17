@@ -29,7 +29,14 @@ function ProfileDropdown() {
                 <>
                     <Link to="/address"><i className="fas fa-map-marker-alt"></i> Manage Delivery Address</Link>
                     <Link to="/tracking"><i className="fas fa-route"></i> Order Tracking</Link>
+                    <Link to="/support"><i className="fas fa-headset"></i> Support Center</Link>
                 </>
+            )}
+            {role === 'designer' && (
+                <Link to="/designer/support"><i className="fas fa-headset"></i> Support Center</Link>
+            )}
+            {role === 'mfg' && (
+                <Link to="/mfg/support"><i className="fas fa-headset"></i> Support Center</Link>
             )}
             <div className="popup-divider"></div>
             <Link to="/terms"><i className="fas fa-file-alt"></i> Terms and Conditions</Link>

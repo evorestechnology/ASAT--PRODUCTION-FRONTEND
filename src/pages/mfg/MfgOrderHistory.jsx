@@ -542,13 +542,15 @@ function MfgOrderHistory() {
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '15px'
+                                gap: '15px',
+                                background: '#ffffff',
+                                borderRadius: '8px',
+                                border: '1px solid #ddd'
                             }}
                         >
                             <img 
                                 src="/ast-logo.jpg" 
                                 alt="AST Logo" 
-                                crossOrigin="anonymous"
                                 style={{
                                     width: '80px',
                                     height: 'auto',
