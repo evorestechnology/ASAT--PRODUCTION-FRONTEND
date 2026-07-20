@@ -528,7 +528,7 @@ function UserSupport() {
 
                             {chatMessages.map(msg => (
                                 <div 
-                                    className={`chat-bubble-wrap ${msg.senderId === user.id ? 'me' : 'other'}`} 
+                                    className={`chat-bubble-wrap ${msg.senderId === user.id && msg.senderRole !== 'admin' ? 'me' : 'other'}`} 
                                     key={msg.id}
                                 >
                                     <div className="chat-bubble">

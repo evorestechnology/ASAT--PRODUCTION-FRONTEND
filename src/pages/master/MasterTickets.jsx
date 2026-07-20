@@ -24,6 +24,7 @@ const parseEvidence = (text) => {
 function MasterTickets() {
     const { user } = useAuth();
     const [filter, setFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -188,6 +189,15 @@ function MasterTickets() {
             if (role.toLowerCase() !== filter.toLowerCase()) return false;
         }
 
+        if (statusFilter !== 'all') {
+            const status = (t.status || 'open').toLowerCase();
+            if (statusFilter === 'ongoing') {
+                if (status !== 'open' && status !== 'active') return false;
+            } else if (statusFilter === 'closed') {
+                if (status !== 'closed') return false;
+            }
+        }
+
         if (searchTerm.trim() !== '') {
             const q = searchTerm.toLowerCase();
             const idStr = (t.id || '').toLowerCase();
@@ -222,12 +232,22 @@ function MasterTickets() {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
-                <div className="adm-page__filters" style={{ margin: 0 }}>
-                    {['all', 'designer', 'user', 'mfg'].map(f => (
-                        <button key={f} className={`adm-page__filter-btn ${filter === f ? 'adm-page__filter-btn--active' : ''}`} onClick={() => setFilter(f)}>
-                            {f === 'mfg' ? 'Manufacturer' : f.charAt(0).toUpperCase() + f.slice(1)}
-                        </button>
-                    ))}
+                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                    <div className="adm-page__filters" style={{ margin: 0 }}>
+                        {['all', 'designer', 'user', 'mfg'].map(f => (
+                            <button key={f} className={`adm-page__filter-btn ${filter === f ? 'adm-page__filter-btn--active' : ''}`} onClick={() => setFilter(f)}>
+                                {f === 'mfg' ? 'Manufacturer' : f.charAt(0).toUpperCase() + f.slice(1)}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="adm-page__filters" style={{ margin: 0 }}>
+                        {['all', 'ongoing', 'closed'].map(sf => (
+                            <button key={sf} className={`adm-page__filter-btn ${statusFilter === sf ? 'adm-page__filter-btn--active' : ''}`} onClick={() => setStatusFilter(sf)}>
+                                {sf === 'all' ? 'All Status' : sf.charAt(0).toUpperCase() + sf.slice(1)}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>

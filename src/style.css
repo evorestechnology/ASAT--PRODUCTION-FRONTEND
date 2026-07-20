@@ -5,10 +5,14 @@
     --gray: #2D2D2D;
 }
 
+html, body, #root {
+    min-height: 100vh;
+    background-color: var(--light) !important;
+}
+
 body {
     margin: 0;
     font-family: 'Montserrat', sans-serif;
-    background-color: var(--light);
     color: var(--dark);
     scroll-behavior: smooth;
 }
@@ -1415,7 +1419,7 @@ footer {
     position: fixed;
     bottom: 28px;
     right: 28px;
-    z-index: 9000;
+    z-index: 99;
 }
 
 /* Backdrop */
