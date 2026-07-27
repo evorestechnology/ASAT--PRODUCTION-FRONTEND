@@ -1114,14 +1114,8 @@ function Cart() {
                 }
             };
 
-            if (isSimulated) {
-                // Simulation mode for testing prior to entering real API keys
-                showToast('Initiating Cashfree checkout...', 'info');
-                setTimeout(() => {
-                    handleFinalizeOrder();
-                }, 1200);
-            } else if (window.Cashfree) {
-                const mode = (cfEnv || 'TEST').toUpperCase() === 'PRODUCTION' ? 'production' : 'sandbox';
+            if (window.Cashfree) {
+                const mode = (cfEnv || 'PRODUCTION').toUpperCase() === 'PRODUCTION' ? 'production' : 'sandbox';
                 const cashfree = window.Cashfree({ mode });
 
                 // Inject CSS overrides targeting Cashfree modal DOM elements (SDK adds them to body)
