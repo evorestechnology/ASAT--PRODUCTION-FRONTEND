@@ -461,7 +461,7 @@ function DesignerRegister() {
         return {
             fullName: '', countryCode: '+91 India', contact: '', gmail: '', useAsRecovery: true,
             username: '', password: '', confirmPassword: '',
-            gender: '', dob: '', address: '', country: ''
+            gender: '', dob: '', address: '', country: '', upiId: '', paypalId: ''
         };
     });
     const [errors, setErrors] = useState({});
@@ -665,6 +665,13 @@ function DesignerRegister() {
         if (!form.dob) e.dob = 'Date of birth is required';
         if (!form.address.trim()) e.address = 'Address is required';
         if (!form.country) e.country = 'Select country';
+
+        const isIndia = (form.country || '').trim().toLowerCase() === 'india';
+        if (isIndia && !form.upiId.trim()) {
+            e.upiId = 'UPI ID is required for designers in India';
+        } else if (!isIndia && form.country && !form.paypalId.trim()) {
+            e.paypalId = 'PayPal ID is required for international designers';
+        }
         return e;
     };
 
@@ -715,6 +722,8 @@ function DesignerRegister() {
                     dob: form.dob,
                     address: form.address,
                     country: form.country,
+                    upiId: form.upiId,
+                    paypalId: form.paypalId,
                 })
             });
             
@@ -998,13 +1007,40 @@ function DesignerRegister() {
                         </div>
 
                         <div className="auth-input-group">
-                            <label>Country</label>
+                            <label>Country *</label>
                             <select className="auth-select" value={form.country} onChange={e => set('country', e.target.value)}>
                                 <option value="">Select country</option>
                                 {COUNTRIES.map(c => <option key={c}>{c}</option>)}
                             </select>
                             {errors.country && <div className="auth-err">{errors.country}</div>}
                         </div>
+
+                        {/* Dynamic Payout Method Input */}
+                        {((form.country || '').trim().toLowerCase() === 'india' || (!form.country && form.countryCode.includes('+91'))) ? (
+                            <div className="auth-input-group">
+                                <label>UPI ID (for Payouts) *</label>
+                                <input 
+                                    type="text" 
+                                    className="auth-input" 
+                                    placeholder="e.g. username@upi or phone@okaxis" 
+                                    value={form.upiId} 
+                                    onChange={e => set('upiId', e.target.value)} 
+                                />
+                                {errors.upiId && <div className="auth-err">{errors.upiId}</div>}
+                            </div>
+                        ) : form.country ? (
+                            <div className="auth-input-group">
+                                <label>PayPal ID / Email (for Payouts) *</label>
+                                <input 
+                                    type="email" 
+                                    className="auth-input" 
+                                    placeholder="e.g. designer@example.com" 
+                                    value={form.paypalId} 
+                                    onChange={e => set('paypalId', e.target.value)} 
+                                />
+                                {errors.paypalId && <div className="auth-err">{errors.paypalId}</div>}
+                            </div>
+                        ) : null}
 
                         <button type="submit" className="auth-submit-btn">Join the Paradise</button>
                     </form>

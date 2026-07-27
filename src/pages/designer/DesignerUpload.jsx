@@ -17,9 +17,163 @@ const STEP_LABELS = [
 ];
 
 /* â”€â”€â”€ DropZone â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── ZoomableImage Component ─── */
+function ZoomableImage({ src, alt, maxHeight = 100, style = {} }) {
+    const [isHovered, setIsHovered] = useState(false);
+    const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleMouseMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setMousePos({ x, y });
+    };
+
+    if (!src) return null;
+
+    return (
+        <>
+            <div 
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onMouseMove={handleMouseMove}
+                onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
+                title="Hover to zoom · Click to enlarge"
+                style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    overflow: 'hidden',
+                    borderRadius: 6,
+                    cursor: 'zoom-in',
+                    border: '1px solid rgba(197, 160, 89, 0.3)',
+                    background: '#ffffff',
+                    boxShadow: isHovered ? '0 8px 24px rgba(0,0,0,0.18)' : 'none',
+                    transition: 'box-shadow 0.3s ease',
+                    ...style
+                }}
+            >
+                <img 
+                    src={src} 
+                    alt={alt || 'Zoomable preview'} 
+                    style={{
+                        maxHeight: maxHeight,
+                        maxWidth: '100%',
+                        display: 'block',
+                        margin: '0 auto',
+                        objectFit: 'contain',
+                        transform: isHovered ? 'scale(2.4)' : 'scale(1)',
+                        transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
+                        transition: isHovered ? 'transform 0.08s linear' : 'transform 0.3s ease',
+                    }} 
+                />
+                <div style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    right: 4,
+                    background: 'rgba(0,0,0,0.72)',
+                    color: '#fff',
+                    padding: '2px 6px',
+                    borderRadius: 4,
+                    fontSize: '0.58rem',
+                    fontFamily: 'Montserrat, sans-serif',
+                    pointerEvents: 'none',
+                    opacity: isHovered ? 0 : 0.85,
+                    transition: 'opacity 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 3
+                }}>
+                    <i className="fas fa-search-plus" style={{ fontSize: '0.55rem' }} /> Zoom
+                </div>
+            </div>
+
+            {/* Lightbox Modal on Click */}
+            {isModalOpen && (
+                <div 
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 10000,
+                        background: 'rgba(0,0,0,0.85)',
+                        backdropFilter: 'blur(6px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 20
+                    }}
+                    onClick={() => setIsModalOpen(false)}
+                >
+                    <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
+                        <button 
+                            onClick={() => setIsModalOpen(false)}
+                            style={{
+                                position: 'absolute',
+                                top: -14,
+                                right: -14,
+                                background: 'var(--gold)',
+                                color: '#000',
+                                border: 'none',
+                                width: 32,
+                                height: 32,
+                                borderRadius: '50%',
+                                fontSize: '1rem',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            ✕
+                        </button>
+                        <img 
+                            src={src} 
+                            alt={alt} 
+                            style={{
+                                maxWidth: '90vw',
+                                maxHeight: '85vh',
+                                objectFit: 'contain',
+                                borderRadius: 8,
+                                border: '2px solid var(--gold)',
+                                background: '#fff',
+                                boxShadow: '0 12px 40px rgba(0,0,0,0.5)'
+                            }} 
+                        />
+                        {alt && (
+                            <div style={{
+                                textAlign: 'center',
+                                marginTop: 10,
+                                color: '#ccc',
+                                fontFamily: 'Montserrat, sans-serif',
+                                fontSize: '0.78rem',
+                                letterSpacing: '1px'
+                            }}>
+                                {alt}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
+
+/* ─── DropZone ─── */
 function DropZone({ label, preview, onFile, accept = 'image/*' }) {
     const [dragOver, setDragOver] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
     const fileInputRef = React.useRef(null);
+
+    const handleMouseMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setMousePos({ x, y });
+    };
+
     return (
         <div
             className={`dsn-upload__drop ${dragOver ? 'dsn-upload__drop--active' : ''} ${preview ? 'dsn-upload__drop--has' : ''}`}
@@ -27,10 +181,21 @@ function DropZone({ label, preview, onFile, accept = 'image/*' }) {
             onDragLeave={() => setDragOver(false)}
             onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]); }}
             onClick={() => fileInputRef.current.click()}
-            style={{ cursor: 'pointer', width: '100%', height: '100%', aspectRatio: 'auto' }}
+            style={{ cursor: 'pointer', width: '100%', height: '100%', aspectRatio: 'auto', position: 'relative', overflow: 'hidden' }}
         >
             {preview ? (
-                <div className="dsn-upload__drop-preview" style={{ backgroundImage: `url(${preview})` }}>
+                <div 
+                    className="dsn-upload__drop-preview" 
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseMove={handleMouseMove}
+                    style={{ 
+                        backgroundImage: `url(${preview})`,
+                        backgroundPosition: isHovered ? `${mousePos.x}% ${mousePos.y}%` : 'center',
+                        backgroundSize: isHovered ? '240%' : 'contain',
+                        transition: isHovered ? 'background-size 0.2s ease' : 'all 0.3s ease'
+                    }}
+                >
                     <span className="dsn-upload__drop-change" onClick={e => { e.stopPropagation(); fileInputRef.current.click(); }}>Change</span>
                 </div>
             ) : (
@@ -112,6 +277,7 @@ function DesignerUpload() {
                     printingStyles: d.printing_styles || [],
                     details: d.details || [],
                     washCare: d.wash_care || [],
+                    sizeGuide: d.size_chart_image || d.size_guide || d.size_chart || '',
                 }));
                 setDbProducts(list);
             })
@@ -598,17 +764,17 @@ function DesignerUpload() {
  
                                                 {/* Details accordion */}
                                                 {isExpanded && (
-                                                    <div style={{ borderTop: '1px solid #f0f0f0', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12, background: '#fafafa' }}>
+                                                    <div style={{ borderTop: '1px solid #f0f0f0', padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, background: '#fafafa' }}>
                                                         {prod.details && prod.details.length > 0 && (
                                                             <div>
                                                                 <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Product Details</div>
-                                                                {prod.details.map((d, i) => <div key={i} style={{ fontSize: '0.78rem', color: '#555', lineHeight: 1.6 }}>â€¢ {d}</div>)}
+                                                                {prod.details.map((d, i) => <div key={i} style={{ fontSize: '0.78rem', color: '#555', lineHeight: 1.6 }}>• {d}</div>)}
                                                             </div>
                                                         )}
                                                         {prod.washCare && prod.washCare.length > 0 && (
                                                             <div>
                                                                 <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Wash Care</div>
-                                                                {prod.washCare.map((w, i) => <div key={i} style={{ fontSize: '0.78rem', color: '#555', lineHeight: 1.6 }}>â€¢ {w}</div>)}
+                                                                {prod.washCare.map((w, i) => <div key={i} style={{ fontSize: '0.78rem', color: '#555', lineHeight: 1.6 }}>• {w}</div>)}
                                                             </div>
                                                         )}
                                                         {prod.sizes && prod.sizes.length > 0 && (
@@ -616,11 +782,51 @@ function DesignerUpload() {
                                                                 <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Available Sizes</div>
                                                                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                                                     {prod.sizes.map(s => (
-                                                                        <span key={s} style={{ padding: '2px 10px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: 4, fontSize: '0.72rem', color: '#444' }}>{s}</span>
+                                                                        <span key={s} style={{ padding: '3px 12px', background: '#ffffff', border: '1px solid #ddd', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600, color: 'var(--dark)' }}>{s}</span>
                                                                     ))}
                                                                 </div>
                                                             </div>
                                                         )}
+
+                                                        {/* Size Guide Section */}
+                                                        <div>
+                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                <i className="fas fa-ruler-combined" /> Size Guide & Measurements
+                                                            </div>
+                                                            {prod.sizeGuide ? (
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.72rem', color: '#666', marginBottom: 8, fontFamily: 'Montserrat, sans-serif' }}>
+                                                                        Hover over size chart to zoom · Click to enlarge:
+                                                                    </div>
+                                                                    <ZoomableImage src={prod.sizeGuide} alt={`${prod.title} Size Guide`} maxHeight={200} />
+                                                                </div>
+                                                            ) : (
+                                                                <div style={{ background: '#ffffff', border: '1px solid #e2e2e2', borderRadius: 8, padding: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                                                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--dark)', marginBottom: 8, fontFamily: 'Cinzel, serif', letterSpacing: '0.5px' }}>
+                                                                        Standard Sizing Chart (in inches)
+                                                                    </div>
+                                                                    <div style={{ overflowX: 'auto' }}>
+                                                                        <table style={{ width: '100%', fontSize: '0.72rem', borderCollapse: 'collapse', textAlign: 'center', color: '#444', fontFamily: 'Montserrat, sans-serif' }}>
+                                                                            <thead>
+                                                                                <tr style={{ background: 'rgba(197, 160, 89, 0.1)', borderBottom: '1px solid var(--gold)' }}>
+                                                                                    <th style={{ padding: '7px 10px', fontWeight: 700 }}>Size</th>
+                                                                                    <th style={{ padding: '7px 10px', fontWeight: 700 }}>Chest</th>
+                                                                                    <th style={{ padding: '7px 10px', fontWeight: 700 }}>Length</th>
+                                                                                    <th style={{ padding: '7px 10px', fontWeight: 700 }}>Sleeve</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <tr style={{ borderBottom: '1px solid #f0f0f0' }}><td style={{ fontWeight: 700, color: 'var(--gold)' }}>S</td><td>38"</td><td>27"</td><td>8.0"</td></tr>
+                                                                                <tr style={{ borderBottom: '1px solid #f0f0f0' }}><td style={{ fontWeight: 700, color: 'var(--gold)' }}>M</td><td>40"</td><td>28"</td><td>8.5"</td></tr>
+                                                                                <tr style={{ borderBottom: '1px solid #f0f0f0' }}><td style={{ fontWeight: 700, color: 'var(--gold)' }}>L</td><td>42"</td><td>29"</td><td>9.0"</td></tr>
+                                                                                <tr style={{ borderBottom: '1px solid #f0f0f0' }}><td style={{ fontWeight: 700, color: 'var(--gold)' }}>XL</td><td>44"</td><td>30"</td><td>9.5"</td></tr>
+                                                                                <tr><td style={{ fontWeight: 700, color: 'var(--gold)' }}>XXL</td><td>46"</td><td>31"</td><td>10.0"</td></tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -862,9 +1068,9 @@ function DesignerUpload() {
                                                                     {/* Reference boundary image */}
                                                                     {(pl.refImage || pl.image) ? (
                                                                         <div>
-                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Print Position Reference</div>
-                                                                            <div style={{ border: '1px dashed rgba(212,175,55,0.25)', borderRadius: 4, padding: 8, textAlign: 'center', background: '#fafafa' }}>
-                                                                                <img src={pl.refImage || pl.image} alt="print position" style={{ maxHeight: 80, objectFit: 'contain' }} />
+                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Print Position Reference (Hover to Zoom)</div>
+                                                                            <div style={{ border: '1px dashed rgba(212,175,55,0.35)', borderRadius: 6, padding: 8, textAlign: 'center', background: '#fafafa' }}>
+                                                                                <ZoomableImage src={pl.refImage || pl.image} alt={`Print Position: ${pl.label}`} maxHeight={120} />
                                                                             </div>
                                                                         </div>
                                                                     ) : (

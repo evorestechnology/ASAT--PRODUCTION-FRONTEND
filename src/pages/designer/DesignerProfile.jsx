@@ -12,7 +12,8 @@ function DesignerProfile() {
     const { user } = useAuth();
     const [form, setForm] = useState({
         fullName: '', contact: '', address: '',
-        country: '', gender: '', dob: '', profilePhoto: null
+        country: '', gender: '', dob: '', profilePhoto: null,
+        upiId: '', paypalId: ''
     });
     const [username, setUsername] = useState('');
     const [toast, setToast] = useState('');
@@ -39,7 +40,9 @@ function DesignerProfile() {
                         country: data.country || '',
                         gender: data.gender || '',
                         dob: data.dob || '',
-                        profilePhoto: data.avatar_url || null
+                        profilePhoto: data.avatar_url || null,
+                        upiId: data.upi_id || '',
+                        paypalId: data.paypal_id || ''
                     });
                     setUsername(data.username || '');
                     setRankBadge(data.points >= 5000 ? 'Gold Designer' : data.points >= 1500 ? 'Silver Designer' : 'Bronze Designer');
@@ -106,6 +109,8 @@ function DesignerProfile() {
                     country: form.country,
                     gender: form.gender,
                     dob: form.dob,
+                    upi_id: form.upiId,
+                    paypal_id: form.paypalId,
                     username
                 })
             });
@@ -130,6 +135,8 @@ function DesignerProfile() {
             showToast('Failed to send reset link: ' + err.message);
         }
     };
+
+    const isIndia = !form.country || (form.country || '').trim().toLowerCase() === 'india';
 
     if (loading) {
         return (
@@ -217,6 +224,35 @@ function DesignerProfile() {
                             <input type="text" value={form.address} onChange={e => set('address', e.target.value)} placeholder="Street address" />
                         </div>
                     </div>
+                </div>
+
+                <h3 className="dsn-profile__section-title" style={{ marginTop: 28 }}>Payout Information</h3>
+                <div className="dsn-profile__grid">
+                    {isIndia ? (
+                        <div className="dsn-profile__group dsn-profile__group--full">
+                            <label>UPI ID (for Royalty Withdrawals)</label>
+                            <div className="dsn-auth__field"><i className="fas fa-mobile-alt"></i>
+                                <input 
+                                    type="text" 
+                                    value={form.upiId} 
+                                    onChange={e => set('upiId', e.target.value)} 
+                                    placeholder="e.g. username@upi or phone@okaxis" 
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="dsn-profile__group dsn-profile__group--full">
+                            <label>PayPal ID / Email (for Royalty Withdrawals)</label>
+                            <div className="dsn-auth__field"><i className="fab fa-paypal"></i>
+                                <input 
+                                    type="email" 
+                                    value={form.paypalId} 
+                                    onChange={e => set('paypalId', e.target.value)} 
+                                    placeholder="e.g. designer@example.com" 
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <h3 className="dsn-profile__section-title">Security</h3>

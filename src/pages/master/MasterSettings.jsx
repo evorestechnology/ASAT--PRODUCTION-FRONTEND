@@ -674,7 +674,7 @@ function MasterSettings() {
 
             {/* General T&C Section */}
             <div className="adm-settings__section">
-                <h3>Terms & Conditions</h3>
+                <h3>TTerms & Conditions</h3>
                 <textarea
                     className="adm-settings__textarea"
                     placeholder="Enter the platform terms and conditions..."

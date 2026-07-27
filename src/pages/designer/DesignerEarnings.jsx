@@ -7,24 +7,25 @@ import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 function DesignerEarnings() {
     const { user, profile } = useAuth();
     const { toasts, showToast } = useToast();
-    const [walletBalance, setWalletBalance] = useState(0);
-    const [totalWithdrawn, setTotalWithdrawn] = useState(0);
-    const [withdrawals, setWithdrawals] = useState([]);
-    const [showWithdraw, setShowWithdraw] = useState(false);
-    const [withdrawAmt, setWithdrawAmt] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [designerProfile, setDesignerProfile] = useState(null);
+    const [payoutId, setPayoutId] = useState('');
+    const [submittingWithdraw, setSubmittingWithdraw] = useState(false);
 
     const fetchWalletAndWithdrawals = async () => {
         if (!user) return;
         try {
-            // 1. Fetch wallet
+            // 1. Fetch profile for payout info & country
+            const prof = await apiFetch('/api/designers/me').catch(() => null);
+            if (prof) setDesignerProfile(prof);
+
+            // 2. Fetch wallet
             const walletData = await apiFetch('/api/wallets/me').catch(() => null);
             if (walletData) {
                 setWalletBalance(Number(walletData.balance) || 0);
                 setTotalWithdrawn(Number(walletData.total_withdrawn) || 0);
             }
 
-            // 2. Fetch withdrawals
+            // 3. Fetch withdrawals
             const withdrawalsData = await apiFetch('/api/wallets/withdrawals');
 
             const list = (withdrawalsData || []).map(w => {
@@ -48,6 +49,15 @@ function DesignerEarnings() {
         fetchWalletAndWithdrawals();
     }, [user]);
 
+    const handleOpenWithdrawModal = () => {
+        const isIndia = !designerProfile?.country || (designerProfile?.country || '').trim().toLowerCase() === 'india';
+        const existingId = isIndia ? (designerProfile?.upi_id || '') : (designerProfile?.paypal_id || '');
+        setPayoutId(existingId);
+        setShowWithdraw(true);
+    };
+
+    const isIndia = !designerProfile?.country || (designerProfile?.country || '').trim().toLowerCase() === 'india';
+
     const handleWithdraw = async () => {
         const amt = parseInt(withdrawAmt);
         if (!amt || amt <= 0) {
@@ -58,11 +68,27 @@ function DesignerEarnings() {
             showToast('Insufficient balance in wallet.', 'error');
             return;
         }
+        if (!payoutId.trim()) {
+            showToast(isIndia ? 'UPI ID is required for payout.' : 'PayPal ID is required for payout.', 'warning');
+            return;
+        }
 
+        setSubmittingWithdraw(true);
         try {
+            // Save/update payout ID on profile
+            const updatePayload = isIndia ? { upi_id: payoutId.trim() } : { paypal_id: payoutId.trim() };
+            await apiFetch('/api/designers/me', {
+                method: 'PUT',
+                body: JSON.stringify(updatePayload)
+            }).catch(e => console.error('Failed to update payout ID on profile:', e));
+
             await apiFetch('/api/wallets/withdraw', {
                 method: 'POST',
-                body: JSON.stringify({ amount: amt })
+                body: JSON.stringify({
+                    amount: amt,
+                    paymentMethod: isIndia ? 'upi' : 'paypal',
+                    paymentId: payoutId.trim()
+                })
             });
 
             showToast(`Withdrawal request for ₹${amt.toLocaleString('en-IN')} submitted!`, 'success');
@@ -72,6 +98,8 @@ function DesignerEarnings() {
         } catch (err) {
             console.error("Error processing withdrawal request:", err);
             showToast("Could not process withdrawal request. Please try again.", 'error');
+        } finally {
+            setSubmittingWithdraw(false);
         }
     };
 
@@ -115,23 +143,52 @@ function DesignerEarnings() {
                     </div>
 
                     <div className="dsn-earnings__action-row">
-                        <button className="dsn-auth__btn" onClick={() => setShowWithdraw(true)}>
+                        <button className="dsn-auth__btn" onClick={handleOpenWithdrawModal}>
                             <span>Request Withdrawal</span><i className="fas fa-arrow-right"></i>
                         </button>
                     </div>
 
                     {showWithdraw && (
-                        <div className="dsn-modal-overlay" onClick={() => setShowWithdraw(false)}>
-                            <div className="dsn-modal" onClick={e => e.stopPropagation()}>
+                        <div className="dsn-modal-overlay" onClick={() => !submittingWithdraw && setShowWithdraw(false)}>
+                            <div className="dsn-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
                                 <h3>Withdraw Funds</h3>
                                 <p>Available balance: <strong>₹{walletBalance.toLocaleString('en-IN')}</strong></p>
-                                <div className="dsn-auth__field">
-                                    <span style={{ padding: '0 8px', color: 'var(--gold)', fontWeight: 600 }}>₹</span>
-                                    <input type="number" placeholder="Enter amount" value={withdrawAmt} onChange={e => setWithdrawAmt(e.target.value)} max={walletBalance} />
+                                
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 16 }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#555', marginBottom: 6, fontFamily: 'Montserrat' }}>
+                                            Withdrawal Amount *
+                                        </label>
+                                        <div className="dsn-auth__field">
+                                            <span style={{ padding: '0 8px', color: 'var(--gold)', fontWeight: 600 }}>₹</span>
+                                            <input type="number" placeholder="Enter amount" value={withdrawAmt} onChange={e => setWithdrawAmt(e.target.value)} max={walletBalance} />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#555', marginBottom: 6, fontFamily: 'Montserrat' }}>
+                                            {isIndia ? 'UPI ID (for payout) *' : 'PayPal ID / Email (for payout) *'}
+                                        </label>
+                                        <div className="dsn-auth__field">
+                                            <i className={isIndia ? "fas fa-mobile-alt" : "fab fa-paypal"} style={{ padding: '0 8px', color: 'var(--gold)' }}></i>
+                                            <input 
+                                                type={isIndia ? "text" : "email"} 
+                                                placeholder={isIndia ? "e.g. username@upi or phone@okaxis" : "e.g. designer@example.com"} 
+                                                value={payoutId} 
+                                                onChange={e => setPayoutId(e.target.value)} 
+                                            />
+                                        </div>
+                                        <span style={{ fontSize: '0.68rem', color: '#888', fontFamily: 'Montserrat', display: 'block', marginTop: 4 }}>
+                                            {isIndia ? 'Your earnings will be transferred directly to this UPI ID.' : 'Your earnings will be transferred to this PayPal email.'}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="dsn-modal__actions">
-                                    <button className="dsn-modal__cancel" onClick={() => setShowWithdraw(false)}>Cancel</button>
-                                    <button className="dsn-auth__btn" onClick={handleWithdraw}><span>Confirm</span></button>
+
+                                <div className="dsn-modal__actions" style={{ marginTop: 22 }}>
+                                    <button className="dsn-modal__cancel" onClick={() => setShowWithdraw(false)} disabled={submittingWithdraw}>Cancel</button>
+                                    <button className="dsn-auth__btn" onClick={handleWithdraw} disabled={submittingWithdraw}>
+                                        <span>{submittingWithdraw ? 'Submitting...' : 'Confirm'}</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
