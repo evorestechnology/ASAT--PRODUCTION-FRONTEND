@@ -27,6 +27,7 @@ function Navbar() {
     const { currency, setCurrency, activeCurrencies, globalCurrencies } = useCurrency();
     const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
     const currencyDropdownRef = useRef(null);
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -216,6 +217,11 @@ function Navbar() {
                             )}
                         </div>
 
+                        {/* Search Icon (Visible on mobile only) */}
+                        <div className="nav-icon-wrapper nav-search-toggle-mobile" onClick={() => setShowMobileSearch(prev => !prev)} style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
+                            <i className="fas fa-search" style={{ marginLeft: '20px' }}></i>
+                        </div>
+
                         {/* Cart Shopping Bag Icon with dynamic badge */}
                         <div className="nav-icon-wrapper" onClick={() => navigate('/cart')} style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
                             <i className="fas fa-shopping-bag" style={{ marginLeft: '20px' }}></i>
@@ -244,6 +250,53 @@ function Navbar() {
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile Search Dropdown Bar */}
+                {showMobileSearch && (
+                    <div className="nav-mobile-search-bar" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 4%',
+                        background: '#f8f8fa',
+                        borderBottom: '1px solid rgba(0,0,0,0.06)',
+                        marginTop: '5px',
+                        borderRadius: '4px'
+                    }}>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleSearchSubmit(e);
+                            setShowMobileSearch(false);
+                        }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                className="nav-search-input-field"
+                                value={navSearchTerm}
+                                onChange={e => setNavSearchTerm(e.target.value)}
+                                autoFocus
+                                style={{
+                                    flex: 1,
+                                    border: 'none',
+                                    background: 'white',
+                                    outline: 'none',
+                                    fontSize: '0.85rem',
+                                    color: 'var(--dark)',
+                                    fontFamily: "'Montserrat', sans-serif",
+                                    padding: '8px 12px',
+                                    borderRadius: '4px',
+                                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
+                                }}
+                            />
+                            <button type="submit" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'var(--dark)' }}>
+                                <i className="fas fa-search"></i>
+                            </button>
+                            <button type="button" onClick={() => setShowMobileSearch(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#888', padding: '0 4px' }}>
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </div>
+                )}
 
                 {/* Desktop Secondary Menu Bar — Centered, Symmetrical Luxury Layout */}
                 <div className="nav-desktop-links" style={{
@@ -277,6 +330,7 @@ function Navbar() {
                         <input
                             type="text"
                             placeholder="SEARCH..."
+                            className="nav-search-input"
                             value={navSearchTerm}
                             onChange={e => setNavSearchTerm(e.target.value)}
                             style={{

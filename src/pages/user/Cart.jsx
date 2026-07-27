@@ -1066,38 +1066,159 @@ function Cart() {
                 tracking_id: ''
             };
 
-            await apiFetch('/api/orders', {
+            // 1. Create Cashfree payment order session
+            const totalAmountINR = Number(priceBreakdown.total) || 0;
+            const paymentSessionRes = await apiFetch('/api/payment/create-order', {
                 method: 'POST',
-                body: JSON.stringify(orderData)
+                body: JSON.stringify({
+                    amount: totalAmountINR,
+                    customerName: addrName,
+                    customerEmail: user?.email || '',
+                    customerPhone: addrPhone,
+                    cartItems: formattedItems,
+                    shippingAddress: fullAddress
+                })
             });
 
-            // Construct WhatsApp message
-            const msg = cart.map(i => {
-                let itemText = `• ${i.name} (${i.size}) × ${i.qty}`;
-                const detailParts = [];
-                const col = i.colorName || i.color;
-                if (col) detailParts.push(`Color: ${col}`);
-                if (i.isMfgProduct && i.printStyle) {
-                    detailParts.push(`Printing: ${i.printStyle}`);
-                }
-                if (detailParts.length > 0) {
-                    itemText += ` [${detailParts.join(', ')}]`;
-                }
-                itemText += ` — ${formatPrice(i.price * i.qty)}`;
-                return itemText;
-            }).join('\n');
+            if (!paymentSessionRes || !paymentSessionRes.success) {
+                showToast(paymentSessionRes?.error || 'Failed to initiate Cashfree payment session.', 'error');
+                setPlacing(false);
+                return;
+            }
 
-            const fullMsg = `Hi! I'd like to place an order (Order ID: ${oId}):\n\n${msg}\n\nDelivery Details:\nName: ${addrName}\nPhone: ${addrPhone}\nAddress: ${fullAddress}, ${addrCountry}\n\nSubtotal: ${formatPrice(priceBreakdown.subtotal)}\n${priceBreakdown.taxRate > 0 ? `${priceBreakdown.taxLabel}: ${formatPrice(priceBreakdown.taxAmount)}\n` : ''}Shipping: ${formatPrice(priceBreakdown.shippingAmt)}\nTotal: ${formatPrice(priceBreakdown.total)}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank');
+            const { payment_session_id, order_id: cfOrderId, isSimulated, cfEnv } = paymentSessionRes;
 
-            // Clear cart
-            updateCart([]);
-            setShowAddressModal(false);
-            navigate('/orders');
+            const handleFinalizeOrder = async () => {
+                try {
+                    // Create order in database
+                    await apiFetch('/api/orders', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            ...orderData,
+                            order_id: cfOrderId || oId,
+                            payment_id: cfOrderId,
+                            payment_status: 'PAID'
+                        })
+                    });
+
+                    showToast('Payment successful! Your order has been placed.', 'success');
+                    updateCart([]);
+                    setShowAddressModal(false);
+                    navigate('/orders');
+                } catch (createErr) {
+                    console.error('Error saving order after payment:', createErr);
+                    showToast('Payment confirmed, but order recording had an issue. Please contact support.', 'warning');
+                    navigate('/orders');
+                } finally {
+                    setPlacing(false);
+                }
+            };
+
+            if (isSimulated) {
+                // Simulation mode for testing prior to entering real API keys
+                showToast('Initiating Cashfree checkout...', 'info');
+                setTimeout(() => {
+                    handleFinalizeOrder();
+                }, 1200);
+            } else if (window.Cashfree) {
+                const mode = (cfEnv || 'TEST').toUpperCase() === 'PRODUCTION' ? 'production' : 'sandbox';
+                const cashfree = window.Cashfree({ mode });
+
+                // Inject CSS overrides targeting Cashfree modal DOM elements (SDK adds them to body)
+                const cfStyleId = '__asat_cf_style';
+                if (!document.getElementById(cfStyleId)) {
+                    const style = document.createElement('style');
+                    style.id = cfStyleId;
+                    style.textContent = `
+                        /* ASAT Cashfree Modal Size Overrides */
+                        body > div[class*="cf"],
+                        body > div[class*="cashfree"],
+                        body > div[id*="cashfree"],
+                        body > div[class*="pg-dropin"],
+                        body > div[class*="checkout"] {
+                            z-index: 999999 !important;
+                        }
+                        body > div[class*="cf"] > div,
+                        body > div[class*="cashfree"] > div,
+                        body > div[id*="cashfree"] > div,
+                        body > div[class*="pg-dropin"] > div {
+                            width: min(580px, 92vw) !important;
+                            max-width: 580px !important;
+                            min-width: 340px !important;
+                            border-radius: 20px !important;
+                            box-shadow: 0 24px 80px rgba(0,0,0,0.5) !important;
+                            overflow: hidden !important;
+                        }
+                        body > div[class*="cf"] iframe,
+                        body > div[class*="cashfree"] iframe,
+                        body > div[id*="cashfree"] iframe,
+                        body > div[class*="pg-dropin"] iframe {
+                            width: 100% !important;
+                            min-height: 580px !important;
+                            height: 580px !important;
+                            border: none !important;
+                        }
+                        @media (max-width: 600px) {
+                            body > div[class*="cf"] > div,
+                            body > div[class*="cashfree"] > div,
+                            body > div[id*="cashfree"] > div,
+                            body > div[class*="pg-dropin"] > div {
+                                width: 96vw !important;
+                                max-width: 96vw !important;
+                                border-radius: 14px !important;
+                            }
+                            body > div[class*="cf"] iframe,
+                            body > div[class*="cashfree"] iframe,
+                            body > div[id*="cashfree"] iframe,
+                            body > div[class*="pg-dropin"] iframe {
+                                min-height: 500px !important;
+                                height: 500px !important;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                cashfree.checkout({
+                    paymentSessionId: payment_session_id,
+                    redirectTarget: '_modal'
+
+                }).then(async (result) => {
+                    if (result.error) {
+                        console.error('Cashfree checkout failed/cancelled:', result.error);
+                        showToast(result.error.message || 'Payment cancelled or failed.', 'warning');
+                        setPlacing(false);
+                    } else {
+                        // Verify payment with backend
+                        try {
+                            const verifyRes = await apiFetch('/api/payment/verify', {
+                                method: 'POST',
+                                body: JSON.stringify({ orderId: cfOrderId })
+                            });
+                            if (verifyRes && verifyRes.verified) {
+                                await handleFinalizeOrder();
+                            } else {
+                                showToast('Payment verification pending or incomplete.', 'warning');
+                                setPlacing(false);
+                            }
+                        } catch (verifyErr) {
+                            console.error('Payment verification error:', verifyErr);
+                            // Fallback finalize if verification call throws network error
+                            await handleFinalizeOrder();
+                        }
+                    }
+                }).catch(err => {
+                    console.error('Cashfree SDK modal error:', err);
+                    showToast('Cashfree Payment Modal closed or failed.', 'error');
+                    setPlacing(false);
+                });
+            } else {
+                showToast('Cashfree SDK is not available. Please refresh the page.', 'error');
+                setPlacing(false);
+            }
         } catch (err) {
-            console.error("Error creating Supabase order:", err);
-            showToast("There was an error creating your order. Please try again.", 'error');
-        } finally {
+            console.error("Error initiating payment:", err);
+            showToast("There was an error initiating payment. Please try again.", 'error');
             setPlacing(false);
         }
     };
@@ -1503,7 +1624,7 @@ function Cart() {
                                       disabled={!selectedAddressId || isRestricted || placing}
                                       style={(!selectedAddressId || isRestricted || placing) ? { background: '#888', cursor: 'not-allowed', opacity: 0.6 } : {}}
                                   >
-                                      {isRestricted ? 'DELIVERY RESTRICTED' : (placing ? 'PLACING ORDER...' : (selectedAddressId ? 'CHECKOUT VIA WHATSAPP' : 'SELECT ADDRESS TO CHECKOUT'))}
+                                      {isRestricted ? 'DELIVERY RESTRICTED' : (placing ? 'PROCESSING PAYMENT...' : (selectedAddressId ? 'PAY NOW WITH CASHFREE' : 'SELECT ADDRESS TO CHECKOUT'))}
                                   </button>
                                 <a className="cart-continue" onClick={() => navigate('/products')}>← Continue Shopping</a>
                                 <div className="cart-secure">

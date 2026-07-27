@@ -821,9 +821,7 @@ function DesignerUpload() {
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 gap: 8,
-                                                background: '#fdfdfd',
-                                                maxHeight: '480px',
-                                                overflowY: 'auto'
+                                                background: '#fdfdfd'
                                             }}>
                                                 {placements.map(pl => {
                                                     const config = getPlacementConfig(activeColorTab, techKey, pl.id);
@@ -876,7 +874,7 @@ function DesignerUpload() {
                                                                     )}
 
                                                                     {/* Two upload zones side by side */}
-                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                                                    <div className="dsn-upload__drop-grid">
                                                                         <div>
                                                                             <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Upload Design *</div>
                                                                             <div style={{ height: 110 }}>
@@ -914,7 +912,7 @@ function DesignerUpload() {
                 </section>
             )}
 
-            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â• STEP 3: COMMENTS â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {/* ══════════════════════════════ STEP 3: COMMENTS ══════════════════════════════ */}
             {step === 3 && (
                 <section className="dsn-upload__section">
                     <h3 className="dsn-upload__heading">Production Comments</h3>
@@ -927,7 +925,7 @@ function DesignerUpload() {
                         <textarea
                             className="dsn-upload__textarea dsn-upload__textarea--lg"
                             rows={6}
-                            placeholder="e.g. Place chest print 3 cm below collar Â· Keep ink density below 80% Â· Use Pantone match for brand colours..."
+                            placeholder="e.g. Place chest print 3 cm below collar · Keep ink density below 80% · Use Pantone match for brand colours..."
                             value={productionComments}
                             onChange={e => setProductionComments(e.target.value)}
                         />
@@ -935,7 +933,7 @@ function DesignerUpload() {
                 </section>
             )}
 
-            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â• STEP 4: CUSTOMER DETAILS â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {/* ══════════════════════════════ STEP 4: CUSTOMER DETAILS ══════════════════════════════ */}
             {step === 4 && (
                 <section className="dsn-upload__section">
                     <h3 className="dsn-upload__heading">Customer Details</h3>
@@ -993,8 +991,7 @@ function DesignerUpload() {
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                             {mockupSlots.map(({ field, previewField, label }) => (
-                                                <div key={field} style={{
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                <div key={field} className="dsn-upload__mockup-row" style={{
                                                     padding: '8px 12px', background: '#ffffff',
                                                     border: `1px solid ${m[field] ? 'rgba(212,175,55,0.45)' : '#e0e0e0'}`, borderRadius: 4
                                                 }}>

@@ -38,7 +38,19 @@ const styles = `
     .profile-actions button {
         flex: 1;
     }
+    @media (max-width: 640px) {
+        .container { margin: 20px auto; padding: 24px 18px; }
+        .form-grid { grid-template-columns: 1fr; gap: 16px; }
+        .full-width { grid-column: span 1; }
+        .profile-actions { flex-direction: column; grid-column: span 1; }
+        .profile-actions button { width: 100%; }
+    }
+    @media (max-width: 400px) {
+        .container { padding: 18px 14px; }
+        .form-group input { padding: 10px; font-size: 16px; }
+    }
 `;
+
 
 function UserProfile() {
     const navigate = useNavigate();

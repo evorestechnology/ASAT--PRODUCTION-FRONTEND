@@ -249,6 +249,30 @@ const styles = `
         cursor: pointer;
         font-size: 0.95rem;
     }
+
+    /* ── Table mobile: horizontal scroll wrapper ── */
+    .orders-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .orders-table { min-width: 640px; }
+
+    @media (max-width: 768px) {
+        .orders-page { padding: 24px 4%; }
+        .orders-title { font-size: 1.6rem; letter-spacing: 2px; }
+        .orders-subtitle { font-size: 0.78rem; margin-bottom: 24px; }
+        .glass-card { padding: 20px; margin-top: 14px; }
+        .orders-table th { padding: 14px 10px; font-size: 0.75rem; letter-spacing: 1px; }
+        .orders-table td { padding: 14px 10px; font-size: 0.82rem; }
+        .modal-card { padding: 20px; }
+    }
+    @media (max-width: 480px) {
+        .orders-title { font-size: 1.3rem; }
+        .glass-card { padding: 14px; }
+        .track-btn { padding: 7px 12px; font-size: 0.7rem; }
+        .status-badge { padding: 5px 10px; font-size: 0.65rem; }
+    }
 `;
 
 function UserOrders() {

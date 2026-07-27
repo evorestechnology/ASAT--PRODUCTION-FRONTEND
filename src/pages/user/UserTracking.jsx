@@ -170,7 +170,42 @@ const styles = `
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+
+    /* ── Mobile: compact progress track ── */
+    @media (max-width: 640px) {
+        .tracking-page { padding: 24px 4%; }
+        .glass-card { padding: 24px 18px; }
+        .tracking-title { font-size: 1.3rem; letter-spacing: 1.5px; margin-bottom: 20px; }
+
+        /* Switch to compact node labels — allow wrapping, make font tiny */
+        .node-label {
+            font-size: 0.52rem;
+            letter-spacing: 0.5px;
+            white-space: normal;
+            width: 60px;
+            line-height: 1.2;
+            text-align: center;
+        }
+        .progress-node { width: 26px; height: 26px; font-size: 0.65rem; }
+        .progress-track { margin: 30px 0 55px; }
+
+        /* Details row wraps label/value */
+        .details-row {
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 14px;
+        }
+        .details-value { font-size: 0.82rem; }
+        .tracking-status-text { font-size: 0.9rem; }
+    }
+    @media (max-width: 400px) {
+        .glass-card { padding: 18px 12px; }
+        .tracking-title { font-size: 1.1rem; }
+        .node-label { width: 48px; font-size: 0.48rem; }
+        .progress-node { width: 22px; height: 22px; font-size: 0.6rem; }
+    }
 `;
+
 
 function UserTracking() {
     const [searchParams] = useSearchParams();

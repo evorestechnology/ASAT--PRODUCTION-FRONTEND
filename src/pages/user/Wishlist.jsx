@@ -264,7 +264,35 @@ const styles = `
         from { transform: scale(0.95); opacity: 0; }
         to { transform: scale(1); opacity: 1; }
     }
+
+    /* ── Mobile responsiveness ── */
+    @media (max-width: 768px) {
+        .wishlist-hero { padding: 36px 4% 28px; }
+        .wishlist-hero h1 { font-size: 1.6rem; letter-spacing: 3px; }
+        .wishlist-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            padding: 24px 4% 40px;
+        }
+    }
+    @media (max-width: 480px) {
+        .wishlist-hero h1 { font-size: 1.3rem; letter-spacing: 2px; }
+        .wishlist-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 18px 3% 32px;
+        }
+        .wishlist-details { padding: 14px; gap: 4px; }
+        .wishlist-actions { padding: 0 14px 14px; }
+        .wishlist-add-bag { font-size: 0.68rem; padding: 10px; }
+        .wishlist-size-modal-content { padding: 22px 18px; }
+    }
+    @media (max-width: 380px) {
+        .wishlist-grid { grid-template-columns: 1fr; }
+        .wishlist-empty { padding: 50px 10px; }
+    }
 `;
+
 
 function Wishlist() {
     const navigate = useNavigate();

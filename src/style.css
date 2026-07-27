@@ -80,6 +80,9 @@ header {
     display: flex;
     align-items: center;
 }
+.nav-search-toggle-mobile {
+    display: none !important;
+}
 
 .nav-icons i {
     font-size: 1.4rem;
@@ -1574,54 +1577,139 @@ footer {
     transition-delay: calc(var(--bubble-i) * 80ms + 100ms);
 }
 
-/* Hide greeting on mobile */
-/* Hide greeting on mobile and adjust Navbar */
+/* ═══════════════════════════════════════
+   MOBILE NAVBAR — keeps logo centred
+   Key design: absolute positions logo in center,
+   places currency on left, and remaining icons on right.
+═══════════════════════════════════════ */
 @media (max-width: 768px) {
     .nav-greeting {
         display: none !important;
     }
+
     .nav-container {
+        position: relative !important;
         display: flex !important;
-        justify-content: space-between !important;
+        justify-content: flex-end !important;
         align-items: center !important;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .nav-desktop-links {
-        flex-wrap: wrap !important;
-        gap: 15px !important;
-        justify-content: center !important;
-    }
-    .logo {
-        font-size: 1.3rem;
-        letter-spacing: 2.5px;
+        height: 50px !important;
+        padding: 0 !important;
         margin: 0 !important;
     }
-    header {
-        padding: 14px 4%;
+
+    .logo {
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        font-size: 1rem !important;
+        letter-spacing: 1px !important;
+        text-align: center;
+        margin: 0 !important;
+        z-index: 5 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
     }
+    .logo-caption {
+        font-size: 5px !important;
+        letter-spacing: 1px !important;
+        display: block !important;
+        margin-top: 1px !important;
+    }
+
+    /* Currency selector absolute positioned to left spacer area */
+    .currency-selector-container {
+        position: absolute !important;
+        left: 0 !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        margin: 0 !important;
+        z-index: 5 !important;
+    }
+    .currency-select-btn {
+        font-size: 0.65rem !important;
+        padding: 3px 5px !important;
+        height: 25px !important;
+        gap: 2px !important;
+    }
+
+    /* Icons aligned to the right */
     .nav-icons {
-        margin-top: 5px;
+        display: flex !important;
+        align-items: center !important;
+        margin: 0 !important;
+        gap: 0 !important;
+        z-index: 5 !important;
     }
-    .nav-icon-wrapper i {
-        margin-left: 15px !important;
+    .nav-icon-wrapper i, .profile-container i {
+        margin-left: 7px !important;
+        font-size: 1.05rem !important;
+    }
+    .profile-container i {
+        margin-left: 0 !important; /* profile icon handles its own spacing */
+    }
+    .nav-icon-wrapper .badge {
+        top: -6px !important;
+        right: -6px !important;
+        font-size: 0.5rem !important;
+        min-width: 13px !important;
+        height: 13px !important;
+        line-height: 13px !important;
+    }
+
+    header { padding: 12px 4% 0; }
+
+    /* ── Secondary links bar: single scrollable row ── */
+    .nav-desktop-links {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        justify-content: flex-start !important;
+        gap: 20px !important;
+        padding: 8px 4% 6px !important;
+        font-size: 0.65rem !important;
+        letter-spacing: 2px !important;
+        scrollbar-width: none !important;
+        border-top: 1px solid rgba(0,0,0,0.04);
+    }
+    .nav-desktop-links::-webkit-scrollbar { display: none !important; }
+    .nav-desktop-links a {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Search bar in secondary row */
+    .nav-search-input {
+        width: 100px !important;
+        font-size: 0.65rem !important;
+    }
+
+    /* Mobile search toggle & desktop search form hide */
+    .nav-search-toggle-mobile {
+        display: inline-block !important;
+    }
+    .nav-desktop-links form {
+        display: none !important;
     }
 }
 
 @media (max-width: 480px) {
     .nav-desktop-links {
-        font-size: 0.65rem !important;
-        gap: 10px !important;
+        font-size: 0.62rem !important;
+        gap: 16px !important;
     }
     .logo {
-        font-size: 1.1rem !important;
+        font-size: 1rem !important;
     }
     .nav-icon-wrapper i {
         margin-left: 10px !important;
     }
     .currency-select-btn {
-        font-size: 0.7rem !important;
-        padding: 4px 8px !important;
+        font-size: 0.68rem !important;
+        padding: 4px 6px !important;
+        height: 28px !important;
     }
 }
 
