@@ -1088,6 +1088,12 @@ function Cart() {
 
             const { payment_session_id, order_id: cfOrderId, isSimulated, cfEnv } = paymentSessionRes;
 
+            if (!payment_session_id) {
+                showToast('Payment session creation returned no session ID. Please try again.', 'error');
+                setPlacing(false);
+                return;
+            }
+
             const handleFinalizeOrder = async () => {
                 try {
                     // Create order in database
@@ -1115,7 +1121,7 @@ function Cart() {
             };
 
             if (window.Cashfree) {
-                const mode = (cfEnv || 'PRODUCTION').toUpperCase() === 'PRODUCTION' ? 'production' : 'sandbox';
+                const mode = (cfEnv && cfEnv.toUpperCase() === 'TEST') || (cfEnv && cfEnv.toUpperCase() === 'SANDBOX') ? 'sandbox' : 'production';
                 const cashfree = window.Cashfree({ mode });
 
                 // Inject CSS overrides targeting Cashfree modal DOM elements (SDK adds them to body)
