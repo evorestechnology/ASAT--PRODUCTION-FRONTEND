@@ -298,6 +298,19 @@ function UserOrders() {
             return;
         }
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const returningOrderId = urlParams.get('order_id');
+        if (returningOrderId) {
+            apiFetch('/api/payment/verify', {
+                method: 'POST',
+                body: JSON.stringify({ orderId: returningOrderId })
+            }).then(vRes => {
+                if (vRes && vRes.verified) {
+                    showToast(`Payment verified successfully for order #${returningOrderId}!`, 'success');
+                }
+            }).catch(() => {});
+        }
+
         const fetchOrders = async () => {
             try {
                 const data = await apiFetch('/api/orders');
