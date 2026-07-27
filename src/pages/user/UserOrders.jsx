@@ -304,9 +304,33 @@ function UserOrders() {
             apiFetch('/api/payment/verify', {
                 method: 'POST',
                 body: JSON.stringify({ orderId: returningOrderId })
-            }).then(vRes => {
+            }).then(async (vRes) => {
                 if (vRes && vRes.verified) {
-                    showToast(`Payment verified successfully for order #${returningOrderId}!`, 'success');
+                    // Check if there is pending order data in localStorage
+                    const rawPending = localStorage.getItem('asat_pending_order');
+                    if (rawPending) {
+                        try {
+                            const pendingData = JSON.parse(rawPending);
+                            await apiFetch('/api/orders', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    ...pendingData.orderData,
+                                    order_id: returningOrderId,
+                                    payment_id: returningOrderId,
+                                    payment_status: 'PAID'
+                                })
+                            });
+                            localStorage.removeItem('asat_pending_order');
+                            localStorage.removeItem('asat_cart');
+                            window.dispatchEvent(new Event('cart_updated'));
+                        } catch (pErr) {
+                            console.error('Error finalizing pending order:', pErr);
+                        }
+                    }
+                    showToast(`Payment verified successfully! Order #${returningOrderId} has been placed.`, 'success');
+                    // Refresh orders list
+                    const freshData = await apiFetch('/api/orders');
+                    setOrders(freshData || []);
                 }
             }).catch(() => {});
         }

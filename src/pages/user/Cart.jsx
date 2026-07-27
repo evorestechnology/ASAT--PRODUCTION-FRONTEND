@@ -1179,39 +1179,60 @@ function Cart() {
                     document.head.appendChild(style);
                 }
 
-                cashfree.checkout({
-                    paymentSessionId: payment_session_id,
-                    redirectTarget: '_modal'
+                // Save pending order details in localStorage prior to launching Cashfree checkout
+                localStorage.setItem('asat_pending_order', JSON.stringify({
+                    orderData,
+                    orderId: cfOrderId || oId
+                }));
 
-                }).then(async (result) => {
-                    if (result.error) {
-                        console.error('Cashfree checkout failed/cancelled:', result.error);
-                        showToast(result.error.message || 'Payment cancelled or failed.', 'warning');
-                        setPlacing(false);
-                    } else {
-                        // Verify payment with backend
-                        try {
-                            const verifyRes = await apiFetch('/api/payment/verify', {
-                                method: 'POST',
-                                body: JSON.stringify({ orderId: cfOrderId })
-                            });
-                            if (verifyRes && verifyRes.verified) {
-                                await handleFinalizeOrder();
-                            } else {
-                                showToast('Payment verification pending or incomplete.', 'warning');
+                // Initiate Cashfree Checkout
+                try {
+                    // Try modal drop-in first
+                    cashfree.checkout({
+                        paymentSessionId: payment_session_id,
+                        redirectTarget: '_modal'
+                    }).then(async (result) => {
+                        if (result.error) {
+                            console.warn('Cashfree modal closed or error:', result.error);
+                            // Fallback to direct redirect payment page if modal fails or is closed
+                            if (result.error.code === 'MODAL_CLOSED' || result.error.message?.includes('closed')) {
                                 setPlacing(false);
+                            } else {
+                                cashfree.checkout({
+                                    paymentSessionId: payment_session_id,
+                                    redirectTarget: '_self'
+                                });
                             }
-                        } catch (verifyErr) {
-                            console.error('Payment verification error:', verifyErr);
-                            // Fallback finalize if verification call throws network error
-                            await handleFinalizeOrder();
+                        } else {
+                            try {
+                                const verifyRes = await apiFetch('/api/payment/verify', {
+                                    method: 'POST',
+                                    body: JSON.stringify({ orderId: cfOrderId })
+                                });
+                                if (verifyRes && verifyRes.verified) {
+                                    await handleFinalizeOrder();
+                                } else {
+                                    showToast('Payment verification pending.', 'warning');
+                                    setPlacing(false);
+                                }
+                            } catch (vErr) {
+                                await handleFinalizeOrder();
+                            }
                         }
-                    }
-                }).catch(err => {
-                    console.error('Cashfree SDK modal error:', err);
-                    showToast('Cashfree Payment Modal closed or failed.', 'error');
-                    setPlacing(false);
-                });
+                    }).catch(() => {
+                        // On modal rejection (e.g. origin policy restriction on localhost), fallback to redirectTarget: '_self'
+                        cashfree.checkout({
+                            paymentSessionId: payment_session_id,
+                            redirectTarget: '_self'
+                        });
+                    });
+                } catch (checkoutErr) {
+                    console.error('Cashfree checkout invocation error:', checkoutErr);
+                    cashfree.checkout({
+                        paymentSessionId: payment_session_id,
+                        redirectTarget: '_self'
+                    });
+                }
             } else {
                 showToast('Cashfree SDK is not available. Please refresh the page.', 'error');
                 setPlacing(false);
