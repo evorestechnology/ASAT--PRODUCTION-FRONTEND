@@ -602,11 +602,19 @@ function Products() {
       items = items.filter((p) => p.collection === activeCollection);
     }
 
-    // Gender
+    // Gender — if Male/Men or Female/Women is selected, Unisex products are also included
     if (activeGender !== 'All') {
-      items = items.filter(
-        (p) => (p.gender || 'Unisex').toLowerCase() === activeGender.toLowerCase()
-      );
+      const targetGender = activeGender.toLowerCase();
+      items = items.filter((p) => {
+        const prodGender = (p.gender || 'Unisex').toLowerCase();
+        if (targetGender === 'male' || targetGender === 'men') {
+          return prodGender === 'male' || prodGender === 'men' || prodGender === 'unisex';
+        }
+        if (targetGender === 'female' || targetGender === 'women') {
+          return prodGender === 'female' || prodGender === 'women' || prodGender === 'unisex';
+        }
+        return prodGender === targetGender;
+      });
     }
 
     // Price range — compare against selling price (markup-applied)

@@ -69,7 +69,7 @@ function DesignerRanking() {
                                 <th>Rank</th>
                                 <th>Country</th>
                                 <th>Designer</th>
-                                <th>User ID</th>
+                                {/* <th>User ID</th> */}
                                 <th>Score</th>
                             </tr>
                         </thead>
@@ -91,7 +91,7 @@ function DesignerRanking() {
                                         <td className="dsn-ranking__name">
                                             {r.name} {r.userId === currentDesignerId && <span className="dsn-ranking__you">You</span>}
                                         </td>
-                                        <td className="dsn-table__id">{r.userId}</td>
+                                        {/* <td className="dsn-table__id">{r.userId}</td> */}
                                         <td className="dsn-ranking__score">{r.score.toLocaleString()}</td>
                                     </tr>
                                 ))

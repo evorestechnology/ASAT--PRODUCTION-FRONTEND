@@ -196,6 +196,13 @@ function MfgProducts() {
         // DB format: [{ style: 'dtg', placements: [{ id: 'tshirt front_pocket', label, cost_dark, cost_light, image, price }] }]
         const parsedMethods = [];
         (p.printing_styles || p.printingStyles || []).forEach(ps => {
+            const matchingDbStyle = dbPrintStyles.find(dps =>
+                dps.id === ps.id ||
+                (dps.category && dps.category.toLowerCase() === (ps.style || '').toLowerCase()) ||
+                (dps.name && dps.name.toLowerCase() === (ps.style || '').toLowerCase())
+            );
+            const fromStyleId = matchingDbStyle ? matchingDbStyle.id : (ps.style || 'style');
+
             const grouped = {};
             (ps.placements || []).forEach(pl => {
                 const opt = pl.label || '';
@@ -227,10 +234,12 @@ function MfgProducts() {
                 const isActive = placementsInCat.length > 0 ? placementsInCat.some(pl => pl.active !== false) : true;
 
                 parsedMethods.push({
-                    id: Date.now() + Math.random(),
+                    id: fromStyleId + '_' + cat + '_' + Date.now() + Math.random(),
                     type: ps.style,
                     category: cat,
                     options: grouped[cat],
+                    fromStyleId: fromStyleId,
+                    fromCategory: cat,
                     active: isActive
                 });
             });
@@ -908,10 +917,15 @@ function MfgProducts() {
                         {dbPrintStyles.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 {dbPrintStyles.map(ps => {
+                                    const isPmCatActive = (pc) => {
+                                        return printMethods.some(pm => 
+                                            (pm.fromStyleId === ps.id || pm.type?.toLowerCase() === ps.category?.toLowerCase() || pm.type?.toLowerCase() === ps.name?.toLowerCase()) &&
+                                            (pm.fromCategory?.toLowerCase() === pc.category?.toLowerCase() || pm.category?.toLowerCase() === pc.category?.toLowerCase())
+                                        );
+                                    };
+
                                     const totalCats = ps.placementCategories?.length || 0;
-                                    const enabledCats = (ps.placementCategories || []).filter(pc =>
-                                        printMethods.some(pm => pm.fromStyleId === ps.id && pm.fromCategory === pc.category)
-                                    ).length;
+                                    const enabledCats = (ps.placementCategories || []).filter(pc => isPmCatActive(pc)).length;
                                     const allSelected = totalCats > 0 && enabledCats === totalCats;
                                     const someSelected = enabledCats > 0 && enabledCats < totalCats;
 
@@ -938,7 +952,7 @@ function MfgProducts() {
                                             {totalCats > 0 && (
                                                 <div style={{ borderTop: '1px solid #2a2a2a', display: 'flex', flexDirection: 'column', gap: 0 }}>
                                                     {(ps.placementCategories || []).map((pc, i) => {
-                                                        const isCatEnabled = printMethods.some(pm => pm.fromStyleId === ps.id && pm.fromCategory === pc.category);
+                                                        const isCatEnabled = isPmCatActive(pc);
                                                         const optCount = Object.keys(pc.placements || {}).length;
                                                         return (
                                                             <label key={pc.category} style={{
@@ -1441,7 +1455,7 @@ function MfgProducts() {
                                     </div>
                                 </div>
                                 <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                    <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', color: 'white' }}>{p.title}</h3>
+                                    <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', color: 'black' }}>{p.title}</h3>
                                     
                                     <div style={{ display: 'flex', gap: 15, marginBottom: 15, fontSize: '0.8rem', color: '#aaa' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1488,7 +1502,7 @@ function MfgProducts() {
                                 </div>
                                 
                                 <div style={{ display: 'flex', borderTop: '1px solid #333' }}>
-                                    <button onClick={() => handleEditClick(p)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#ccc', cursor: 'pointer', borderRight: '1px solid #333', transition: 'background 0.2s' }} onMouseOver={e => e.target.style.background = 'rgba(255,255,255,0.05)'} onMouseOut={e => e.target.style.background = 'transparent'}>
+                                    <button onClick={() => handleEditClick(p)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#000000', cursor: 'pointer', borderRight: '1px solid #333', transition: 'background 0.2s' }} onMouseOver={e => e.target.style.background = 'rgba(255,255,255,0.05)'} onMouseOut={e => e.target.style.background = 'transparent'}>
                                         <i className="fas fa-edit"></i> Edit
                                     </button>
                                     <button onClick={() => setPendingDeleteProduct(p.id)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#dc3545', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.target.style.background = 'rgba(220,53,69,0.1)'} onMouseOut={e => e.target.style.background = 'transparent'}>

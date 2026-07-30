@@ -22,6 +22,7 @@ function MasterHeader() {
         { to: '/master/tickets', label: 'Tickets', icon: 'fas fa-headset' },
         { to: '/master/finance', label: 'Finance', icon: 'fas fa-calculator' },
         { to: '/master/delivery', label: 'Delivery', icon: 'fas fa-truck' },
+        { to: '/master/tutorials', label: 'Tutorials', icon: 'fas fa-graduation-cap' },
         { to: '/master/settings', label: 'Settings', icon: 'fas fa-cog' },
     ];
 

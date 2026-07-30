@@ -624,6 +624,18 @@ function DesignerPublicProfile() {
           if (data.status === 'blocked') {
             setNotFound(true);
           } else {
+            let rankVal = data.rank || data.ranking;
+            if (!rankVal) {
+              try {
+                const rankings = await apiFetch('/api/designers/rankings');
+                const sorted = [...(rankings || [])].sort((a, b) => Number(b.points || b.total_earnings || 0) - Number(a.points || a.total_earnings || 0));
+                const idx = sorted.findIndex(d => d.id === data.id);
+                if (idx !== -1) rankVal = idx + 1;
+              } catch (rErr) {
+                console.error('Error fetching rankings fallback:', rErr);
+              }
+            }
+
             setDesigner({
               id: data.id,
               fullName: data.full_name,
@@ -637,7 +649,8 @@ function DesignerPublicProfile() {
               designsCount: data.designs_count,
               totalEarnings: Number(data.total_earnings) || 0,
               points: data.points,
-              rank: data.rank
+              rank: rankVal || 1,
+              ranking: rankVal || 1
             });
           }
         } else {
@@ -850,12 +863,12 @@ function DesignerPublicProfile() {
                   <div className="dpp-hero__stat-num">{designer.designsCount ?? products.length}</div>
                   <div className="dpp-hero__stat-label">Designs</div>
                 </div>
-                <div className="dpp-hero__stat">
+                {/* <div className="dpp-hero__stat">
                   <div className="dpp-hero__stat-num">{designer.totalOrders ?? '—'}</div>
                   <div className="dpp-hero__stat-label">Total Sales</div>
-                </div>
+                </div> */}
                 <div className="dpp-hero__stat">
-                  <div className="dpp-hero__stat-num">#{designer.ranking ?? '—'}</div>
+                  <div className="dpp-hero__stat-num">#{designer.ranking || designer.rank || '-'}</div>
                   <div className="dpp-hero__stat-label">Ranking</div>
                 </div>
               </div>

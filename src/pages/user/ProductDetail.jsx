@@ -1467,7 +1467,7 @@ function ProductDetail() {
                         </div>
 
                         {/* Certified Quality Badge */}
-                        <div style={{
+                        {/* <div style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '14px',
@@ -1493,15 +1493,15 @@ function ProductDetail() {
                             }}>
                                 <i className="fa-solid fa-award"></i>
                             </div>
-                            {/* <div>
+                            <div>
                                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--dark)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                                     ASAT Certified Quality
                                 </div>
                                 <div style={{ fontSize: '0.7rem', color: '#666', marginTop: '2px', lineHeight: '1.35' }}>
                                     100% premium fabric construction. Hand-inspected and printed with trade-certified durability.
                                 </div>
-                            </div> */}
-                        </div>
+                            </div>
+                        </div> */}
 
                         <div className="pdp-divider" />
 

@@ -5,6 +5,54 @@ import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
+const COLOR_NAME_TO_HEX = {
+    'jet black': '#121212',
+    'black': '#000000',
+    'white': '#ffffff',
+    'off white': '#faf0e6',
+    'snow white': '#fffafa',
+    'navy': '#0b192c',
+    'navy blue': '#0b192c',
+    'blue': '#1e3a8a',
+    'red': '#b91c1c',
+    'maroon': '#800000',
+    'green': '#15803d',
+    'forest green': '#14532d',
+    'olive': '#556b2f',
+    'yellow': '#eab308',
+    'gold': '#c5a059',
+    'grey': '#6b7280',
+    'gray': '#6b7280',
+    'charcoal': '#374151',
+    'heather grey': '#9ca3af',
+    'light grey': '#d1d5db',
+    'dark grey': '#4b5563',
+    'beige': '#f5f5dc',
+    'brown': '#78350f',
+    'pink': '#ec4899',
+    'purple': '#7e22ce',
+    'lavender': '#e6e6fa',
+    'orange': '#f97316'
+};
+
+const resolveColorHex = (c) => {
+    if (!c) return '#121212';
+    if (typeof c === 'object' && c !== null) {
+        const hex = c.color || c.colorHex || c.hex || c.color_hex;
+        if (hex && typeof hex === 'string' && hex.startsWith('#')) return hex;
+        const name = (c.colorName || c.name || '').toString().trim().toLowerCase();
+        if (COLOR_NAME_TO_HEX[name]) return COLOR_NAME_TO_HEX[name];
+        if (name && !name.includes(' ')) return name;
+        return '#121212';
+    }
+    const str = String(c).trim();
+    if (str.startsWith('#')) return str;
+    const lower = str.toLowerCase();
+    if (COLOR_NAME_TO_HEX[lower]) return COLOR_NAME_TO_HEX[lower];
+    if (lower && !lower.includes(' ')) return lower;
+    return '#121212';
+};
+
 function DesignerDesigns() {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -266,9 +314,24 @@ function DesignerDesigns() {
                                 )}
 
                                 <div className="dsn-design-card__row">
-                                    <div className="dsn-design-card__colors">
-                                        {(d.colors || []).map((c, i) => <span key={i} className="dsn-design-card__swatch" style={{ background: c }}></span>)}
-                                    </div>
+                                     <div className="dsn-design-card__colors">
+                                         {(d.colors || []).map((c, i) => {
+                                             const hex = resolveColorHex(c);
+                                             const name = typeof c === 'object' ? (c.colorName || c.name || '') : c;
+                                             return (
+                                                 <span 
+                                                     key={i} 
+                                                     className="dsn-design-card__swatch" 
+                                                     title={name}
+                                                     style={{ 
+                                                         background: hex,
+                                                         border: '1px solid rgba(0,0,0,0.25)',
+                                                         boxShadow: '0 0 2px rgba(0,0,0,0.15)'
+                                                     }}
+                                                 />
+                                             );
+                                         })}
+                                     </div>
                                     <span className="dsn-design-card__price">₹{d.price?.toLocaleString('en-IN')}</span>
                                 </div>
                                 <div className="dsn-design-card__actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

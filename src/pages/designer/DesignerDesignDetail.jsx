@@ -359,7 +359,11 @@ export default function DesignerDesignDetail() {
                                 {/* Color header */}
                                 <div className="ddd-color-header">
                                     <span className="ddd-color-swatch"
-                                        style={{ background: cHex.toLowerCase() === 'white' ? '#f8fafc' : cHex.toLowerCase() === 'black' ? '#0f172a' : cHex }} />
+                                        style={{ 
+                                            background: cHex.toLowerCase().includes('black') ? '#121212' : cHex.toLowerCase().includes('white') ? '#ffffff' : (cHex.startsWith('#') ? cHex : '#121212'),
+                                            border: '1px solid rgba(0,0,0,0.25)'
+                                        }} 
+                                    />
                                     <span className="ddd-color-title">{cName}</span>
                                 </div>
 

@@ -53,6 +53,7 @@ import DesignerUpload   from './pages/designer/DesignerUpload';
 import DesignerBaseProducts from './pages/designer/DesignerBaseProducts';
 import DesignerProductDetail from './pages/designer/DesignerProductDetail';
 import DesignerDesignDetail from './pages/designer/DesignerDesignDetail';
+import DesignerTutorials from './pages/designer/DesignerTutorials';
 
 
 // Master pages
@@ -74,6 +75,7 @@ import MasterCategories   from './pages/master/MasterCategories';
 import MasterFinance      from './pages/master/MasterFinance';
 import MasterDelivery     from './pages/master/MasterDelivery';
 import MasterWithdrawals  from './pages/master/MasterWithdrawals';
+import MasterTutorials    from './pages/master/MasterTutorials';
 
 // Mfg pages
 import MfgIndex        from './pages/mfg/MfgIndex';
@@ -143,6 +145,7 @@ function App() {
 
           <Route path="base-products" element={<DesignerBaseProducts />} />
           <Route path="base-products/:id" element={<DesignerProductDetail />} />
+          <Route path="tutorials" element={<DesignerTutorials />} />
         </Route>
 
         {/* ─── Master Auth (standalone — no header) ─── */}
@@ -171,6 +174,7 @@ function App() {
           <Route path="finance"   element={<MasterFinance />} />
           <Route path="delivery"  element={<MasterDelivery />} />
           <Route path="withdrawals" element={<MasterWithdrawals />} />
+          <Route path="tutorials"  element={<MasterTutorials />} />
         </Route>
 
         {/* ─── Mfg Auth (standalone — no header) ─── */}

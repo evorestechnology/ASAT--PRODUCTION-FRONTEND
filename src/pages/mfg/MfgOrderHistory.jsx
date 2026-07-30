@@ -7,6 +7,55 @@ import BackButton from '../../components/BackButton';
 import '../../styles/admin.css';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
+const COLOR_NAME_TO_HEX = {
+    'jet black': '#121212',
+    'black': '#000000',
+    'white': '#ffffff',
+    'off white': '#faf0e6',
+    'snow white': '#fffafa',
+    'navy': '#0b192c',
+    'navy blue': '#0b192c',
+    'blue': '#1e3a8a',
+    'red': '#b91c1c',
+    'maroon': '#800000',
+    'green': '#15803d',
+    'forest green': '#14532d',
+    'olive': '#556b2f',
+    'yellow': '#eab308',
+    'gold': '#c5a059',
+    'grey': '#6b7280',
+    'gray': '#6b7280',
+    'charcoal': '#374151',
+    'heather grey': '#9ca3af',
+    'light grey': '#d1d5db',
+    'dark grey': '#4b5563',
+    'beige': '#f5f5dc',
+    'brown': '#78350f',
+    'pink': '#ec4899',
+    'purple': '#7e22ce',
+    'lavender': '#e6e6fa',
+    'orange': '#f97316'
+};
+
+const resolveColorHex = (item) => {
+    if (!item) return '#121212';
+    const hexProp = item.colorHex || item.hex || item.color_hex;
+    if (hexProp && typeof hexProp === 'string' && hexProp.startsWith('#')) {
+        return hexProp;
+    }
+    if (item.color && typeof item.color === 'string' && item.color.startsWith('#')) {
+        return item.color;
+    }
+    const rawName = (item.colorName || item.color || '').toString().trim().toLowerCase();
+    if (COLOR_NAME_TO_HEX[rawName]) {
+        return COLOR_NAME_TO_HEX[rawName];
+    }
+    if (rawName && !rawName.includes(' ')) {
+        return rawName;
+    }
+    return '#121212';
+};
+
 function MfgOrderHistory() {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -220,9 +269,7 @@ function MfgOrderHistory() {
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: item.image ? 30 : 0, color: '#666', fontSize: '0.7rem' }}>
                                                          {(item.color || item.colorName) && (
                                                              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                 {item.color && (
-                                                                     <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #ccc' }}></span>
-                                                                 )}
+                                                                 <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', backgroundColor: resolveColorHex(item), border: '1px solid rgba(0,0,0,0.25)', boxShadow: '0 0 2px rgba(0,0,0,0.15)' }}></span>
                                                                  {item.colorName || item.color}
                                                              </span>
                                                          )}
