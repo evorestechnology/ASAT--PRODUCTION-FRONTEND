@@ -290,6 +290,23 @@ function UserOrders() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     
+    const fetchOrders = async () => {
+        setLoading(true);
+        try {
+            const data = await apiFetch('/api/orders');
+            setOrders(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Error fetching orders:", err);
+            showToast("Failed to load orders: " + err.message, "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+    
     // Support query states
     const [queryOrder, setQueryOrder] = useState(null);
     const [queryCategory, setQueryCategory] = useState('Product not yet received');

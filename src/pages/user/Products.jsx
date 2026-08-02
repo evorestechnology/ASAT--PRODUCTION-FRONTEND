@@ -24,6 +24,11 @@ const SORT_OPTIONS = [
    INLINE STYLES  (extended with filter-bar, price, skeleton)
 ═══════════════════════════════════════════════════════════ */
 const extraStyles = `
+  .products-page {
+    background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
+    min-height: 80vh;
+  }
+
   /* ── Enhanced Filter Bar ── */
   .pcol-filter-bar {
     background: #1a1a1a;

@@ -378,16 +378,10 @@ export default function MasterDesignReview() {
                                         <span className="mdr-price-row__k" style={{ fontStyle:'italic' }}>Subtotal</span>
                                         <span className="mdr-price-row__v">₹{subtotal.toLocaleString()}</span>
                                     </div>
-                                    {[
-                                        ['Operating Cost', `₹${oCost.toLocaleString()}`],
-                                        ['Packing Cost', `₹${pkCost.toLocaleString()}`],
-                                        ['Markup', `₹${markup.toLocaleString()}`],
-                                    ].map(([k,v]) => (
-                                        <div key={k} className="mdr-price-row">
-                                            <span className="mdr-price-row__k">{k}</span>
-                                            <span className="mdr-price-row__v">{v}</span>
-                                        </div>
-                                    ))}
+                                    <div className="mdr-price-row">
+                                        <span className="mdr-price-row__k">Other Costs</span>
+                                        <span className="mdr-price-row__v">₹{(oCost + pkCost + markup).toLocaleString()}</span>
+                                    </div>
                                     <div className="mdr-price-row mdr-price-total">
                                         <span className="mdr-price-row__k">Customer Pays</span>
                                         <span className="mdr-price-row__v">₹{customerPrice.toLocaleString()}</span>

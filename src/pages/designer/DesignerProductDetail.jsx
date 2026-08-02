@@ -352,13 +352,26 @@ function DesignerProductDetail() {
                                                             ? `${formattedCategory} - ${formattedLabel}` 
                                                             : formattedLabel;
 
+                                                        const pr = Number(pl.price) || 0;
+                                                        const cd = Number(pl.cost_dark ?? pl.darkPrice) || 0;
+                                                        const cl = Number(pl.cost_light ?? pl.lightPrice) || 0;
+                                                        let priceDisplay = '';
+                                                        if (pr > 0) {
+                                                            priceDisplay = `₹${pr}`;
+                                                        } else if (cd > 0 || cl > 0) {
+                                                            if (cd === cl) priceDisplay = `₹${cd}`;
+                                                            else priceDisplay = `Dark: ₹${cd} | Light: ₹${cl}`;
+                                                        } else {
+                                                            priceDisplay = `₹${pr}`;
+                                                        }
+
                                                         return (
                                                             <span key={pl.id} style={{
                                                                 fontSize: '0.7rem', padding: '2px 8px',
                                                                 background: '#fafafa', border: '1px solid #eee',
                                                                 color: '#666', borderRadius: 12, textTransform: 'capitalize'
                                                             }}>
-                                                                {displayLabel} (₹{pl.price || 0})
+                                                                {displayLabel} ({priceDisplay})
                                                             </span>
                                                         );
                                                     })}

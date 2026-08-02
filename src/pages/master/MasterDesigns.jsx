@@ -356,16 +356,8 @@ function DesignDrawer({ design, onClose, onAction, actionLoading, rejectComment,
                                         <span className="dsn-drawer__kv-val">₹{subtotal.toLocaleString()}</span>
                                     </div>
                                     <div className="dsn-drawer__kv">
-                                        <span className="dsn-drawer__kv-key">Operating Cost</span>
-                                        <span className="dsn-drawer__kv-val">₹{oCost.toLocaleString()}</span>
-                                    </div>
-                                    <div className="dsn-drawer__kv">
-                                        <span className="dsn-drawer__kv-key">Packing Cost</span>
-                                        <span className="dsn-drawer__kv-val">₹{pkCost.toLocaleString()}</span>
-                                    </div>
-                                    <div className="dsn-drawer__kv">
-                                        <span className="dsn-drawer__kv-key">ASAT Markup</span>
-                                        <span className="dsn-drawer__kv-val" style={{ color: '#C5A059' }}>₹{markup.toLocaleString()}</span>
+                                        <span className="dsn-drawer__kv-key">Other Costs</span>
+                                        <span className="dsn-drawer__kv-val" style={{ color: '#C5A059' }}>₹{(oCost + pkCost + markup).toLocaleString()}</span>
                                     </div>
                                     <div className="dsn-drawer__kv" style={{ borderTop: '2px solid #2a2a2a', paddingTop: 10, marginTop: 4 }}>
                                         <span style={{ color: 'white', fontWeight: 700 }}>Customer Selling Price</span>

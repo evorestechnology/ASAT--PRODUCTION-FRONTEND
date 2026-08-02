@@ -512,7 +512,7 @@ function DesignerUpload() {
         });
     };
 
-    /* â”€â”€ Step 4 handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ──── Step 4 handlers ──────────────────────── */
     const updateColorMockup = (colorName, field, file) => {
         const previewField = field.replace('File', 'Preview');
         const preview = file ? URL.createObjectURL(file) : '';
@@ -526,7 +526,7 @@ function DesignerUpload() {
         setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
     };
 
-    /* â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ──── Validation ───────────────────────────── */
     const canProceed = () => {
         if (step === 1) return !!selectedProductId && selectedColors.length > 0 && !!primaryColor;
         if (step === 2) {
@@ -633,6 +633,18 @@ function DesignerUpload() {
             };
 
             const baseCost = Number(selectedProductObj.cost) || 0;
+            const findPl = (placements, placementId) => {
+                if (!placements || !placementId) return null;
+                const pidClean = String(placementId).toLowerCase().trim();
+                return placements.find(p => {
+                    const pId = String(p.id || '').toLowerCase().trim();
+                    const pLabel = String(p.label || '').toLowerCase().trim();
+                    const pName = String(p.name || '').toLowerCase().trim();
+                    return pId === pidClean || pLabel === pidClean || pName === pidClean ||
+                           (pId && pidClean && (pId.endsWith('_' + pidClean) || pidClean.endsWith('_' + pId)));
+                });
+            };
+
             const maxPrintingCost = selectedColors.reduce((max, color) => {
                 const colorCost = (colorPlacements[color] || []).reduce((sum, placement) => {
                     const allStyles = (selectedProductObj.printingStyles || []).filter(
@@ -640,8 +652,18 @@ function DesignerUpload() {
                     );
                     let plPrice = 0;
                     for (const ps of allStyles) {
-                        const pl = (ps.placements || []).find(p => p.id === placement.placementId);
-                        if (pl) { plPrice = placement.style?.toLowerCase() === "dtg" ? (Number(pl.cost_dark) || 0) : (Number(pl.price) || 0); break; }
+                        const pl = findPl(ps.placements, placement.placementId);
+                        if (pl) {
+                            const isDtg = placement.style?.toLowerCase() === 'dtg';
+                            if (isDtg) {
+                                const cd = Number(pl.cost_dark) || 0;
+                                const cl = Number(pl.cost_light) || 0;
+                                plPrice = (cd > 0 || cl > 0) ? Math.max(cd, cl) : (Number(pl.price) || 0);
+                            } else {
+                                plPrice = Number(pl.price ?? pl.cost ?? pl.cost_dark ?? pl.cost_light ?? 0);
+                            }
+                            break;
+                        }
                     }
                     return sum + plPrice;
                 }, 0);
@@ -1305,8 +1327,11 @@ function DesignerUpload() {
                                 <span>Max Printing Cost:</span><span>₹{pricePreview.maxPrint.toLocaleString()}</span>
                             </div>
                             <hr style={{ border: 'none', borderTop: '1px solid rgba(212,175,55,0.15)', margin: '8px 0' }} />
-                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8a6d3b', fontSize: '0.95rem', fontWeight: 700 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8a6d3b', fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>
                                 <span>Your Royalty:</span><span>₹{pricePreview.dCost.toLocaleString()}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#111', fontSize: '0.95rem', fontWeight: 800, borderTop: '1px dashed rgba(212,175,55,0.3)', paddingTop: 8 }}>
+                                <span>Customer Pays:</span><span style={{ color: '#b8922a' }}>₹{Math.round(applyMarkup(pricePreview.rawTotal)).toLocaleString()}</span>
                             </div>
                         </div>
                     )}

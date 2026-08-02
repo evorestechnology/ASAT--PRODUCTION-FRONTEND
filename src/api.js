@@ -1,4 +1,6 @@
-﻿let authToken = null;
+import { supabase } from './supabase';
+
+let authToken = null;
 
 export function setAuthToken(token) {
   authToken = token;
@@ -7,6 +9,16 @@ export function setAuthToken(token) {
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').trim();
 
 export async function apiFetch(path, options = {}) {
+  // 1. If no in-memory authToken, attempt to grab access token from active Supabase session
+  if (!authToken) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        authToken = session.access_token;
+      }
+    } catch (_) {}
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
@@ -18,10 +30,31 @@ export async function apiFetch(path, options = {}) {
     delete headers['Content-Type'];
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
+  let res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers,
   });
+
+  // 2. If response is 401 (token expired/invalid), attempt automatic token refresh & retry request once
+  if (res.status === 401 && !options._isRetry) {
+    try {
+      const { data: { session } } = await supabase.auth.refreshSession();
+      const freshToken = session?.access_token || (await supabase.auth.getSession()).data.session?.access_token;
+      if (freshToken) {
+        authToken = freshToken;
+        const retryHeaders = {
+          ...headers,
+          Authorization: `Bearer ${freshToken}`,
+        };
+        res = await fetch(`${API_URL}${path}`, {
+          ...options,
+          headers: retryHeaders,
+        });
+      }
+    } catch (refreshErr) {
+      console.warn('Session auto-refresh on 401 failed:', refreshErr);
+    }
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'An unknown error occurred.' }));

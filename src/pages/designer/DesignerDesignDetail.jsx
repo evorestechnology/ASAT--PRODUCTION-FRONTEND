@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
 /* ─── Page-scoped Light Theme CSS ────────────────────────────── */
@@ -204,10 +205,9 @@ export default function DesignerDesignDetail() {
     const fetchDesign = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await apiFetch('/api/designs/mine');
-            const found = (data || []).find(d => d.id === id || d.id === parseInt(id));
-            if (!found) { showToast('Design not found.', 'error'); setLoading(false); return; }
-            setDesign(found);
+            const data = await apiFetch(`/api/designs/${id}?cb=${Date.now()}`);
+            if (!data || data.error) { showToast('Design not found.', 'error'); setLoading(false); return; }
+            setDesign(data);
         } catch (e) {
             showToast('Failed to load design.', 'error');
         } finally { setLoading(false); }
@@ -228,6 +228,8 @@ export default function DesignerDesignDetail() {
         </div>
     );
 
+    const { applyMarkup } = useCurrency();
+
     const desc = parseDesc(design.description);
     const pricing = desc.pricing || {};
     const colorMockups = desc.customerImages || desc.colorMockups || {};
@@ -240,7 +242,8 @@ export default function DesignerDesignDetail() {
     const royalty = pricing.designerCost || design.price || 0;
     const bCost   = pricing.baseCost || 0;
     const pCost   = pricing.printingCost || 0;
-    const customerPays = bCost + pCost + royalty;
+    const subtotal = bCost + pCost + royalty;
+    const customerPays = Math.round(applyMarkup(subtotal));
 
     const statusKey = (design.status || 'pending').toLowerCase();
     const sc = STATUS_STYLE[statusKey] || STATUS_STYLE.pending;

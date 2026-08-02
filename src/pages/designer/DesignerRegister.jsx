@@ -1030,7 +1030,7 @@ function DesignerRegister() {
                             </div>
                         ) : form.country ? (
                             <div className="auth-input-group">
-                                <label>PayPal ID / Email (for Payouts) *</label>
+                                <label>PayPal ID (for Payouts) *</label>
                                 <input 
                                     type="email" 
                                     className="auth-input" 

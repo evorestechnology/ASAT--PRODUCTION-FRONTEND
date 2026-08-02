@@ -483,7 +483,10 @@ export default function UserIndex() {
      RENDER
      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   return (
-    <>
+    <div className="home-page" style={{
+      background: "linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto",
+      minHeight: "100vh"
+    }}>
       <style>{`
         @keyframes shimmer {
           0%   { background-position: 200% 0; }
@@ -754,6 +757,6 @@ export default function UserIndex() {
           `}</style>
         </div>
       )}
-    </>
+    </div>
   );
 }

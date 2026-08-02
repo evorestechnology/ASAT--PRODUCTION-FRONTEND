@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
 const COLOR_NAME_TO_HEX = {
@@ -57,6 +58,7 @@ function DesignerDesigns() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { toasts, showToast } = useToast();
+    const { applyMarkup } = useCurrency();
     const [designs, setDesigns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -332,7 +334,7 @@ function DesignerDesigns() {
                                              );
                                          })}
                                      </div>
-                                    <span className="dsn-design-card__price">₹{d.price?.toLocaleString('en-IN')}</span>
+                                    {/* <span className="dsn-design-card__price">₹{d.price?.toLocaleString('en-IN')}</span> */}
                                 </div>
                                 <div className="dsn-design-card__actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     <button
@@ -496,11 +498,11 @@ function DesignerDesigns() {
                                     }}>
                                         <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#1a1a1a' }}>Customer Pays</span>
                                         <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#b8922a' }}>
-                                            ₹{(
+                                            ₹{Math.round(applyMarkup(
                                                 editModalData.baseCost +
                                                 editModalData.printingCost +
                                                 (parseFloat(editModalData.designerCost) || 0)
-                                            ).toLocaleString()}
+                                            )).toLocaleString()}
                                         </span>
                                     </div>
                                 </div>

@@ -651,13 +651,17 @@ function MfgProducts() {
                         imgUrl = await uploadFile(opt.imageFile, filePath, 'asat-uploads');
                     }
                     
+                    const darkP = parseFloat(opt.darkPrice) || 0;
+                    const lightP = parseFloat(opt.lightPrice) || 0;
+                    const flatP = parseFloat(opt.price) || 0;
+
                     styleGroups[pm.type].push({
                         id: `${pm.category}_${optName}`,
                         label: optName,
                         image: imgUrl,
-                        price: parseFloat(opt.price) || 0,
-                        cost_dark: parseFloat(opt.darkPrice) || 0,
-                        cost_light: parseFloat(opt.lightPrice) || 0,
+                        price: pm.type === 'dtg' ? (darkP || lightP || flatP) : flatP,
+                        cost_dark: darkP,
+                        cost_light: lightP,
                         active: pm.active !== false
                     });
                 }
