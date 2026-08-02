@@ -133,9 +133,13 @@ function Navbar() {
                     <div className={`nav-greeting ${!isHomePage ? 'nav-greeting--shifted' : ''}`} style={{ justifySelf: 'start' }}>
                         {greeting}
                     </div>
-                    <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer', textAlign: 'center', margin: '0 auto' }}>
-                        As Simple as That
-                        <span className="logo-caption">**A Designer Paradise**</span>
+                    <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer', textAlign: 'center', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <span className="logo-top-tag" style={{ fontSize: '0.68rem', letterSpacing: '3px', textTransform: 'uppercase', fontFamily: "'Montserrat', sans-serif", fontWeight: '700', color: 'var(--gold)', marginBottom: '1px' }}>
+                            ASAT
+                        </span>
+                        <span className="logo-main-title" style={{ fontSize: '1.7rem', letterSpacing: '4px', textTransform: 'uppercase', fontFamily: "'Cinzel', serif", fontWeight: '700', color: 'var(--dark)', lineHeight: '1.1' }}>
+                            DESIGNER PARADISE
+                        </span>
                     </div>
 
                     <div className="nav-icons" style={{ justifySelf: 'end', display: 'flex', alignItems: 'center' }}>
@@ -190,36 +194,9 @@ function Navbar() {
                             </div>
                         </div>
 
-                        {/* Wishlist Heart Icon with dynamic badge */}
-                        <div className="nav-icon-wrapper" onClick={() => navigate('/wishlist')} style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
-                            <i className="far fa-heart" style={{ marginLeft: '20px' }}></i>
-                            {wishlistCount > 0 && (
-                                <span style={{
-                                    position: 'absolute',
-                                    top: '-6px',
-                                    right: '-6px',
-                                    background: 'var(--gold)',
-                                    color: 'white',
-                                    fontSize: '0.62rem',
-                                    fontWeight: '700',
-                                    borderRadius: '50%',
-                                    width: '16px',
-                                    height: '16px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontFamily: "'Montserrat', sans-serif",
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-                                    zIndex: 5
-                                }}>
-                                    {wishlistCount}
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Search Icon (Visible on mobile only) */}
-                        <div className="nav-icon-wrapper nav-search-toggle-mobile" onClick={() => setShowMobileSearch(prev => !prev)} style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }}>
-                            <i className="fas fa-search" style={{ marginLeft: '20px' }}></i>
+                        {/* Search Icon (in place of Wishlist) */}
+                        <div className="nav-icon-wrapper" onClick={() => setShowMobileSearch(prev => !prev)} style={{ position: 'relative', display: 'inline-block', cursor: 'pointer' }} title="Search Products">
+                            <i className="fas fa-search" style={{ marginLeft: '20px', fontSize: '1.05rem', color: showMobileSearch ? 'var(--gold)' : 'inherit', transition: 'color 0.2s' }}></i>
                         </div>
 
                         {/* Cart Shopping Bag Icon with dynamic badge */}
@@ -251,7 +228,7 @@ function Navbar() {
                     </div>
                 </div>
 
-                {/* Mobile Search Dropdown Bar */}
+                {/* Search Dropdown Bar */}
                 {showMobileSearch && (
                     <div className="nav-mobile-search-bar" style={{
                         display: 'flex',
@@ -270,7 +247,7 @@ function Navbar() {
                         }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <input
                                 type="text"
-                                placeholder="Search products..."
+                                placeholder="Search products, designs..."
                                 className="nav-search-input-field"
                                 value={navSearchTerm}
                                 onChange={e => setNavSearchTerm(e.target.value)}
@@ -288,8 +265,8 @@ function Navbar() {
                                     boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
                                 }}
                             />
-                            <button type="submit" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', color: 'var(--dark)' }}>
-                                <i className="fas fa-search"></i>
+                            <button type="submit" style={{ background: 'var(--gold)', border: 'none', color: 'white', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '700' }}>
+                                SEARCH
                             </button>
                             <button type="button" onClick={() => setShowMobileSearch(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#888', padding: '0 4px' }}>
                                 <i className="fas fa-times"></i>
@@ -318,40 +295,6 @@ function Navbar() {
                         <i className="fas fa-trophy" style={{ color: 'var(--gold)', fontSize: '0.8rem', margin: 0 }}></i> Rankings
                     </Link>
                     <Link to="/terms" style={{ color: 'var(--dark)', textDecoration: 'none' }} className="nav-link-item">T&amp;C</Link>
-                    
-                    <form onSubmit={handleSearchSubmit} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginLeft: '20px',
-                        borderBottom: '1px solid rgba(0,0,0,0.15)',
-                        paddingBottom: '2px',
-                        position: 'relative'
-                    }}>
-                        <input
-                            type="text"
-                            placeholder="SEARCH..."
-                            className="nav-search-input"
-                            value={navSearchTerm}
-                            onChange={e => setNavSearchTerm(e.target.value)}
-                            style={{
-                                border: 'none',
-                                background: 'transparent',
-                                outline: 'none',
-                                fontSize: '0.68rem',
-                                color: 'var(--dark)',
-                                fontFamily: "'Montserrat', sans-serif",
-                                letterSpacing: '1.5px',
-                                width: searchFocused ? '160px' : '90px',
-                                transition: 'width 0.3s ease',
-                                textTransform: 'uppercase'
-                            }}
-                            onFocus={() => setSearchFocused(true)}
-                            onBlur={() => setSearchFocused(false)}
-                        />
-                        <button type="submit" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--dark)' }}>
-                            <i className="fas fa-search" style={{ fontSize: '0.75rem' }}></i>
-                        </button>
-                    </form>
                 </div>
             </header>
 

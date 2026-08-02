@@ -161,7 +161,7 @@ function ZoomableImage({ src, alt, maxHeight = 100, style = {} }) {
 }
 
 /* ─── DropZone ─── */
-function DropZone({ label, preview, onFile, accept = 'image/*' }) {
+function DropZone({ label, preview, onFile, accept = '.png, image/png', onInvalidFile }) {
     const [dragOver, setDragOver] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -174,12 +174,25 @@ function DropZone({ label, preview, onFile, accept = 'image/*' }) {
         setMousePos({ x, y });
     };
 
+    const validateAndProcess = (file) => {
+        if (!file) return;
+        const isPngOnly = accept.includes('.png') && !accept.includes('image/*') && !accept.includes('.jpg');
+        if (isPngOnly) {
+            const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+            if (!isPng) {
+                if (onInvalidFile) onInvalidFile('Only PNG format (.png) is allowed.');
+                return;
+            }
+        }
+        onFile(file);
+    };
+
     return (
         <div
             className={`dsn-upload__drop ${dragOver ? 'dsn-upload__drop--active' : ''} ${preview ? 'dsn-upload__drop--has' : ''}`}
             onDragOver={e => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
-            onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]); }}
+            onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) validateAndProcess(e.dataTransfer.files[0]); }}
             onClick={() => fileInputRef.current.click()}
             style={{ cursor: 'pointer', width: '100%', height: '100%', aspectRatio: 'auto', position: 'relative', overflow: 'hidden' }}
         >
@@ -205,7 +218,7 @@ function DropZone({ label, preview, onFile, accept = 'image/*' }) {
                 </div>
             )}
             <input type="file" ref={fileInputRef} accept={accept}
-                onChange={e => e.target.files[0] && onFile(e.target.files[0])}
+                onChange={e => e.target.files[0] && validateAndProcess(e.target.files[0])}
                 style={{ display: 'none' }} />
         </div>
     );
@@ -471,6 +484,13 @@ function DesignerUpload() {
         (colorPlacements[colorName] || []).find(c => c.style === techStyle && c.placementId === placementId) || null;
 
     const setPlacementFile = (colorName, techStyle, placementId, placementLabel, field, file) => {
+        if (file) {
+            const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+            if (!isPng) {
+                showToast('Only PNG format (.png) is allowed for design files and mockups in Step 2.', 'warning');
+                return;
+            }
+        }
         const preview = file ? URL.createObjectURL(file) : '';
         const previewField = field === 'designFile' ? 'designPreview' : 'mockupPreview';
         setColorPlacements(prev => {
@@ -573,7 +593,7 @@ function DesignerUpload() {
             for (const colorName of selectedColors) {
                 const m = colorMockups[colorName] || {};
                 const uploaded = {};
-                for (const field of ['frontFile', 'backFile', 'modelFile']) {
+                for (const field of ['frontFile', 'backFile', 'modelFile', 'modelFile2']) {
                     if (m[field]) {
                         const ext = m[field].name.split('.').pop() || 'jpg';
                         const url = await uploadFile(m[field], `designs/${user.id}/${Date.now()}_${colorName}_${field}.${ext}`, 'asat-uploads');
@@ -615,7 +635,6 @@ function DesignerUpload() {
             const baseCost = Number(selectedProductObj.cost) || 0;
             const maxPrintingCost = selectedColors.reduce((max, color) => {
                 const colorCost = (colorPlacements[color] || []).reduce((sum, placement) => {
-                    // Find the specific placement entry by id to get its price
                     const allStyles = (selectedProductObj.printingStyles || []).filter(
                         x => x.style?.toLowerCase() === placement.style?.toLowerCase()
                     );
@@ -665,16 +684,14 @@ function DesignerUpload() {
         }
     };
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       RENDER
-    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    /* ══════════════════════════════ RENDER ══════════════════════════════ */
     return (
         <main className="dsn-upload">
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />
             <BackButton />
 
-            {/* â”€â”€ Progress Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {/* ── Progress Bar ────────────────────────────── */}
             <div className="dsn-upload__progress">
                 {STEP_LABELS.map(({ num, label }) => (
                     <div key={num} className={`dsn-upload__step ${step > num ? 'done' : ''} ${step === num ? 'active' : ''}`}>
@@ -686,7 +703,7 @@ function DesignerUpload() {
                 ))}
             </div>
 
-            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â• STEP 1: PRODUCT â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {/* ══════════════ STEP 1: PRODUCT ══════════════ */}
             {step === 1 && (
                 <section className="dsn-upload__section">
                     <h3 className="dsn-upload__heading">Select Product</h3>
@@ -717,7 +734,7 @@ function DesignerUpload() {
                                     <input 
                                         type="text" 
                                         className="dsn-upload__input"
-                                        placeholder="Search products by title or manufacturer..."
+                                        placeholder="Search products by title..."
                                         value={productSearchQuery}
                                         onChange={e => setProductSearchQuery(e.target.value)}
                                         style={{ width: '100%' }}
@@ -752,7 +769,7 @@ function DesignerUpload() {
                                                             {prod.title}
                                                         </div>
                                                         <div style={{ fontSize: '0.7rem', color: '#777' }}>
-                                                            by {prod.mfgName || 'Manufacturer'} &nbsp;Â·&nbsp; Base Cost: ₹{(prod.cost || 0).toLocaleString()}
+                                                            Base Cost: ₹{(prod.cost || 0).toLocaleString()}
                                                         </div>
                                                     </div>
                                                     <button type="button"
@@ -1079,26 +1096,29 @@ function DesignerUpload() {
                                                                         </div>
                                                                     )}
 
-                                                                    {/* Two upload zones side by side */}
+                                                                    {/* Two upload zones side by side (PNG ONLY) */}
                                                                     <div className="dsn-upload__drop-grid">
                                                                         <div>
-                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Upload Design *</div>
+                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Upload Design (PNG Only) *</div>
                                                                             <div style={{ height: 110 }}>
                                                                                 <DropZone
-                                                                                    label="Design File (PNG/AI/PDF)"
+                                                                                    label="Design File (PNG Only)"
                                                                                     preview={config?.designPreview || ''}
                                                                                     onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'designFile', f)}
-                                                                                    accept=".png,.ai,.pdf,image/*"
+                                                                                    accept=".png, image/png"
+                                                                                    onInvalidFile={(msg) => showToast(msg, 'warning')}
                                                                                 />
                                                                             </div>
                                                                         </div>
                                                                         <div>
-                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Reference Mockup *</div>
+                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Reference Mockup (PNG Only) *</div>
                                                                             <div style={{ height: 110 }}>
                                                                                 <DropZone
-                                                                                    label="Mockup Image"
+                                                                                    label="Mockup Image (PNG Only)"
                                                                                     preview={config?.mockupPreview || ''}
                                                                                     onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'mockupFile', f)}
+                                                                                    accept=".png, image/png"
+                                                                                    onInvalidFile={(msg) => showToast(msg, 'warning')}
                                                                                 />
                                                                             </div>
                                                                         </div>
@@ -1187,7 +1207,8 @@ function DesignerUpload() {
                                 const mockupSlots = [
                                     { field: 'frontFile', previewField: 'frontPreview', label: 'Front View' },
                                     { field: 'backFile', previewField: 'backPreview', label: 'Back View' },
-                                    { field: 'modelFile', previewField: 'modelPreview', label: 'Model View' },
+                                    { field: 'modelFile', previewField: 'modelPreview', label: 'Model View 1 (Optional)' },
+                                    { field: 'modelFile2', previewField: 'modelPreview2', label: 'Model View 2 (Optional)' },
                                 ];
                                 return (
                                     <div key={colorName} style={{ border: '1px solid rgba(212,175,55,0.15)', borderRadius: 6, padding: 14, background: '#fafafa' }}>

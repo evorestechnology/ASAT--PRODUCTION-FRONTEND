@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../../components/BackButton';
 import { apiFetch } from '../../api';
@@ -176,12 +176,9 @@ function DesignerProductDetail() {
                             </span>
                         </div>
 
-                        <h1 style={{ fontFamily: "'Cinzel', serif", fontSize: '1.7rem', color: '#1c1c1c', margin: '0 0 4px', fontWeight: 700 }}>
+                        <h1 style={{ fontFamily: "'Cinzel', serif", fontSize: '1.7rem', color: '#1c1c1c', margin: '0 0 16px', fontWeight: 700 }}>
                             {product.title}
                         </h1>
-                        <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.8rem', color: '#777', margin: '0 0 16px' }}>
-                            by {product.mfgName}
-                        </p>
 {/* 
                         <div style={{ borderTop: '1px solid #eee', paddingTop: 16, display: 'flex', alignItems: 'baseline', gap: 10 }}>
                             <span style={{ fontSize: '0.72rem', color: '#888', textTransform: 'uppercase', letterSpacing: 0.5 }}>Manufacturer Base Cost</span>

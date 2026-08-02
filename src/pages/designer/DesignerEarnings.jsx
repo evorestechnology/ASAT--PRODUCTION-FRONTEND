@@ -311,9 +311,6 @@ function DesignerEarnings() {
                             <div className="dsn-page-head" style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                                 <div>
                                     <h3 className="dsn-page-title" style={{ margin: 0 }}>Design Sales History</h3>
-                                    <p style={{ fontSize: '0.78rem', color: '#666', marginTop: 4 }}>
-                                        Track customer purchases and earnings credited upon completed order delivery
-                                    </p>
                                 </div>
                                 <div style={{ position: 'relative', width: 240 }}>
                                     <input
@@ -339,18 +336,17 @@ function DesignerEarnings() {
                                 <table className="dsn-table">
                                     <thead>
                                         <tr>
-                                            <th>Design Item</th>
-                                            <th>Order Details</th>
-                                            <th>Variant</th>
-                                            <th>Royalty / Unit</th>
-                                            <th>Total Royalty</th>
-                                            <th>Earnings Status</th>
+                                            <th>ORDER DETAILS</th>
+                                            <th>ITEMS</th>
+                                            <th>VARIANT</th>
+                                            <th>ROYALTY</th>
+                                            <th>TOTAL ROYALTY</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredSales.length === 0 && (
                                             <tr>
-                                                <td colSpan="6" className="dsn-table__empty">
+                                                <td colSpan="5" className="dsn-table__empty">
                                                     <i className="fas fa-shopping-cart" style={{ fontSize: '1.8rem', marginBottom: 8, display: 'block', color: '#ddd' }}></i>
                                                     No design sales recorded yet
                                                 </td>
@@ -358,6 +354,14 @@ function DesignerEarnings() {
                                         )}
                                         {filteredSales.map((s, idx) => (
                                             <tr key={s.id || idx}>
+                                                <td>
+                                                    <div style={{ fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                        <span style={{ fontWeight: 700, color: 'var(--dark, #121212)' }}>Order #{String(s.orderId).slice(0, 14)}</span>
+                                                        <span style={{ fontSize: '0.72rem', color: '#666' }}>
+                                                            Order Date: {s.date ? new Date(s.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
+                                                        </span>
+                                                    </div>
+                                                </td>
                                                 <td>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                         {s.image ? (
@@ -374,14 +378,6 @@ function DesignerEarnings() {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div style={{ fontSize: '0.78rem' }}>
-                                                        <span style={{ fontWeight: 600, color: '#333' }}>Order #{String(s.orderId).slice(0, 12)}</span>
-                                                        <div style={{ fontSize: '0.7rem', color: '#888', marginTop: 2 }}>
-                                                            {s.date ? new Date(s.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#555' }}>
                                                         <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', backgroundColor: resolveColorHex(s), border: '1px solid rgba(0,0,0,0.25)' }}></span>
                                                         <span>{s.color}</span>
@@ -394,23 +390,6 @@ function DesignerEarnings() {
                                                 </td>
                                                 <td className="dsn-table__royalty" style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--gold, #C5A059)' }}>
                                                     ₹{s.totalEarned?.toLocaleString('en-IN')}
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        className={`dsn-status ${s.isDelivered ? 'dsn-status--paid' : 'dsn-status--pending'}`}
-                                                        style={{
-                                                            padding: '4px 10px',
-                                                            borderRadius: 12,
-                                                            fontSize: '0.7rem',
-                                                            fontWeight: 700,
-                                                            display: 'inline-flex',
-                                                            alignItems: 'center',
-                                                            gap: 4
-                                                        }}
-                                                    >
-                                                        <i className={s.isDelivered ? "fas fa-check-circle" : "fas fa-clock"}></i>
-                                                        {s.earningsStatus}
-                                                    </span>
                                                 </td>
                                             </tr>
                                         ))}

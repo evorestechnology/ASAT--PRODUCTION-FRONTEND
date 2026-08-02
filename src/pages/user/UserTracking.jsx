@@ -289,10 +289,23 @@ function UserTracking() {
                                 <p className="order-id-label" style={{ textAlign: 'center', marginBottom: '20px', fontWeight: 'bold' }}>{order.order_id || order.id?.slice(0, 10).toUpperCase()}</p>
                             </div>
                             
+                            {order.status === 'cancelled' && (
+                                <div style={{
+                                    background: '#ffebee', border: '1px solid #ffcdd2', borderRadius: 8,
+                                    padding: '16px 20px', marginBottom: 24, textAlign: 'center', color: '#c62828'
+                                }}>
+                                    <i className="fas fa-exclamation-circle" style={{ fontSize: '1.8rem', marginBottom: 8, display: 'block' }}></i>
+                                    <h4 style={{ margin: '0 0 6px', fontFamily: "'Cinzel', serif", fontSize: '1.1rem' }}>ORDER CANCELLED</h4>
+                                    <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, fontWeight: 500 }}>
+                                        We are so sorry to inform you that your order was cancelled due to some issues. The amount will be refunded within 48 hours.
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="progress-bar-container" style={{ position: 'relative', margin: '40px 0 50px' }}>
                                 <div className="progress-bar-nodes" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
                                     <div className="progress-bar-back" style={{ position: 'absolute', height: '4px', width: '100%', background: '#e0e0e0', zIndex: 1 }} />
-                                    <div className="progress-bar-fill" style={{ width: `${fillPercent}%`, position: 'absolute', height: '4px', background: 'var(--gold)', zIndex: 2, transition: 'width 0.8s ease-in-out' }} />
+                                    <div className="progress-bar-fill" style={{ width: `${fillPercent}%`, position: 'absolute', height: '4px', background: order.status === 'cancelled' ? '#dc3545' : 'var(--gold)', zIndex: 2, transition: 'width 0.8s ease-in-out' }} />
                                     
                                     <div className={`progress-node ${getNodeClass(0)}`}>
                                         <i className="fas fa-clipboard" />
@@ -308,7 +321,7 @@ function UserTracking() {
                                     </div>
                                     <div className={`progress-node ${getNodeClass(3)}`}>
                                         <i className="fas fa-check-circle" />
-                                        <span className="node-label">Delivered</span>
+                                        <span className="node-label">{order.status === 'cancelled' ? 'Cancelled' : 'Delivered'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -338,8 +351,8 @@ function UserTracking() {
                                 </div>
                                 {order.tracking_id && (
                                     <div className="details-row">
-                                        <span className="details-label">Tracking ID / Waybill:</span>
-                                        <span className="details-value" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                        <span className="details-label">Courier & Tracking ID:</span>
+                                        <span className="details-value" style={{ fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.5px' }}>
                                             {order.tracking_id}
                                         </span>
                                     </div>

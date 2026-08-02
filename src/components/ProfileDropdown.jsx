@@ -25,6 +25,7 @@ function ProfileDropdown() {
         <>
             <Link to={getAccountPath()}><i className="fas fa-user-circle"></i> Account Details</Link>
             <Link to={getOrdersPath()}><i className="fas fa-box-open"></i> Order History</Link>
+            <Link to="/wishlist"><i className="far fa-heart"></i> My Wishlist</Link>
             {role === 'user' && (
                 <>
                     <Link to="/address"><i className="fas fa-map-marker-alt"></i> Manage Delivery Address</Link>

@@ -704,6 +704,7 @@ footer {
 /* â”€â”€ Horizontal Scroll Wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ui-scroll-wrap {
     position: relative;
+    padding: 0 24px;
 }
 
 .ui-scroll-row {
@@ -722,7 +723,7 @@ footer {
 
 .ui-scroll-arrow {
     position: absolute;
-    top: 50%;
+    top: 40%;
     transform: translateY(-50%);
     z-index: 10;
     width: 44px;
@@ -737,7 +738,7 @@ footer {
     cursor: pointer;
     font-size: 1.1rem;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     backdrop-filter: blur(6px);
 }
 
@@ -748,8 +749,8 @@ footer {
     box-shadow: 0 6px 20px rgba(197,160,89,0.3);
 }
 
-.ui-scroll-arrow--left  { left: -8px; }
-.ui-scroll-arrow--right { right: -8px; }
+.ui-scroll-arrow--left  { left: -20px; }
+.ui-scroll-arrow--right { right: -20px; }
 
 /* Dark-section arrows */
 .ui-section--dark .ui-scroll-arrow {
@@ -763,54 +764,46 @@ footer {
     color: var(--dark);
 }
 
-/* â”€â”€ 3/6 Â· Product Card (full-bleed background) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── 3/6 · Product Card (full-bleed background) ────────────────────────────────────── */
 .ui-product-card {
     min-width: 260px;
     max-width: 260px;
-    height: 360px;
-    border-radius: 6px;
-    overflow: hidden;
     cursor: pointer;
-    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.35s ease, filter 0.35s ease;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.35s ease;
     scroll-snap-align: start;
     flex-shrink: 0;
     position: relative;
-    background-size: cover;
-    background-position: center;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
 }
 
 .ui-product-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.18);
-    filter: brightness(1.08);
+    transform: translateY(-8px);
 }
 
-.ui-product-card::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
+.ui-product-card__cover {
     width: 100%;
-    height: 3px;
-    background: var(--gold);
-    transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 0.35s ease;
-    z-index: 5;
+    height: 340px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-.ui-product-card:hover::after {
-    transform: scaleX(1);
+.ui-product-card__info {
+    padding: 12px 4px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.ui-section--dark .ui-product-card {
+.ui-section--dark .ui-product-card__cover {
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
-/* Badge â€” top-left */
+/* Badge — top-left */
 .ui-product-card__badge {
     position: absolute;
     top: 12px;
@@ -831,7 +824,7 @@ footer {
     color: var(--dark);
 }
 
-/* Heart icon â€” top-right, fill toggle */
+/* Heart icon — top-right, fill toggle */
 .ui-product-card__heart {
     position: absolute;
     top: 12px;
@@ -890,30 +883,28 @@ footer {
     100% { transform: scale(1);    }
 }
 
-/* Bottom overlay â€” gradient + name + price */
-.ui-product-card__overlay {
-    position: relative;
-    z-index: 2;
-    padding: 20px 18px 16px;
-    background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.35) 60%, transparent 100%);
-    margin-top: auto;
-}
-
 .ui-product-card__name {
     font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 700;
-    margin: 0 0 4px;
+    margin: 0;
     letter-spacing: 0.5px;
-    color: white;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+    color: var(--dark, #121212);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ui-section--dark .ui-product-card__name {
+    color: #ffffff;
 }
 
 .ui-product-card__price {
     font-family: 'Montserrat', sans-serif;
     font-size: 0.85rem;
     font-weight: 600;
-    color: rgba(255,255,255,0.88);
+    color: var(--gold, #C5A059);
 }
 
 /* Quick Add pill â€” slides up from bottom on hover */

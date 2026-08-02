@@ -81,7 +81,7 @@ function DesignerBaseProducts() {
                         Base Products Directory
                     </h2>
                     <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.8rem', color: '#777', margin: '4px 0 0' }}>
-                        Browse manufacturer product catalogs, view detailed specifications, and start designing directly.
+                        Browse base product catalogs, view detailed specifications, and start designing directly.
                     </p>
                 </div>
             </div>
@@ -104,23 +104,10 @@ function DesignerBaseProducts() {
                     <input
                         type="text"
                         className="dsn-upload__input"
-                        placeholder="Search title, manufacturer..."
+                        placeholder="Search title..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
-                </div>
-
-                {/* Manufacturer Filter */}
-                <div>
-                    <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#888', marginBottom: 6 }}>Manufacturer</label>
-                    <select
-                        className="dsn-upload__select"
-                        value={selectedMfg}
-                        onChange={e => setSelectedMfg(e.target.value)}
-                    >
-                        <option value="">All Manufacturers</option>
-                        {manufacturers.map(mfg => <option key={mfg} value={mfg}>{mfg}</option>)}
-                    </select>
                 </div>
 
                 {/* Category Filter */}
@@ -223,7 +210,7 @@ function DesignerBaseProducts() {
                                             {p.title}
                                         </h4>
                                         <div style={{ fontSize: '0.72rem', color: '#777', marginBottom: 12 }}>
-                                            by {p.mfgName} &nbsp;·&nbsp; <span style={{ textTransform: 'capitalize' }}>{p.gender}</span>
+                                            <span style={{ textTransform: 'capitalize' }}>{p.gender}</span>
                                         </div>
 
                                         {/* Color Swatches */}

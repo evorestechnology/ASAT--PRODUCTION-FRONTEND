@@ -413,6 +413,7 @@ export default function MasterDesignReview() {
                         const front = mockup.frontUrl || mockup.front || '';
                         const back = mockup.backUrl || mockup.back || '';
                         const model = mockup.modelUrl || mockup.model || '';
+                        const model2 = mockup.modelUrl2 || mockup.model2 || '';
 
                         const placementsList = placements[cName] || [];
                         const groupedPlacements = {};
@@ -437,7 +438,7 @@ export default function MasterDesignReview() {
                                 {/* Mockup images uploaded for this color */}
                                 <div className="mdr-placements-title">Mockup Images ({cName})</div>
                                 <div className="mdr-mockups-container">
-                                    {[['front', 'Front Mockup', front], ['back', 'Back Mockup', back], ['model', 'Model Mockup', model]].map(([key, label, url]) => {
+                                    {[['front', 'Front Mockup', front], ['back', 'Back Mockup', back], ['model', 'Model 1 Mockup', model], ['model2', 'Model 2 Mockup', model2]].map(([key, label, url]) => {
                                         return url ? (
                                             <div key={key} className="mdr-mockup-item">
                                                 <img src={url} alt={label} className="mdr-mockup-img" onClick={() => setLightbox(url)} />

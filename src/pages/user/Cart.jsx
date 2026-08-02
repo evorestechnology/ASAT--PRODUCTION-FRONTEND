@@ -46,6 +46,43 @@ const parseEarnings = (item) => {
     };
 };
 
+const getColorHexByName = (name, fallback = '#333333') => {
+    if (!name || typeof name !== 'string') return fallback;
+    const lower = name.toLowerCase().trim();
+    if (lower.startsWith('#') || lower.startsWith('rgb') || lower.startsWith('hsl')) return name;
+    
+    if (lower.includes('black') || lower === 'blk') return '#000000';
+    if (lower.includes('white') || lower === 'wht') return '#ffffff';
+    if (lower.includes('red') || lower.includes('maroon') || lower.includes('crimson')) return '#d32f2f';
+    if (lower.includes('blue') || lower.includes('navy') || lower.includes('indigo') || lower.includes('royal')) return '#1976d2';
+    if (lower.includes('green') || lower.includes('olive') || lower.includes('emerald') || lower.includes('forest')) return '#388e3c';
+    if (lower.includes('yellow') || lower.includes('gold') || lower.includes('mustard')) return '#fbc02d';
+    if (lower.includes('orange')) return '#f57c00';
+    if (lower.includes('pink') || lower.includes('rose')) return '#e91e63';
+    if (lower.includes('purple') || lower.includes('violet')) return '#7b1fa2';
+    if (lower.includes('grey') || lower.includes('gray') || lower.includes('charcoal')) return '#616161';
+    if (lower.includes('beige') || lower.includes('cream') || lower.includes('khaki') || lower.includes('tan') || lower.includes('nude') || lower.includes('oatmeal') || lower.includes('ivory')) return '#d7ccc8';
+    if (lower.includes('brown') || lower.includes('chocolate')) return '#5d4037';
+    
+    return fallback;
+};
+
+const formatCartColor = (item) => {
+    let rawName = item.colorName;
+    if (!rawName || rawName.startsWith('#')) {
+        if (typeof item.color === 'string' && !item.color.startsWith('#')) {
+            rawName = item.color;
+        } else if (item.selectedColorName) {
+            rawName = item.selectedColorName;
+        } else {
+            rawName = 'Standard';
+        }
+    }
+    const rawColor = item.color || item.colorName || '';
+    const hex = getColorHexByName(rawColor || rawName, '#333333');
+    return { name: rawName, hex };
+};
+
 const styles = `
     /* ═══════ Cart Page ═══════ */
     .cart-page { min-height: 80vh; background: var(--light); }
@@ -1441,10 +1478,27 @@ function Cart() {
                                             <div className="cart-item-details">
                                                 <span className="cart-item-name" onClick={() => navigate(`/products/${item.id}`)}>{item.name}</span>
                                                 <span className="cart-item-meta">Size: {item.size}</span>
-                                                <span className="cart-item-meta">
-                                                    <span className="cart-item-color-dot" style={{ backgroundColor: item.color }}></span>
-                                                    Color: {item.colorName || item.color || 'Selected'}
-                                                </span>
+                                                {(() => {
+                                                    const { name: cName, hex: cHex } = formatCartColor(item);
+                                                    return (
+                                                        <span className="cart-item-meta" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                                                            <span 
+                                                                className="cart-item-color-dot" 
+                                                                style={{ 
+                                                                    backgroundColor: cHex, 
+                                                                    width: '12px', 
+                                                                    height: '12px', 
+                                                                    borderRadius: '50%', 
+                                                                    border: '1px solid #ccc', 
+                                                                    display: 'inline-block',
+                                                                    flexShrink: 0,
+                                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.15)'
+                                                                }} 
+                                                            />
+                                                            <span>Color: <strong style={{ color: 'var(--dark)', fontWeight: '600' }}>{cName}</strong></span>
+                                                        </span>
+                                                    );
+                                                })()}
                                                 {!item.isMfgProduct && item.designerUsername && (
                                                     <span className="cart-item-meta" style={{ display: 'block', marginTop: '2px', color: 'var(--gold)', fontWeight: '500' }}>
                                                         by @{item.designerUsername}

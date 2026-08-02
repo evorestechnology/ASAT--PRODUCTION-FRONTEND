@@ -373,6 +373,19 @@ export default function MfgDesignDetail() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Cost Adjustment Helper Banner */}
+                                <div style={{ marginTop: 10, paddingTop: 12, borderTop: '1px dashed #C5A059', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                                    <span style={{ fontSize: '0.78rem', color: '#666' }}>
+                                        <i className="fas fa-info-circle" style={{ color: '#C5A059', marginRight: 6 }}></i> Need extra cost adjustment for live orders of this item?
+                                    </span>
+                                    <button 
+                                        onClick={() => navigate('/mfg/orders')}
+                                        style={{ background: '#28a745', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'Montserrat', sans-serif" }}
+                                    >
+                                        <i className="fas fa-coins" style={{ marginRight: 4 }}></i> Request Cost Adjustment in Orders
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

@@ -92,6 +92,12 @@ const styles = `
         background: #ede7f6;
         color: #4a148c;
     }
+    .status-badge.cancelled {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid #ef9a9a;
+        font-weight: 700;
+    }
     .track-btn {
         background: var(--dark);
         color: white;
@@ -565,7 +571,7 @@ function UserOrders() {
                                                 </td>
                                                 <td>
                                                     <span className={`status-badge ${o.status || 'pending'}`}>
-                                                        {o.status || 'pending'}
+                                                        {o.status === 'cancelled' ? 'CANCELLED' : (o.status || 'pending')}
                                                     </span>
                                                 </td>
                                                 <td>

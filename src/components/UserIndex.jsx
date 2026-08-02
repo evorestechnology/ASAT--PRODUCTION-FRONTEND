@@ -161,31 +161,34 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
   return (
     <article
       className="ui-product-card"
-      style={{ backgroundImage: `url('${img}')`, minWidth: '240px', cursor: 'pointer' }}
+      style={{ cursor: 'pointer' }}
       onClick={() => onNavigate(`/products/${product.id}`)}
     >
-      <span className={`ui-product-card__badge ${badgeClass}`}>{badge}</span>
-      {rank ? (
-        <div className="ui-product-card__rank">#{rank}</div>
-      ) : (
+      <div className="ui-product-card__cover" style={{ backgroundImage: `url('${img}')` }}>
+        {badge && <span className={`ui-product-card__badge ${badgeClass}`}>{badge}</span>}
+        {rank ? (
+          <div className="ui-product-card__rank">#{rank}</div>
+        ) : (
+          <button
+            className="ui-product-card__heart"
+            onClick={toggleWishlist}
+            aria-label="Wishlist"
+          >
+            <i className={wishlisted ? 'fas fa-heart' : 'far fa-heart'} />
+          </button>
+        )}
         <button
-          className="ui-product-card__heart"
-          onClick={toggleWishlist}
-          aria-label="Wishlist"
+          className="ui-product-card__quick-add"
+          onClick={(e) => { e.stopPropagation(); onNavigate(`/products/${product.id}`); }}
         >
-          <i className={wishlisted ? 'fas fa-heart' : 'far fa-heart'} />
+          QUICK ADD
         </button>
-      )}
-      <div className="ui-product-card__overlay">
-        <h4 className="ui-product-card__name">{product.title}</h4>
+      </div>
+
+      <div className="ui-product-card__info">
+        <h4 className="ui-product-card__name" title={product.title}>{product.title}</h4>
         <span className="ui-product-card__price">{formatPrice(applyMarkup(product.price))}</span>
       </div>
-      <button
-        className="ui-product-card__quick-add"
-        onClick={(e) => { e.stopPropagation(); onNavigate(`/products/${product.id}`); }}
-      >
-        QUICK ADD
-      </button>
     </article>
   );
 }
@@ -631,7 +634,7 @@ export default function UserIndex() {
       </Section>
 
       {/* â”â”â” 7 Â· WHY CHOOSE US â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
-      <section className="ui-features" id="why-choose-us">
+      {/* <section className="ui-features" id="why-choose-us">
         <div className="ui-section__head" data-animate="heading">
           <div className="ui-section__label">The ASAT Promise</div>
           <h2 className="ui-section__title">Why Choose Us</h2>
@@ -646,7 +649,7 @@ export default function UserIndex() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* â”â”â” 8 Â· DESIGNERS SPOTLIGHT â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <Section id="designers-spotlight" label="Curated Talent" title="Designers Spotlight">

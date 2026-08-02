@@ -228,6 +228,38 @@ function MfgOrders() {
         }
     };
 
+    const [selectedPartner, setSelectedPartner] = useState({});
+    const [customPartner, setCustomPartner] = useState({});
+    const [cantBeDoneOrder, setCantBeDoneOrder] = useState(null);
+    const [cantBeDoneReason, setCantBeDoneReason] = useState('Out of Stock / Material Unavailable');
+    const [cantBeDoneNotes, setCantBeDoneNotes] = useState('');
+    const [submittingReport, setSubmittingReport] = useState(false);
+
+    // Cost adjustment states
+    const [costAdjustmentOrder, setCostAdjustmentOrder] = useState(null);
+    const [costAdjustmentAmountInput, setCostAdjustmentAmountInput] = useState('');
+    const [costAdjustmentReasonInput, setCostAdjustmentReasonInput] = useState('');
+    const [submittingCostAdjustment, setSubmittingCostAdjustment] = useState(false);
+
+    const STANDARD_PARTNERS = ['DTDC', 'FedEx', 'Delhivery', 'Blue Dart', 'India Post', 'DHL'];
+
+    const parseTrackingString = (rawTracking) => {
+        if (!rawTracking) return { partner: 'DTDC', customPartner: '', code: '' };
+        if (rawTracking.startsWith('[')) {
+            const idx = rawTracking.indexOf(']');
+            if (idx !== -1) {
+                const pName = rawTracking.substring(1, idx).trim();
+                const code = rawTracking.substring(idx + 1).trim();
+                if (STANDARD_PARTNERS.includes(pName)) {
+                    return { partner: pName, customPartner: '', code };
+                } else {
+                    return { partner: 'Others', customPartner: pName, code };
+                }
+            }
+        }
+        return { partner: 'DTDC', customPartner: '', code: rawTracking };
+    };
+
     const fetchOrders = async () => {
         if (!user) return;
         try {
@@ -249,7 +281,11 @@ function MfgOrders() {
                     status: o.status || 'pending',
                     trackingId: o.tracking_id,
                     country: o.country || 'India',
-                    mfgId: o.mfg_id
+                    mfgId: o.mfg_id,
+                    statusHistory: o.status_history || [],
+                    costAdjustmentStatus: o.cost_adjustment_status,
+                    costAdjustmentAmount: o.cost_adjustment_amount,
+                    costAdjustmentReason: o.cost_adjustment_reason
                 };
             }).filter(o => {
                 const isUnassigned = !o.mfgId;
@@ -266,12 +302,19 @@ function MfgOrders() {
 
             setOrders(activeOrders);
 
-            // Populate tempTracking state with existing trackingIds
+            // Populate tracking & partner states
             const tracking = {};
+            const partners = {};
+            const customPartners = {};
             activeOrders.forEach(o => {
-                tracking[o.id] = o.trackingId || '';
+                const parsed = parseTrackingString(o.trackingId);
+                tracking[o.id] = parsed.code;
+                partners[o.id] = parsed.partner;
+                customPartners[o.id] = parsed.customPartner;
             });
             setTempTracking(prev => ({ ...tracking, ...prev }));
+            setSelectedPartner(prev => ({ ...partners, ...prev }));
+            setCustomPartner(prev => ({ ...customPartners, ...prev }));
             setLoading(false);
         } catch (err) {
             console.error("Error fetching active orders:", err);
@@ -305,18 +348,79 @@ function MfgOrders() {
     const handleTrackingSave = async (orderId) => {
         setSavingTracking(prev => ({ ...prev, [orderId]: true }));
         try {
-            const value = tempTracking[orderId] || '';
+            const partnerVal = selectedPartner[orderId] === 'Others' 
+                ? (customPartner[orderId] || 'Others') 
+                : (selectedPartner[orderId] || 'DTDC');
+            const codeVal = tempTracking[orderId] || '';
+
             await apiFetch(`/api/orders/${orderId}`, {
                 method: 'PUT',
-                body: JSON.stringify({ tracking_id: value })
+                body: JSON.stringify({ 
+                    shipping_partner: partnerVal,
+                    tracking_id: codeVal 
+                })
             });
-            showToast('Tracking ID updated successfully!', 'success');
+            showToast(`Tracking ID & Shipping Partner (${partnerVal}) updated!`, 'success');
             fetchOrders();
         } catch (error) {
             console.error("Failed to update tracking ID: ", error);
-            showToast("Error saving tracking ID.", 'error');
+            showToast("Error saving tracking details.", 'error');
         } finally {
             setSavingTracking(prev => ({ ...prev, [orderId]: false }));
+        }
+    };
+
+    const handleReportCantBeDoneSubmit = async () => {
+        if (!cantBeDoneOrder) return;
+        setSubmittingReport(true);
+        try {
+            const fullReason = `${cantBeDoneReason}${cantBeDoneNotes.trim() ? ` - ${cantBeDoneNotes.trim()}` : ''}`;
+            await apiFetch(`/api/orders/${cantBeDoneOrder.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    status: 'issue_reported',
+                    cant_be_done_reason: fullReason
+                })
+            });
+            showToast('Report submitted to Master Admin. Order flagged for termination.', 'success');
+            setCantBeDoneOrder(null);
+            setCantBeDoneNotes('');
+            fetchOrders();
+        } catch (err) {
+            console.error('Error reporting issue:', err);
+            showToast('Failed to submit report. Please try again.', 'error');
+        } finally {
+            setSubmittingReport(false);
+        }
+    };
+
+    const handleCostAdjustmentSubmit = async () => {
+        if (!costAdjustmentOrder) return;
+        const numAmt = Number(costAdjustmentAmountInput);
+        if (isNaN(numAmt) || numAmt <= 0) {
+            showToast("Please enter a valid extra cost amount.", "warning");
+            return;
+        }
+
+        setSubmittingCostAdjustment(true);
+        try {
+            await apiFetch(`/api/orders/${costAdjustmentOrder.id}/cost-adjustment`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    amount: numAmt,
+                    reason: costAdjustmentReasonInput.trim()
+                })
+            });
+            showToast(`Cost adjustment request of ₹${numAmt} sent to Master Admin!`, 'success');
+            setCostAdjustmentOrder(null);
+            setCostAdjustmentAmountInput('');
+            setCostAdjustmentReasonInput('');
+            fetchOrders();
+        } catch (err) {
+            console.error("Failed to submit cost adjustment request:", err);
+            showToast("Failed to submit request. Please try again.", 'error');
+        } finally {
+            setSubmittingCostAdjustment(false);
         }
     };
 
@@ -456,29 +560,73 @@ function MfgOrders() {
                                         <div>{o.phone}</div>
                                     </td>
                                     <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                            <input 
-                                                type="text" 
-                                                placeholder="Tracking ID" 
-                                                value={tempTracking[o.id] || ''}
-                                                onChange={(e) => setTempTracking({ ...tempTracking, [o.id]: e.target.value })}
-                                                style={{ 
-                                                    padding: '6px 8px', 
-                                                    border: '1px solid #ddd', 
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: 170 }}>
+                                            {/* Shipping Partner Dropdown */}
+                                            <select
+                                                value={selectedPartner[o.id] || 'DTDC'}
+                                                onChange={(e) => setSelectedPartner({ ...selectedPartner, [o.id]: e.target.value })}
+                                                style={{
+                                                    padding: '5px 8px',
+                                                    border: '1px solid #C5A059',
                                                     borderRadius: 4,
-                                                    fontFamily: "'Montserrat'", 
-                                                    fontSize: '0.75rem', 
-                                                    width: 130 
-                                                }} 
-                                            />
-                                            <button 
-                                                onClick={() => handleTrackingSave(o.id)}
-                                                className="adm-action-btn"
-                                                style={{ padding: '6px 8px', background: '#C5A059', color: '#fff', borderRadius: 4, border: 'none', cursor: 'pointer' }}
-                                                disabled={savingTracking[o.id]}
+                                                    fontSize: '0.72rem',
+                                                    fontFamily: "'Montserrat'",
+                                                    background: '#fff',
+                                                    fontWeight: 600
+                                                }}
                                             >
-                                                {savingTracking[o.id] ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save"></i>}
-                                            </button>
+                                                <option value="DTDC">DTDC</option>
+                                                <option value="FedEx">FedEx</option>
+                                                <option value="Delhivery">Delhivery</option>
+                                                <option value="Blue Dart">Blue Dart</option>
+                                                <option value="India Post">India Post</option>
+                                                <option value="DHL">DHL</option>
+                                                <option value="Others">Others (Custom)</option>
+                                            </select>
+
+                                            {/* Dynamic Custom Partner Textbox */}
+                                            {selectedPartner[o.id] === 'Others' && (
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Shipping Partner"
+                                                    value={customPartner[o.id] || ''}
+                                                    onChange={(e) => setCustomPartner({ ...customPartner, [o.id]: e.target.value })}
+                                                    style={{
+                                                        padding: '4px 8px',
+                                                        border: '1px solid #ddd',
+                                                        borderRadius: 4,
+                                                        fontSize: '0.72rem',
+                                                        fontFamily: "'Montserrat'"
+                                                    }}
+                                                />
+                                            )}
+
+                                            {/* Tracking ID & Save Button */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Tracking ID" 
+                                                    value={tempTracking[o.id] || ''}
+                                                    onChange={(e) => setTempTracking({ ...tempTracking, [o.id]: e.target.value })}
+                                                    style={{ 
+                                                        padding: '5px 8px', 
+                                                        border: '1px solid #ddd', 
+                                                        borderRadius: 4,
+                                                        fontFamily: "'Montserrat'", 
+                                                        fontSize: '0.72rem', 
+                                                        width: '100%'
+                                                    }} 
+                                                />
+                                                <button 
+                                                    onClick={() => handleTrackingSave(o.id)}
+                                                    className="adm-action-btn"
+                                                    style={{ padding: '5px 8px', background: '#C5A059', color: '#fff', borderRadius: 4, border: 'none', cursor: 'pointer', flexShrink: 0 }}
+                                                    disabled={savingTracking[o.id]}
+                                                    title="Save Shipping Partner & Tracking ID"
+                                                >
+                                                    {savingTracking[o.id] ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save"></i>}
+                                                </button>
+                                            </div>
                                         </div>
                                     </td>
                                     <td>
@@ -504,13 +652,64 @@ function MfgOrders() {
                                         </select>
                                     </td>
                                     <td>
-                                        <button 
-                                            onClick={() => setSelectedOrder(o)}
-                                            className="adm-action-btn"
-                                            style={{ background: '#121212', color: '#fff' }}
-                                        >
-                                            <i className="fas fa-eye"></i> View
-                                        </button>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start', minWidth: 120 }}>
+                                            <button 
+                                                onClick={() => setSelectedOrder(o)}
+                                                className="adm-action-btn"
+                                                style={{ background: '#121212', color: '#fff', width: '100%', justifyContent: 'center' }}
+                                            >
+                                                <i className="fas fa-eye"></i> View
+                                            </button>
+
+                                            {/* Cost Adjustment Request Button & Badges */}
+                                            {o.costAdjustmentStatus === 'requested' ? (
+                                                <span style={{ fontSize: '0.65rem', color: '#b78103', background: '#fff8e1', padding: '4px 6px', borderRadius: 4, border: '1px solid #ffe082', fontWeight: 700, width: '100%', boxSizing: 'border-box', textAlign: 'center' }}>
+                                                    <i className="fas fa-hourglass-half"></i> Adj: ₹{o.costAdjustmentAmount} (Pending)
+                                                </span>
+                                            ) : o.costAdjustmentStatus === 'approved' ? (
+                                                <span style={{ fontSize: '0.65rem', color: '#1b5e20', background: '#e8f5e9', padding: '4px 6px', borderRadius: 4, border: '1px solid #c8e6c9', fontWeight: 700, width: '100%', boxSizing: 'border-box', textAlign: 'center' }}>
+                                                    <i className="fas fa-check-circle"></i> Adj: +₹{o.costAdjustmentAmount} Approved
+                                                </span>
+                                            ) : o.costAdjustmentStatus === 'rejected' ? (
+                                                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                                    <span style={{ fontSize: '0.62rem', color: '#b91c1c', background: '#ffebee', padding: '2px 4px', borderRadius: 4, border: '1px solid #ffcdd2', fontWeight: 700, textAlign: 'center' }}>
+                                                        <i className="fas fa-times-circle"></i> Adj Rejected
+                                                    </span>
+                                                    <button 
+                                                        onClick={() => { setCostAdjustmentOrder(o); setCostAdjustmentAmountInput(o.costAdjustmentAmount || ''); setCostAdjustmentReasonInput(''); }}
+                                                        className="adm-action-btn"
+                                                        style={{ background: '#28a745', color: '#fff', fontSize: '0.65rem', padding: '3px 6px', width: '100%', justifyContent: 'center' }}
+                                                        title="Request cost adjustment again from Master"
+                                                    >
+                                                        <i className="fas fa-redo"></i> Re-request Cost
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => { setCostAdjustmentOrder(o); setCostAdjustmentAmountInput(''); setCostAdjustmentReasonInput(''); }}
+                                                    className="adm-action-btn"
+                                                    style={{ background: '#28a745', color: '#fff', fontSize: '0.68rem', padding: '4px 8px', width: '100%', justifyContent: 'center' }}
+                                                    title="Request extra manufacturing cost amount from Master Admin"
+                                                >
+                                                    <i className="fas fa-coins"></i> Cost Adjustment
+                                                </button>
+                                            )}
+                                            
+                                            {o.status === 'issue_reported' ? (
+                                                <span style={{ fontSize: '0.65rem', color: '#dc3545', fontWeight: 700, padding: '2px 4px', background: '#fff0f0', borderRadius: 4, border: '1px solid #ffcdd2', width: '100%', boxSizing: 'border-box', textAlign: 'center' }}>
+                                                    <i className="fas fa-exclamation-circle"></i> Reported Can't Be Done
+                                                </span>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => setCantBeDoneOrder(o)}
+                                                    className="adm-action-btn"
+                                                    style={{ background: '#dc3545', color: '#fff', fontSize: '0.68rem', padding: '4px 8px', width: '100%', justifyContent: 'center' }}
+                                                    title="Report to Master Admin that this order cannot be fulfilled"
+                                                >
+                                                    <i className="fas fa-exclamation-triangle"></i> Can't Be Done
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -1135,6 +1334,176 @@ function MfgOrders() {
                                 <><i className="fas fa-download"></i> Download PNG</>
                             )}
                         </button>
+                    </div>
+                </div>
+            )}
+            {/* Report Can't Be Done Modal */}
+            {cantBeDoneOrder && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200
+                }}>
+                    <div style={{
+                        background: '#ffffff', borderRadius: 8, padding: '24px 30px',
+                        maxWidth: 480, width: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                        position: 'relative'
+                    }}>
+                        <button
+                            onClick={() => setCantBeDoneOrder(null)}
+                            style={{ position: 'absolute', top: 16, right: 16, border: 'none', background: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#999' }}
+                        >
+                            &times;
+                        </button>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, color: '#dc3545' }}>
+                            <i className="fas fa-exclamation-triangle" style={{ fontSize: '1.5rem' }}></i>
+                            <h3 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontSize: '1.2rem', color: '#121212' }}>Report Order Issue</h3>
+                        </div>
+
+                        <p style={{ fontSize: '0.82rem', color: '#666', marginBottom: 16, lineHeight: 1.5 }}>
+                            Report to Master Admin that Order <strong>#{cantBeDoneOrder.orderId || cantBeDoneOrder.id}</strong> cannot be fulfilled. Master will review and terminate the order.
+                        </p>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#444', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                Select Reason *
+                            </label>
+                            <select
+                                value={cantBeDoneReason}
+                                onChange={(e) => setCantBeDoneReason(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '10px 12px', borderRadius: 4,
+                                    border: '1px solid #ccc', fontSize: '0.82rem', fontFamily: "'Montserrat', sans-serif"
+                                }}
+                            >
+                                <option value="Out of Stock / Material Unavailable">Out of Stock / Material Unavailable</option>
+                                <option value="Unprintable Design Specification">Unprintable Design Specification</option>
+                                <option value="Garment Sizing / Pattern Defect">Garment Sizing / Pattern Defect</option>
+                                <option value="Equipment / Facility Breakdown">Equipment / Facility Breakdown</option>
+                                <option value="Other Manufacturing Constraint">Other Manufacturing Constraint</option>
+                            </select>
+                        </div>
+
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#444', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                Additional Details (Optional)
+                            </label>
+                            <textarea
+                                rows={3}
+                                placeholder="Explain why this order cannot be manufactured..."
+                                value={cantBeDoneNotes}
+                                onChange={(e) => setCantBeDoneNotes(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '10px 12px', borderRadius: 4,
+                                    border: '1px solid #ccc', fontSize: '0.82rem', fontFamily: "'Montserrat', sans-serif",
+                                    resize: 'vertical'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                            <button
+                                onClick={() => setCantBeDoneOrder(null)}
+                                style={{ padding: '10px 18px', background: '#eee', color: '#333', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleReportCantBeDoneSubmit}
+                                disabled={submittingReport}
+                                style={{ padding: '10px 18px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+                            >
+                                {submittingReport ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
+                                Submit Report to Master
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Manufacturer Cost Adjustment Request Modal */}
+            {costAdjustmentOrder && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200
+                }}>
+                    <div style={{
+                        background: '#ffffff', borderRadius: 8, padding: '24px 30px',
+                        maxWidth: 480, width: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                        position: 'relative'
+                    }}>
+                        <button
+                            onClick={() => setCostAdjustmentOrder(null)}
+                            style={{ position: 'absolute', top: 16, right: 16, border: 'none', background: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#999' }}
+                        >
+                            &times;
+                        </button>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, color: '#28a745' }}>
+                            <i className="fas fa-coins" style={{ fontSize: '1.5rem', color: '#C5A059' }}></i>
+                            <h3 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontSize: '1.2rem', color: '#121212' }}>Request Cost Adjustment</h3>
+                        </div>
+
+                        <p style={{ fontSize: '0.82rem', color: '#666', marginBottom: 16, lineHeight: 1.5 }}>
+                            Request extra manufacturing cost for Order <strong>#{costAdjustmentOrder.orderId || costAdjustmentOrder.id}</strong>. Master Admin will review your request and credit your wallet upon approval.
+                        </p>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#444', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                Extra Cost Amount (₹) *
+                            </label>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <span style={{ position: 'absolute', left: 12, fontWeight: 700, color: '#666', fontSize: '0.9rem' }}>₹</span>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    placeholder="Enter extra amount, e.g. 250"
+                                    value={costAdjustmentAmountInput}
+                                    onChange={(e) => setCostAdjustmentAmountInput(e.target.value)}
+                                    style={{
+                                        width: '100%', padding: '10px 12px 10px 28px', borderRadius: 4,
+                                        border: '1px solid #ccc', fontSize: '0.88rem', fontFamily: "'Montserrat', sans-serif",
+                                        fontWeight: 600
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#444', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                Reason / Justification for Master *
+                            </label>
+                            <textarea
+                                rows={3}
+                                placeholder="Explain why extra cost is needed (e.g. Special thread, fabric weight difference, intricate placement)..."
+                                value={costAdjustmentReasonInput}
+                                onChange={(e) => setCostAdjustmentReasonInput(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '10px 12px', borderRadius: 4,
+                                    border: '1px solid #ccc', fontSize: '0.82rem', fontFamily: "'Montserrat', sans-serif",
+                                    resize: 'vertical'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                            <button
+                                onClick={() => setCostAdjustmentOrder(null)}
+                                style={{ padding: '10px 18px', background: '#eee', color: '#333', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleCostAdjustmentSubmit}
+                                disabled={submittingCostAdjustment}
+                                style={{ padding: '10px 18px', background: '#28a745', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+                            >
+                                {submittingCostAdjustment ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
+                                Submit Request to Master
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

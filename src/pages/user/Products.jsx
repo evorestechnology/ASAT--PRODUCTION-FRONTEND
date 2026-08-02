@@ -250,11 +250,13 @@ const extraStyles = `
     border-radius: 14px;
     overflow: hidden;
     cursor: pointer;
-    background: #111;
+    background: #161616;
     opacity: 0;
     transform: translateY(22px);
     transition: transform 0.4s cubic-bezier(0.25,1,0.5,1), box-shadow 0.4s ease;
     box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    display: flex;
+    flex-direction: column;
   }
   .pcard--standard.pcard-visible {
     animation: pcStdReveal 0.55s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
@@ -267,6 +269,11 @@ const extraStyles = `
   .pcard--standard:hover {
     transform: translateY(-7px) scale(1.015);
     box-shadow: 0 22px 52px rgba(0,0,0,0.22);
+  }
+  .pcard--standard__cover {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
   }
   .pcard--standard__img {
     width: 100%;
@@ -294,21 +301,17 @@ const extraStyles = `
     z-index: 3;
   }
 
-  /* Frosted glass bottom panel */
+  /* Details panel placed BELOW cover image */
   .pcard--standard__panel {
-    position: absolute;
-    bottom: 12px; left: 12px; right: 12px;
-    background: rgba(18,18,18,0.72);
-    backdrop-filter: blur(20px) saturate(1.5);
-    -webkit-backdrop-filter: blur(20px) saturate(1.5);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 10px;
+    position: relative;
+    background: #161616;
+    border-top: 1px solid rgba(255,255,255,0.06);
     padding: 14px 16px 16px;
     z-index: 2;
     transition: background 0.3s ease;
   }
   .pcard--standard:hover .pcard--standard__panel {
-    background: rgba(18,18,18,0.82);
+    background: #1e1e1e;
   }
   .pcard--standard__brand {
     display: block;
@@ -715,18 +718,20 @@ function Products() {
         style={{ '--pcard-delay': `${Math.min(idx, 12) * 60}ms` }}
         onClick={() => goToProduct(product.id)}
       >
-        <div
-          className="pcard--standard__img"
-          style={{ backgroundImage: `url('${getImage(product)}')` }}
-        />
-        {/* Left badge (NEW / TRENDING) */}
-        {badge && <span className="pcard--standard__badge">{badge}</span>}
-        {/* Right rank number for top-50 sold */}
-        {rank && (
-          <span className="pcard--standard__rank">
-            #{String(rank).padStart(2, '0')}
-          </span>
-        )}
+        <div className="pcard--standard__cover">
+          <div
+            className="pcard--standard__img"
+            style={{ backgroundImage: `url('${getImage(product)}')` }}
+          />
+          {/* Left badge (NEW / TRENDING) */}
+          {badge && <span className="pcard--standard__badge">{badge}</span>}
+          {/* Right rank number for top-50 sold */}
+          {rank && (
+            <span className="pcard--standard__rank">
+              #{String(rank).padStart(2, '0')}
+            </span>
+          )}
+        </div>
         <div className="pcard--standard__panel">
           <span className="pcard--standard__brand">{product.brand || 'ASAT'}</span>
           <h4 className="pcard--standard__name">{product.name || product.title}</h4>
