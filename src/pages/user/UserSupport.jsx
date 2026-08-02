@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import BackButton from '../../components/BackButton';
-import { apiFetch } from '../../api';
+import { apiFetch, uploadFile } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
 const styles = `
     .support-page {
         min-height: 80vh;
-        background: var(--light);
+        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
         padding: 40px 5%;
         font-family: 'Montserrat', sans-serif;
     }
@@ -320,7 +320,32 @@ function UserSupport() {
     const [category, setCategory] = useState('Product not yet received');
     const [message, setMessage] = useState('');
     const [replyText, setReplyText] = useState('');
+    const [mediaFiles, setMediaFiles] = useState([]); // Max 5 videos/images
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const chatEndRef = useRef(null);
+
+    const isEvidenceRequired = [
+        'Wrong item received',
+        'Damaged/Broken product received',
+        'Missing item(s) in order'
+    ].includes(category);
+
+    const handleMediaChange = (e) => {
+        const selected = Array.from(e.target.files || []);
+        if (!selected.length) return;
+        setMediaFiles(prev => {
+            const combined = [...prev, ...selected];
+            if (combined.length > 5) {
+                showToast("Maximum 5 media files (images/videos) allowed.", "warning");
+                return combined.slice(0, 5);
+            }
+            return combined;
+        });
+    };
+
+    const handleRemoveMedia = (index) => {
+        setMediaFiles(prev => prev.filter((_, i) => i !== index));
+    };
 
     const fetchTickets = async () => {
         if (!user) return;
@@ -373,26 +398,56 @@ function UserSupport() {
 
     const handleSubmitTicket = async (e) => {
         e.preventDefault();
-        if (!user) return;
+        if (!user || isSubmitting) return;
         if (!message.trim()) {
-            showToast("Please describe your issue.", 'warning');
+            showToast("Please describe your issue in detail.", 'warning');
             return;
         }
+
+        if (isEvidenceRequired && mediaFiles.length === 0) {
+            showToast(`Please attach at least one video or photo evidence for "${category}".`, 'warning');
+            return;
+        }
+
+        setIsSubmitting(true);
         try {
+            let finalDescription = message.trim();
+
+            if (mediaFiles.length > 0) {
+                showToast("Uploading evidence files...", "info");
+                const uploadedUrls = [];
+                for (let i = 0; i < mediaFiles.length; i++) {
+                    const file = mediaFiles[i];
+                    const ext = file.name.split('.').pop() || 'bin';
+                    const isVideo = file.type.startsWith('video/');
+                    const path = `tickets/evidence/${user.id}/${Date.now()}_${i}_${isVideo ? 'vid' : 'img'}.${ext}`;
+                    const url = await uploadFile(file, path, 'asat-uploads');
+                    uploadedUrls.push({ name: file.name, url, isVideo });
+                }
+
+                finalDescription += "\n\n--- EVIDENCE ATTACHED ---";
+                uploadedUrls.forEach((item, idx) => {
+                    finalDescription += `\n${idx + 1}. [${item.isVideo ? 'VIDEO' : 'IMAGE'}] ${item.name}: ${item.url}`;
+                });
+            }
+
             await apiFetch('/api/tickets', {
                 method: 'POST',
                 body: JSON.stringify({
-                    subject: category,
+                    subject: `${category} - ${user.name || 'User'}`,
                     category: category,
-                    description: message
+                    description: finalDescription
                 })
             });
             setMessage('');
+            setMediaFiles([]);
             showToast("Ticket raised successfully!", 'success');
             fetchTickets();
         } catch (err) {
             console.error("Error creating ticket:", err);
-            showToast("Failed to raise ticket. Please try again.", 'error');
+            showToast("Failed to raise ticket: " + err.message, 'error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -486,17 +541,88 @@ function UserSupport() {
                                         <option>Other</option>
                                     </select>
                                 </div>
+
+                                {/* Attach Evidence Upload (Max 5 files total) */}
+                                {isEvidenceRequired && (
+                                    <div className="field-group" style={{ background: 'rgba(255,255,255,0.8)', border: '1px dashed var(--gold)', borderRadius: 8, padding: 14 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--dark)', margin: 0 }}>
+                                                Attach Evidence (Videos &amp; Images) <span style={{ color: '#d32f2f' }}>*</span>
+                                            </label>
+                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: mediaFiles.length >= 5 ? '#d32f2f' : 'var(--gold)' }}>
+                                                {mediaFiles.length}/5 Files Max
+                                            </span>
+                                        </div>
+
+                                        {mediaFiles.length < 5 && (
+                                            <div 
+                                                onClick={() => document.getElementById('support-media-input').click()}
+                                                style={{
+                                                    border: '1px dashed #ccc', borderRadius: 6, padding: '14px', textAlign: 'center',
+                                                    cursor: 'pointer', background: '#fafafa', transition: '0.2s'
+                                                }}
+                                            >
+                                                <i className="fas fa-cloud-upload-alt" style={{ fontSize: '1.4rem', color: 'var(--gold)', marginBottom: 4, display: 'block' }} />
+                                                <span style={{ fontSize: '0.78rem', color: '#555', fontWeight: 600 }}>
+                                                    Click to add unboxing video or product photos
+                                                </span>
+                                                <input 
+                                                    id="support-media-input"
+                                                    type="file"
+                                                    accept="image/*,video/*"
+                                                    multiple
+                                                    style={{ display: 'none' }}
+                                                    onChange={handleMediaChange}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {mediaFiles.length > 0 && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                                                {mediaFiles.map((file, idx) => {
+                                                    const isVid = file.type.startsWith('video/');
+                                                    return (
+                                                        <div key={idx} style={{
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                            padding: '6px 10px', background: '#fff', border: '1px solid #e2e2e2', borderRadius: 5, fontSize: '0.75rem'
+                                                        }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+                                                                <i className={`fas ${isVid ? 'fa-video' : 'fa-image'}`} style={{ color: isVid ? '#e74c3c' : '#3498db' }} />
+                                                                <span style={{ fontWeight: 500, color: '#333', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '200px' }}>
+                                                                    {file.name}
+                                                                </span>
+                                                                <span style={{ fontSize: '0.68rem', color: '#888' }}>
+                                                                    ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                                                                </span>
+                                                            </div>
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => handleRemoveMedia(idx)}
+                                                                style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                            >
+                                                                <i className="fas fa-trash-alt" />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="field-group">
                                     <label>Elaborate your request</label>
                                     <textarea 
                                         className="field-textarea"
-                                        rows="5" 
+                                        rows="4" 
                                         placeholder="Describe the issue or query in detail..."
                                         value={message}
                                         onChange={e => setMessage(e.target.value)}
                                     />
                                 </div>
-                                <button type="submit" className="submit-btn">SUBMIT TICKET</button>
+                                <button type="submit" disabled={isSubmitting} className="submit-btn" style={{ opacity: isSubmitting ? 0.7 : 1 }}>
+                                    {isSubmitting ? 'SUBMITTING...' : 'SUBMIT TICKET'}
+                                </button>
                             </form>
                         </div>
                     </div>

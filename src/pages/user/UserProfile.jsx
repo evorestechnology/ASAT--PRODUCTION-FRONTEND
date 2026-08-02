@@ -109,6 +109,11 @@ function UserProfile() {
                 })
             });
 
+            // Update localStorage & dispatch event to update Navbar greeting dynamically
+            localStorage.setItem('asat_user', JSON.stringify({ fullName, email }));
+            window.dispatchEvent(new Event('storage'));
+            window.dispatchEvent(new Event('user_profile_updated'));
+
             setToast({ type: 'success', msg: 'Account updated successfully!' });
             setTimeout(() => setToast(null), 3000);
         } catch (err) {
@@ -147,9 +152,10 @@ function UserProfile() {
         <>
             <style>{styles}</style>
 
-            <main className="container">
-                <BackButton />
-                <h2 style={{ fontFamily: "'Cinzel', serif", textAlign: 'center', marginBottom: '30px' }}>ACCOUNT SETTINGS</h2>
+            <main style={{ flex: 1, padding: '10px 0', minHeight: '80vh', background: "linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto" }}>
+                <div className="container">
+                    <BackButton />
+                    <h2 style={{ fontFamily: "'Cinzel', serif", textAlign: 'center', marginBottom: '30px' }}>ACCOUNT SETTINGS</h2>
                 
                 {toast && (
                     <div className={`toast toast--${toast.type}`}>
@@ -175,7 +181,8 @@ function UserProfile() {
                         <button type="button" className="cta-gold" style={{ background: '#3a3a3c', color: '#fff', borderColor: '#3a3a3c' }} onClick={handlePasswordReset}>RESET PASSWORD</button>
                     </div>
                 </form>
-            </main>
+            </div>
+        </main>
         </>
     );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import ProfileDropdown from './ProfileDropdown';
 import { useCurrency, SUPPORTED_CURRENCIES } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 
 /* ─── Bubble menu items ─────────────────────────────────────── */
 const bubbleItems = [
@@ -23,6 +24,7 @@ function Navbar() {
     const profileBtnRef = useRef(null);
     const [cartCount, setCartCount] = useState(0);
     const [wishlistCount, setWishlistCount] = useState(0);
+    const { user, profile, role } = useAuth();
 
     const { currency, setCurrency, activeCurrencies, globalCurrencies } = useCurrency();
     const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
@@ -66,19 +68,44 @@ function Navbar() {
 
     const loggedIn = typeof window !== 'undefined' && localStorage.getItem('asat_loggedIn') === 'true';
 
-    // Read login state & username from localStorage
+    // Dynamically update greeting with user's name
     useEffect(() => {
         const updateGreeting = () => {
-            const loggedIn = localStorage.getItem('asat_loggedIn') === 'true';
-            if (loggedIn) {
+            const isUserLoggedIn = loggedIn || !!user;
+            if (!isUserLoggedIn) {
+                setGreeting('Hello there!');
+                return;
+            }
+
+            let nameCandidate = '';
+
+            if (profile?.full_name) {
+                nameCandidate = profile.full_name;
+            } else if (profile?.business_name) {
+                nameCandidate = profile.business_name;
+            } else if (user?.user_metadata?.full_name) {
+                nameCandidate = user.user_metadata.full_name;
+            } else if (user?.user_metadata?.name) {
+                nameCandidate = user.user_metadata.name;
+            } else {
                 const userData = localStorage.getItem('asat_user');
                 if (userData) {
-                    const { fullName } = JSON.parse(userData);
-                    const firstName = fullName ? fullName.split(' ')[0] : '';
-                    setGreeting(`Hello, ${firstName}!`);
-                } else {
-                    setGreeting('Hello there!');
+                    try {
+                        const parsed = JSON.parse(userData);
+                        if (parsed.fullName && parsed.fullName.trim() !== '' && parsed.fullName.toLowerCase() !== 'user') {
+                            nameCandidate = parsed.fullName;
+                        }
+                    } catch (e) {}
                 }
+            }
+
+            if (nameCandidate && nameCandidate.trim() !== '' && nameCandidate.toLowerCase() !== 'user') {
+                const firstName = nameCandidate.trim().split(' ')[0];
+                setGreeting(`Hello, ${firstName}!`);
+            } else if (user?.email) {
+                const rawName = user.email.split('@')[0];
+                const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+                setGreeting(`Hello, ${formattedName}!`);
             } else {
                 setGreeting('Hello there!');
             }
@@ -86,8 +113,12 @@ function Navbar() {
 
         updateGreeting();
         window.addEventListener('storage', updateGreeting);
-        return () => window.removeEventListener('storage', updateGreeting);
-    }, []);
+        window.addEventListener('user_profile_updated', updateGreeting);
+        return () => {
+            window.removeEventListener('storage', updateGreeting);
+            window.removeEventListener('user_profile_updated', updateGreeting);
+        };
+    }, [user, profile, role, loggedIn]);
 
     useEffect(() => {
         const handleClickOutside = (e) => {

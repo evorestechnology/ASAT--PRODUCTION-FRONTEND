@@ -280,56 +280,58 @@ function UserAddress() {
         <>
             <style>{styles}</style>
 
-            <main style={{ flex: 1, padding: '40px 5%' }}>
-                <BackButton />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <h2 style={{ fontFamily: "'Cinzel', serif", margin: 0 }}>STORED ADDRESSES</h2>
-                    <button className="cta-gold" onClick={openAddModal}>+ ADD NEW ADDRESS</button>
-                </div>
-                
-                {toast && (
-                    <div className={`toast toast--${toast.type}`}>
-                        {toast.msg}
+            <main style={{ flex: 1, padding: '40px 5%', minHeight: '80vh', background: "linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto" }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <BackButton />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                        <h2 style={{ fontFamily: "'Cinzel', serif", margin: 0 }}>STORED ADDRESSES</h2>
+                        <button className="cta-gold" onClick={openAddModal}>+ ADD NEW ADDRESS</button>
                     </div>
-                )}
+                    
+                    {toast && (
+                        <div className={`toast toast--${toast.type}`}>
+                            {toast.msg}
+                        </div>
+                    )}
 
-                {loading ? (
-                    <div style={{ textAlign: 'center', fontFamily: 'Montserrat', color: '#666', padding: '40px 0' }}>
-                        Loading delivery addresses…
-                    </div>
-                ) : addresses.length === 0 ? (
-                    <div style={{ textAlign: 'center', fontFamily: 'Montserrat', color: '#888', padding: '60px 0', border: '1px dashed #ddd', background: '#fafafa' }}>
-                        No stored addresses found. Add a delivery address to proceed.
-                    </div>
-                ) : (
-                    <div className="address-grid">
-                        {addresses.map(addr => (
-                            <div className="address-card" key={addr.id}>
-                                <div>
-                                    <h4>
-                                        {addr.label}
-                                        {addr.isDefault && <span className="default-badge">DEFAULT</span>}
-                                    </h4>
-                                    <p style={{ fontWeight: '600', color: '#111' }}>{addr.fullName}</p>
-                                    <p>{addr.addressLine1}</p>
-                                    {addr.addressLine2 && <p style={{ color: '#666', fontStyle: 'italic' }}>Landmark: {addr.addressLine2}</p>}
-                                    <p>{addr.city}{addr.state ? `, ${addr.state}` : ''} - {addr.pincode}</p>
-                                    <p>{addr.country}</p>
-                                    <p className="phone" style={{ fontWeight: 600, color: '#666', marginTop: '4px' }}>📞 Alt Mobile: {addr.phone}</p>
+                    {loading ? (
+                        <div style={{ textAlign: 'center', fontFamily: 'Montserrat', color: '#666', padding: '40px 0' }}>
+                            Loading delivery addresses…
+                        </div>
+                    ) : addresses.length === 0 ? (
+                        <div style={{ textAlign: 'center', fontFamily: 'Montserrat', color: '#888', padding: '60px 0', border: '1px dashed #ddd', background: '#fafafa' }}>
+                            No stored addresses found. Add a delivery address to proceed.
+                        </div>
+                    ) : (
+                        <div className="address-grid">
+                            {addresses.map(addr => (
+                                <div className="address-card" key={addr.id}>
+                                    <div>
+                                        <h4>
+                                            {addr.label}
+                                            {addr.isDefault && <span className="default-badge">DEFAULT</span>}
+                                        </h4>
+                                        <p style={{ fontWeight: '600', color: '#111' }}>{addr.fullName}</p>
+                                        <p>{addr.addressLine1}</p>
+                                        {addr.addressLine2 && <p style={{ color: '#666', fontStyle: 'italic' }}>Landmark: {addr.addressLine2}</p>}
+                                        <p>{addr.city}{addr.state ? `, ${addr.state}` : ''} - {addr.pincode}</p>
+                                        <p>{addr.country}</p>
+                                        <p className="phone" style={{ fontWeight: 600, color: '#666', marginTop: '4px' }}>📞 Alt Mobile: {addr.phone}</p>
+                                    </div>
+                                    <div className="address-actions">
+                                        <button className="address-btn" onClick={() => openEditModal(addr)}>Edit</button>
+                                        <button className="address-btn address-btn--delete" onClick={() => handleDelete(addr.id)}>Delete</button>
+                                        {!addr.isDefault && (
+                                            <button className="address-btn" style={{ marginLeft: 'auto', borderColor: 'var(--gold)', color: 'var(--gold)' }} onClick={() => handleSetDefault(addr.id)}>
+                                                Set as Default
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="address-actions">
-                                    <button className="address-btn" onClick={() => openEditModal(addr)}>Edit</button>
-                                    <button className="address-btn address-btn--delete" onClick={() => handleDelete(addr.id)}>Delete</button>
-                                    {!addr.isDefault && (
-                                        <button className="address-btn" style={{ marginLeft: 'auto', borderColor: 'var(--gold)', color: 'var(--gold)' }} onClick={() => handleSetDefault(addr.id)}>
-                                            Set as Default
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
+                </div>
             </main>
 
             {showModal && (

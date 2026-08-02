@@ -8,7 +8,7 @@ const styles = `
     /* ═══════ Public Designer Rankings ═══════ */
     .rnk-page {
         min-height: 90vh;
-        background: var(--light);
+        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
         padding-bottom: 80px;
         font-family: 'Montserrat', sans-serif;
     }

@@ -8,7 +8,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 const styles = `
     .tracking-page {
         min-height: 80vh;
-        background: var(--light);
+        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
         padding: 40px 5%;
         font-family: 'Montserrat', sans-serif;
     }

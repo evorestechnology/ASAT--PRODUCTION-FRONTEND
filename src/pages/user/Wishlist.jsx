@@ -7,7 +7,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 
 const styles = `
     /* ═══════ Wishlist Page ═══════ */
-    .wishlist-page { min-height: 80vh; background: var(--light); padding-bottom: 60px; }
+    .wishlist-page { min-height: 80vh; background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto; padding-bottom: 60px; }
 
     .wishlist-hero {
         background: var(--dark);

@@ -9,7 +9,7 @@ import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 const styles = `
     .orders-page {
         min-height: 80vh;
-        background: var(--light);
+        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
         padding: 40px 5%;
         font-family: 'Montserrat', sans-serif;
     }
@@ -294,79 +294,37 @@ function UserOrders() {
     const [queryOrder, setQueryOrder] = useState(null);
     const [queryCategory, setQueryCategory] = useState('Product not yet received');
     const [queryDesc, setQueryDesc] = useState('');
-    const [unboxingVideo, setUnboxingVideo] = useState(null);
-    const [productPhotos, setProductPhotos] = useState([]);
+    const [queryMediaFiles, setQueryMediaFiles] = useState([]); // Max 5 videos/photos
     const [submittingQuery, setSubmittingQuery] = useState(false);
 
-    useEffect(() => {
-        if (!user) {
-            setLoading(false);
-            return;
-        }
+    const isEvidenceRequired = [
+        'Wrong item received',
+        'Damaged/Broken product received',
+        'Missing item(s) in order'
+    ].includes(queryCategory);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const returningOrderId = urlParams.get('order_id');
-        if (returningOrderId) {
-            apiFetch('/api/payment/verify', {
-                method: 'POST',
-                body: JSON.stringify({ orderId: returningOrderId })
-            }).then(async (vRes) => {
-                if (vRes && vRes.verified) {
-                    // Check if there is pending order data in localStorage
-                    const rawPending = localStorage.getItem('asat_pending_order');
-                    if (rawPending) {
-                        try {
-                            const pendingData = JSON.parse(rawPending);
-                            await apiFetch('/api/orders', {
-                                method: 'POST',
-                                body: JSON.stringify({
-                                    ...pendingData.orderData,
-                                    order_id: returningOrderId,
-                                    payment_id: returningOrderId,
-                                    payment_status: 'PAID'
-                                })
-                            });
-                            localStorage.removeItem('asat_pending_order');
-                            localStorage.removeItem('asat_cart');
-                            window.dispatchEvent(new Event('cart_updated'));
-                        } catch (pErr) {
-                            console.error('Error finalizing pending order:', pErr);
-                        }
-                    }
-                    showToast(`Payment verified successfully! Order #${returningOrderId} has been placed.`, 'success');
-                    // Refresh orders list
-                    const freshData = await apiFetch('/api/orders');
-                    setOrders(freshData || []);
-                }
-            }).catch(() => {});
-        }
-
-        const fetchOrders = async () => {
-            try {
-                const data = await apiFetch('/api/orders');
-                setOrders(data || []);
-            } catch (err) {
-                console.error('Error fetching user orders:', err);
-            } finally {
-                setLoading(false);
+    const handleQueryMediaChange = (e) => {
+        const selected = Array.from(e.target.files || []);
+        if (!selected.length) return;
+        setQueryMediaFiles(prev => {
+            const combined = [...prev, ...selected];
+            if (combined.length > 5) {
+                showToast("Maximum 5 media files (images/videos) allowed.", "warning");
+                return combined.slice(0, 5);
             }
-        };
+            return combined;
+        });
+    };
 
-        fetchOrders();
-    }, [user]);
-
-    const formatDate = (createdAt) => {
-        if (!createdAt) return 'Pending';
-        const d = new Date(createdAt);
-        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const handleRemoveQueryMedia = (index) => {
+        setQueryMediaFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleOpenQueryModal = (order) => {
         setQueryOrder(order);
         setQueryCategory('Product not yet received');
         setQueryDesc('');
-        setUnboxingVideo(null);
-        setProductPhotos([]);
+        setQueryMediaFiles([]);
     };
 
     const handleCloseQueryModal = () => {
@@ -375,27 +333,14 @@ function UserOrders() {
 
     const handleUploadQuery = async (e) => {
         e.preventDefault();
-        if (!queryOrder) return;
+        if (!queryOrder || submittingQuery) return;
         
         // Validation based on category
-        if (queryCategory === 'Wrong item received' && !unboxingVideo) {
-            showToast("Unboxing video is required for wrong item queries.", "warning");
+        if (isEvidenceRequired && queryMediaFiles.length === 0) {
+            showToast(`Please attach at least one video or photo evidence for "${queryCategory}".`, "warning");
             return;
         }
-        if (queryCategory === 'Missing item(s) in order' && !unboxingVideo) {
-            showToast("Unboxing video is required for missing items queries.", "warning");
-            return;
-        }
-        if (queryCategory === 'Damaged/Broken product received') {
-            if (!unboxingVideo) {
-                showToast("Unboxing video is required for damaged product queries.", "warning");
-                return;
-            }
-            if (productPhotos.length === 0) {
-                showToast("Please upload at least one image showing the damage.", "warning");
-                return;
-            }
-        }
+
         if (!queryDesc.trim()) {
             showToast("Please describe the issue in detail.", "warning");
             return;
@@ -403,36 +348,25 @@ function UserOrders() {
 
         setSubmittingQuery(true);
         try {
-            let videoUrl = null;
-            const photoUrls = [];
             const orderIdForPath = queryOrder.order_id || queryOrder.id;
-
-            // Upload unboxing video if present
-            if (unboxingVideo) {
-                const videoPath = `tickets/evidence/${orderIdForPath}/${Date.now()}_video_${unboxingVideo.name}`;
-                videoUrl = await uploadFile(unboxingVideo, videoPath);
-            }
-
-            // Upload product photos if present
-            if (productPhotos.length > 0) {
-                for (let i = 0; i < productPhotos.length; i++) {
-                    const photo = productPhotos[i];
-                    const photoPath = `tickets/evidence/${orderIdForPath}/${Date.now()}_photo_${i}_${photo.name}`;
-                    const url = await uploadFile(photo, photoPath);
-                    photoUrls.push(url);
-                }
-            }
-
-            // Construct final ticket description text
             let finalDescription = queryDesc.trim();
-            if (videoUrl || photoUrls.length > 0) {
+
+            if (queryMediaFiles.length > 0) {
+                showToast("Uploading evidence files...", "info");
+                const uploadedUrls = [];
+                for (let i = 0; i < queryMediaFiles.length; i++) {
+                    const file = queryMediaFiles[i];
+                    const ext = file.name.split('.').pop() || 'bin';
+                    const isVideo = file.type.startsWith('video/');
+                    const path = `tickets/evidence/${orderIdForPath}/${Date.now()}_${i}_${isVideo ? 'vid' : 'img'}.${ext}`;
+                    const url = await uploadFile(file, path, 'asat-uploads');
+                    uploadedUrls.push({ name: file.name, url, isVideo });
+                }
+
                 finalDescription += "\n\n--- EVIDENCE ATTACHED ---";
-                if (videoUrl) {
-                    finalDescription += `\nUnboxing Video: ${videoUrl}`;
-                }
-                if (photoUrls.length > 0) {
-                    finalDescription += "\nProduct Photos:\n" + photoUrls.map(url => `- ${url}`).join('\n');
-                }
+                uploadedUrls.forEach((item, idx) => {
+                    finalDescription += `\n${idx + 1}. [${item.isVideo ? 'VIDEO' : 'IMAGE'}] ${item.name}: ${item.url}`;
+                });
             }
 
             // Submit ticket
@@ -449,8 +383,8 @@ function UserOrders() {
             showToast("Query raised successfully! Live chat initiated.", "success");
             handleCloseQueryModal();
         } catch (err) {
-            console.error("Error raising order query:", err);
-            showToast("Failed to raise query. Please try again.", "error");
+            console.error("Error submitting query ticket:", err);
+            showToast("Failed to raise query: " + err.message, "error");
         } finally {
             setSubmittingQuery(false);
         }
@@ -699,70 +633,67 @@ function UserOrders() {
                             </div>
 
                             {/* Conditional Evidence Upload Section */}
-                            {queryCategory !== 'Product not yet received' && (
+                            {isEvidenceRequired && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    <h4 style={{ fontFamily: 'Cinzel, serif', fontSize: '0.9rem', margin: '0 0 5px 0', color: 'var(--dark)', letterSpacing: '0.5px' }}>
-                                        REQUIRED EVIDENCE
-                                    </h4>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <h4 style={{ fontFamily: 'Cinzel, serif', fontSize: '0.9rem', margin: 0, color: 'var(--dark)', letterSpacing: '0.5px' }}>
+                                            REQUIRED EVIDENCE <span style={{ color: '#d32f2f' }}>*</span>
+                                        </h4>
+                                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: queryMediaFiles.length >= 5 ? '#d32f2f' : 'var(--gold)' }}>
+                                            {queryMediaFiles.length}/5 Files Max
+                                        </span>
+                                    </div>
                                     
-                                    {/* Unboxing Video Upload */}
                                     <div className="field-group">
                                         <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#555' }}>
-                                            Unboxing Video <span style={{ color: '#d32f2f' }}>*</span>
+                                            Upload Videos &amp; Photos (Unboxing video, damage/wrong item proof)
                                         </label>
-                                        <div className="file-upload-section" onClick={() => document.getElementById('video-input').click()}>
-                                            <i className="fas fa-video" style={{ fontSize: '1.5rem', color: 'var(--gold)', marginBottom: '8px', display: 'block' }}></i>
-                                            <span style={{ fontSize: '0.8rem', color: '#666' }}>
-                                                {unboxingVideo ? unboxingVideo.name : "Select or drag unboxing video here"}
-                                            </span>
-                                            <input 
-                                                id="video-input"
-                                                type="file"
-                                                accept="video/*"
-                                                onChange={e => setUnboxingVideo(e.target.files[0])}
-                                                style={{ display: 'none' }}
-                                            />
-                                        </div>
-                                    </div>
 
-                                    {/* Product Photos Upload (Only for Damaged/Broken) */}
-                                    {queryCategory === 'Damaged/Broken product received' && (
-                                        <div className="field-group">
-                                            <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#555' }}>
-                                                Damage Photos <span style={{ color: '#d32f2f' }}>*</span>
-                                            </label>
-                                            <div className="file-upload-section" onClick={() => document.getElementById('photos-input').click()}>
-                                                <i className="fas fa-camera" style={{ fontSize: '1.5rem', color: 'var(--gold)', marginBottom: '8px', display: 'block' }}></i>
-                                                <span style={{ fontSize: '0.8rem', color: '#666' }}>
-                                                    Upload photos showing the damage
+                                        {queryMediaFiles.length < 5 && (
+                                            <div className="file-upload-section" onClick={() => document.getElementById('query-media-input').click()}>
+                                                <i className="fas fa-cloud-upload-alt" style={{ fontSize: '1.6rem', color: 'var(--gold)', marginBottom: '6px', display: 'block' }}></i>
+                                                <span style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600 }}>
+                                                    Click to attach videos and photos (Max 5 files total)
                                                 </span>
                                                 <input 
-                                                    id="photos-input"
+                                                    id="query-media-input"
                                                     type="file"
-                                                    accept="image/*"
+                                                    accept="image/*,video/*"
                                                     multiple
-                                                    onChange={e => setProductPhotos(Array.from(e.target.files))}
+                                                    onChange={handleQueryMediaChange}
                                                     style={{ display: 'none' }}
                                                 />
                                             </div>
-                                            {productPhotos.length > 0 && (
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px' }}>
-                                                    {productPhotos.map((f, idx) => (
+                                        )}
+
+                                        {queryMediaFiles.length > 0 && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px' }}>
+                                                {queryMediaFiles.map((file, idx) => {
+                                                    const isVid = file.type.startsWith('video/');
+                                                    return (
                                                         <div key={idx} className="file-preview-item">
-                                                            <span>{f.name} ({(f.size / 1024 / 1024).toFixed(2)} MB)</span>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                                                                <i className={`fas ${isVid ? 'fa-video' : 'fa-image'}`} style={{ color: isVid ? '#e74c3c' : '#3498db' }}></i>
+                                                                <span style={{ fontWeight: 500, color: '#333', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '240px' }}>
+                                                                    {file.name}
+                                                                </span>
+                                                                <span style={{ fontSize: '0.7rem', color: '#888' }}>
+                                                                    ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                                                                </span>
+                                                            </div>
                                                             <button 
                                                                 type="button" 
                                                                 className="remove-file-btn"
-                                                                onClick={() => setProductPhotos(prev => prev.filter((_, i) => i !== idx))}
+                                                                onClick={() => handleRemoveQueryMedia(idx)}
                                                             >
                                                                 <i className="fas fa-trash"></i>
                                                             </button>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 

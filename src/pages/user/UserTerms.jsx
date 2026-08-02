@@ -268,9 +268,10 @@ function UserTerms() {
     ];
 
     return (
-        <main style={{ flex: 1, padding: '40px 5%', maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
-            <BackButton />
-            <div className="glass-card" style={{ padding: '40px', marginTop: '20px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.95)', boxShadow: '0 10px 30px rgba(0,0,0,0.06)' }}>
+        <main style={{ flex: 1, padding: '40px 5%', width: '100%', minHeight: '80vh', background: "linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto" }}>
+            <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
+                <BackButton />
+                <div className="glass-card" style={{ padding: '40px', marginTop: '20px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.95)', boxShadow: '0 10px 30px rgba(0,0,0,0.06)' }}>
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                     <h1 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold, #C5A059)', fontSize: '2.2rem', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         CUSTOMER TERMS &amp; CONDITIONS
@@ -318,7 +319,8 @@ function UserTerms() {
                     ))}
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
     );
 }
 
