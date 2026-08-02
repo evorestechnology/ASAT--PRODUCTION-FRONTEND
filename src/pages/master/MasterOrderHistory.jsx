@@ -341,6 +341,30 @@ function MasterOrderHistory() {
                                         <td>{o.trackId || o.trackingId || '—'}</td>
                                         <td>
                                             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                                                {(o.status === 'issue_reported' || o.status === 'cant_be_done') && (
+                                                    <button
+                                                        className="adm-action-btn"
+                                                        style={{ background: '#28a745', color: '#fff', fontSize: '0.72rem', padding: '4px 10px', fontWeight: 600 }}
+                                                        onClick={async () => {
+                                                            if (!window.confirm(`Approve cancellation request for Order #${o.orderId || o.id}? This will notify customer & process refund.`)) return;
+                                                            try {
+                                                                const res = await apiFetch(`/api/orders/${o.id}/approve-cancellation`, {
+                                                                    method: 'POST',
+                                                                    body: JSON.stringify({ reason: 'Manufacturer cannot fulfill order. Approved by Master.' })
+                                                                });
+                                                                showToast(res.message || 'Cancellation approved & customer notified!', 'success');
+                                                                fetchOrders();
+                                                            } catch (err) {
+                                                                console.error('Error approving cancellation:', err);
+                                                                showToast('Failed to approve cancellation: ' + err.message, 'error');
+                                                            }
+                                                        }}
+                                                        title="Approve manufacturer cancellation request & refund customer"
+                                                    >
+                                                        <i className="fas fa-check-circle" style={{ marginRight: 4 }}></i> Approve Cancellation
+                                                    </button>
+                                                )}
+
                                                 {o.costAdjustmentStatus === 'requested' && (
                                                     <>
                                                         <button

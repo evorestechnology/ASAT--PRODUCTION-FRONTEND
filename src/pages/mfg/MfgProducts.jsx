@@ -734,11 +734,13 @@ function MfgProducts() {
                     
                     {/* Category */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Category *</label>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Category * {editProductId && '(Locked)'}</label>
                         <select 
+                            disabled={!!editProductId}
+                            title={editProductId ? "Category cannot be changed once product is created" : ""}
                             value={formData.category}
                             onChange={e => setFormData({...formData, category: e.target.value})}
-                            style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}>
+                            style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#1f1f1f' : '#2c2c2c', opacity: editProductId ? 0.65 : 1, border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', cursor: editProductId ? 'not-allowed' : 'pointer' }}>
                             {categoriesList.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
@@ -747,13 +749,15 @@ function MfgProducts() {
 
                     {/* Name */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Name of the Product *</label>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Name of the Product * {editProductId && '(Locked)'}</label>
                         <input 
                             type="text" 
+                            disabled={!!editProductId}
+                            title={editProductId ? "Product name cannot be changed once product is created" : ""}
                             placeholder="e.g. Premium Cotton T-Shirt"
                             value={formData.title}
                             onChange={e => setFormData({...formData, title: e.target.value})}
-                            style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}
+                            style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#1f1f1f' : '#2c2c2c', opacity: editProductId ? 0.65 : 1, border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', cursor: editProductId ? 'not-allowed' : 'text' }}
                         />
                     </div>
 
@@ -780,11 +784,13 @@ function MfgProducts() {
                     {/* Gender & Base Cost row */}
                     <div style={{ display: 'flex', gap: 20 }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Target Gender *</label>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Target Gender * {editProductId && '(Locked)'}</label>
                             <select 
+                                disabled={!!editProductId}
+                                title={editProductId ? "Target gender cannot be changed once product is created" : ""}
                                 value={formData.gender}
                                 onChange={e => setFormData({...formData, gender: e.target.value})}
-                                style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}>
+                                style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#1f1f1f' : '#2c2c2c', opacity: editProductId ? 0.65 : 1, border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', cursor: editProductId ? 'not-allowed' : 'pointer' }}>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
                                 <option value="unisex">Unisex</option>
@@ -897,7 +903,9 @@ function MfgProducts() {
                                                 Available
                                             </label>
                                         </div>
-                                        <button onClick={() => handleRemoveColor(color.id)} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '0.85rem' }}>Remove</button>
+                                        {!editProductId && (
+                                            <button onClick={() => handleRemoveColor(color.id)} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '0.85rem' }}>Remove</button>
+                                        )}
                                     </div>
                                     <div style={{ display: 'flex', gap: 20, fontSize: '0.75rem', color: '#aaa', borderTop: '1px solid #333', paddingTop: 8 }}>
                                         <div><strong style={{color:'#ccc'}}>Front:</strong> {color.frontFile ? color.frontFile.name : (color.frontPreview ? 'Uploaded' : 'None')}</div>
@@ -992,14 +1000,15 @@ function MfgProducts() {
 
                     {/* Size Chart */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #333', paddingBottom: 8 }}>Size Chart</label>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #333', paddingBottom: 8 }}>Size Chart {editProductId && '(Locked)'}</label>
                         <div style={{ padding: 15, background: '#2c2c2c', border: '1px solid #444', borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: '0.85rem', color: sizeChartFile || sizeChartPreview ? 'white' : '#888' }}>
                                 {sizeChartFile ? sizeChartFile.name : (sizeChartPreview ? 'Size Chart Uploaded' : 'No file uploaded')}
                             </span>
                             <button 
+                                disabled={!!editProductId}
                                 onClick={() => document.getElementById('sizeChartUpload').click()}
-                                style={{ padding: '6px 14px', background: 'transparent', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem' }}>
+                                style={{ padding: '6px 14px', background: 'transparent', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 4, cursor: editProductId ? 'not-allowed' : 'pointer', opacity: editProductId ? 0.5 : 1 }}>
                                 Choose File
                             </button>
                             <input id="sizeChartUpload" type="file" style={{ display: 'none' }} accept="image/*,.pdf" onChange={e => {
