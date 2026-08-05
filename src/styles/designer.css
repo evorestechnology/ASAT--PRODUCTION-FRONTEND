@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Auth Pages ──────────────────────────────────────────────── */
-.dsn-auth { min-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; background: var(--light); position: relative; overflow: hidden; }
+.dsn-auth { min-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto; position: relative; overflow: hidden; }
 .dsn-auth__deco { position: absolute; border-radius: 50%; opacity: 0.07; pointer-events: none; }
 .dsn-auth__deco--1 { width: 500px; height: 500px; top: -150px; right: -100px; background: radial-gradient(circle, var(--gold), transparent 70%); }
 .dsn-auth__deco--2 { width: 400px; height: 400px; bottom: -120px; left: -80px; background: radial-gradient(circle, var(--gold), transparent 70%); }

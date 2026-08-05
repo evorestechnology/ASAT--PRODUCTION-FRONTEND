@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { apiFetch, uploadFile } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
@@ -101,11 +101,16 @@ function StyleSummaryCard({ ps, idx, onEdit, onRemove }) {
                     onMouseLeave={e => { e.currentTarget.style.background = '#2c2c2c'; e.currentTarget.style.color = 'white'; }}>
                     <i className="fas fa-pencil-alt" /> Edit
                 </button>
-                <button type="button" onClick={onRemove}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'none', color: '#dc3545', border: '1px solid rgba(220,53,69,0.3)', borderRadius: 4, cursor: 'pointer', fontSize: '0.7rem', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#dc3545'; e.currentTarget.style.color = 'white'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#dc3545'; }}>
-                    <i className="fas fa-trash-alt" /> Remove
+                <button type="button" onClick={onToggleActive}
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
+                        background: ps.active !== false ? 'rgba(40,167,69,0.15)' : 'rgba(255,193,7,0.15)',
+                        color: ps.active !== false ? '#28a745' : '#ffc107',
+                        border: `1px solid ${ps.active !== false ? 'rgba(40,167,69,0.4)' : 'rgba(255,193,7,0.4)'}`,
+                        borderRadius: 4, cursor: 'pointer', fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap', transition: 'all 0.2s'
+                    }}>
+                    <i className={`fas ${ps.active !== false ? 'fa-check-circle' : 'fa-ban'}`} />
+                    {ps.active !== false ? 'Available' : 'Unavailable'}
                 </button>
             </div>
         </div>
@@ -223,13 +228,15 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                             price: parseFloat(v.price) || 0,
                             darkPrice: parseFloat(v.darkPrice) || 0,
                             lightPrice: parseFloat(v.lightPrice) || 0,
+                            available: v.available !== false,
                         };
                     }
                 }
                 
                 updatedPlacementCategories.push({
                     category: pc.category,
-                    count: Object.keys(updatedPlacements).length,
+                    available: pc.available !== false,
+                    count: Object.values(updatedPlacements).filter(p => p.available !== false).length,
                     placements: updatedPlacements
                 });
             }
@@ -381,21 +388,45 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                                 const configuredCount = Object.values(pc.placements).filter(isOptionValid).length;
                                 const totalCount = Object.keys(pc.placements).length;
                                 const isExpanded = expandedCat === pc.category;
+                                const catAvailable = pc.available !== false;
                                 return (
-                                    <div key={pc.category} style={{ border: '1px solid #444', borderRadius: 6, overflow: 'hidden' }}>
+                                    <div key={pc.category} style={{ border: `1px solid ${catAvailable ? '#444' : '#666'}`, borderRadius: 6, overflow: 'hidden', opacity: catAvailable ? 1 : 0.7 }}>
                                         {/* Category header */}
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: isExpanded ? '#252525' : '#222', cursor: 'pointer' }}
                                             onClick={() => setExpandedCat(isExpanded ? null : pc.category)}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                <span style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600 }}>{pc.category}</span>
+                                                <span style={{ fontSize: '0.9rem', color: catAvailable ? 'white' : '#aaa', fontWeight: 600, textDecoration: catAvailable ? 'none' : 'line-through' }}>{pc.category}</span>
                                                 <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: configuredCount > 0 ? 'rgba(40,167,69,0.2)' : '#333', color: configuredCount > 0 ? '#28a745' : '#888', borderRadius: 12 }}>
                                                     {configuredCount}/{totalCount} configured
                                                 </span>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                <button onClick={e => { e.stopPropagation(); handleRemoveCat(pc.category); }}
-                                                    style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '0.75rem' }}>
-                                                    <i className="fas fa-times" />
+                                                <button
+                                                    type="button"
+                                                    onClick={e => {
+                                                        e.stopPropagation();
+                                                        setPlacementCategories(prev => prev.map(item => {
+                                                            if (item.category !== pc.category) return item;
+                                                            return { ...item, available: !catAvailable };
+                                                        }));
+                                                    }}
+                                                    title={catAvailable ? "Click to set Category Unavailable" : "Click to set Category Available"}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: 5,
+                                                        padding: '3px 9px',
+                                                        borderRadius: 12,
+                                                        border: '1px solid',
+                                                        borderColor: catAvailable ? '#28a745' : '#ffc107',
+                                                        background: catAvailable ? 'rgba(40,167,69,0.15)' : 'rgba(255,193,7,0.15)',
+                                                        color: catAvailable ? '#28a745' : '#ffc107',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.68rem',
+                                                        fontWeight: 700
+                                                    }}>
+                                                    <i className={`fas ${catAvailable ? 'fa-check-circle' : 'fa-ban'}`} />
+                                                    {catAvailable ? 'Available' : 'Unavailable'}
                                                 </button>
                                                 <i className={`fas fa-chevron-${isExpanded ? 'up' : 'down'}`} style={{ color: '#888', fontSize: '0.7rem' }} />
                                             </div>
@@ -422,7 +453,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                                                                             ...pItem,
                                                                             placements: {
                                                                                 ...pItem.placements,
-                                                                                [val]: { imageFile: null, imagePreview: '', price: '', darkPrice: '', lightPrice: '' }
+                                                                                [val]: { imageFile: null, imagePreview: '', price: '', darkPrice: '', lightPrice: '', available: true }
                                                                             }
                                                                         };
                                                                     }));
@@ -443,7 +474,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                                                                         ...pItem,
                                                                         placements: {
                                                                             ...pItem.placements,
-                                                                            [val]: { imageFile: null, imagePreview: '', price: '', darkPrice: '', lightPrice: '' }
+                                                                            [val]: { imageFile: null, imagePreview: '', price: '', darkPrice: '', lightPrice: '', available: true }
                                                                         }
                                                                     };
                                                                 }));
@@ -460,36 +491,42 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                                                     const valid = isOptionValid(opt);
                                                     const isOptExpanded = expandedOpt === `${pc.category}_${optName}`;
                                                     const optKey = `${pc.category}_${optName}`;
+                                                    const isAvailable = opt.available !== false;
                                                     return (
-                                                        <div key={optName} style={{ border: `1px solid ${valid ? 'rgba(40,167,69,0.4)' : '#333'}`, borderRadius: 4, overflow: 'hidden' }}>
+                                                        <div key={optName} style={{ border: `1px solid ${valid ? (isAvailable ? 'rgba(40,167,69,0.4)' : '#666') : '#333'}`, borderRadius: 4, overflow: 'hidden', opacity: isAvailable ? 1 : 0.7 }}>
                                                             {/* Option row header */}
                                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#222', cursor: 'pointer' }}
                                                                 onClick={() => setExpandedOpt(isOptExpanded ? null : optKey)}>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                    <div style={{ width: 16, height: 16, border: `2px solid ${valid ? '#28a745' : '#666'}`, borderRadius: '50%', background: valid ? '#28a745' : 'transparent', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+                                                                    <div style={{ width: 16, height: 16, border: `2px solid ${valid ? (isAvailable ? '#28a745' : '#ffc107') : '#666'}`, borderRadius: '50%', background: valid ? (isAvailable ? '#28a745' : '#ffc107') : 'transparent', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
                                                                         {valid && <div style={{ width: 4, height: 7, border: 'solid white', borderWidth: '0 1.5px 1.5px 0', transform: 'rotate(45deg)', marginBottom: 1 }} />}
                                                                     </div>
-                                                                    <span style={{ fontSize: '0.85rem', color: '#ccc', textTransform: 'capitalize' }}>{optName}</span>
+                                                                    <span style={{ fontSize: '0.85rem', color: isAvailable ? '#ccc' : '#888', textTransform: 'capitalize', textDecoration: isAvailable ? 'none' : 'line-through' }}>{optName}</span>
                                                                 </div>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                                     <button
                                                                         type="button"
                                                                         onClick={e => {
                                                                             e.stopPropagation();
-                                                                            if (window.confirm(`Remove position "${optName}"?`)) {
-                                                                                setPlacementCategories(prev => prev.map(pItem => {
-                                                                                    if (pItem.category !== pc.category) return pItem;
-                                                                                    const updatedPlacements = { ...pItem.placements };
-                                                                                    delete updatedPlacements[optName];
-                                                                                    return {
-                                                                                        ...pItem,
-                                                                                        placements: updatedPlacements
-                                                                                    };
-                                                                                }));
-                                                                            }
+                                                                            updateOption(pc.category, optName, 'available', !isAvailable);
                                                                         }}
-                                                                        style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '0.75rem', padding: '2px' }}>
-                                                                        <i className="fas fa-trash-alt" />
+                                                                        title={isAvailable ? "Click to set Position Unavailable" : "Click to set Position Available"}
+                                                                        style={{
+                                                                            display: 'inline-flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 5,
+                                                                            padding: '3px 9px',
+                                                                            borderRadius: 12,
+                                                                            border: '1px solid',
+                                                                            borderColor: isAvailable ? '#28a745' : '#ffc107',
+                                                                            background: isAvailable ? 'rgba(40,167,69,0.15)' : 'rgba(255,193,7,0.15)',
+                                                                            color: isAvailable ? '#28a745' : '#ffc107',
+                                                                            cursor: 'pointer',
+                                                                            fontSize: '0.68rem',
+                                                                            fontWeight: 700
+                                                                        }}>
+                                                                        <i className={`fas ${isAvailable ? 'fa-check-circle' : 'fa-ban'}`} />
+                                                                        {isAvailable ? 'Available' : 'Unavailable'}
                                                                     </button>
                                                                     <i className={`fas fa-chevron-${isOptExpanded ? 'up' : 'down'}`} style={{ color: '#666', fontSize: '0.65rem', transition: 'transform 0.2s' }} />
                                                                 </div>
@@ -558,7 +595,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                     </button>
                     <button onClick={handleSubmit} disabled={saving}
                         style={{ padding: '10px 24px', background: saving ? '#555' : '#28a745', color: 'white', border: 'none', borderRadius: 4, cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700 }}>
-                        {saving ? <><i className="fas fa-circle-notch fa-spin" style={{ marginRight: 8 }} />Savingâ€¦</> : 'Save Style'}
+                        {saving ? <><i className="fas fa-circle-notch fa-spin" style={{ marginRight: 8 }} />Saving…</> : 'Save Style'}
                     </button>
                 </div>
             </div>
@@ -566,9 +603,9 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
     );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+/* ──────────────────────────────────────────────────────────────────────────────────────────────────
    Main Component
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+────────────────────────────────────────────────────────────────────────────────────────────────── */
 export default function MfgPrintStyles() {
     const { user } = useAuth();
     const [styles, setStyles]     = useState([]);
@@ -581,7 +618,7 @@ export default function MfgPrintStyles() {
 
     const showToast = (msg, type = 'success') => { setToast({ msg, type }); setTimeout(() => setToast(null), 4000); };
 
-    /* â”€â”€ Load â”€â”€ */
+    /* ── Load ── */
     const fetchStyles = async () => {
         if (!user) return;
         try {
@@ -602,6 +639,7 @@ export default function MfgPrintStyles() {
                     category: row.category || 'DTF',
                     cost: costVal,
                     imageUrl: row.image || '',
+                    active: row.active !== false,
                     placementCategories,
                 };
             });
@@ -629,12 +667,27 @@ export default function MfgPrintStyles() {
         }
     }, [user]);
 
-    /* â”€â”€ Open/Close Modal â”€â”€ */
+    /* ── Open/Close Modal ── */
     const openAddModal = () => { setEditingStyle(null); setModalOpen(true); };
     const openEditModal = (ps) => { setEditingStyle(ps); setModalOpen(true); };
     const closeModal = () => { setModalOpen(false); setEditingStyle(null); };
 
-    /* â”€â”€ Save â”€â”€ */
+    /* ── Toggle Active ── */
+    const handleToggleStyleActive = async (ps) => {
+        try {
+            const newActive = ps.active === false ? true : false;
+            await apiFetch(`/api/print-styles/${ps.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ active: newActive })
+            });
+            showToast(`Print style set to ${newActive ? 'Available' : 'Unavailable'}.`);
+            fetchStyles();
+        } catch (err) {
+            showToast('Failed to update status', 'error');
+        }
+    };
+
+    /* ── Save ── */
     const handleSave = async (formData) => {
         const isEdit = editingStyle?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(editingStyle.id);
         const payload = {
@@ -664,7 +717,7 @@ export default function MfgPrintStyles() {
         fetchStyles();
     };
 
-    /* â”€â”€ Delete â”€â”€ */
+    /* ── Delete ── */
     const executeDelete = async () => {
         const id = pendingDeleteId;
         if (!id) return;
@@ -693,7 +746,7 @@ export default function MfgPrintStyles() {
 
             {loading ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '40px 0', color: '#888', fontSize: '0.8rem' }}>
-                    <i className="fas fa-circle-notch fa-spin" style={{ color: 'var(--gold)' }} /> Loadingâ€¦
+                    <i className="fas fa-circle-notch fa-spin" style={{ color: 'var(--gold)' }} /> Loading…
                 </div>
             ) : (
                 <div style={{ maxWidth: 860 }}>
@@ -728,7 +781,7 @@ export default function MfgPrintStyles() {
                                 ps={ps}
                                 idx={idx}
                                 onEdit={() => openEditModal(ps)}
-                                onRemove={() => setPendingDeleteId(ps.id)}
+                                onToggleActive={() => handleToggleStyleActive(ps)}
                             />
                         ))}
                     </div>

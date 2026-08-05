@@ -7,7 +7,11 @@
 
 html, body, #root {
     min-height: 100vh;
-    background-color: var(--light) !important;
+    background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto !important;
+}
+
+main, .dsn-dash, .dsn-orders, .dsn-designs, .dsn-upload, .dsn-earnings, .dsn-tutorials, .dsn-ranking, .dsn-profile, .dsn-base-products, .dsn-support, .mfg-dashboard, .master-dashboard, .admin-dashboard, .orders-page, .home-page, .products-page {
+    background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
 }
 
 body {

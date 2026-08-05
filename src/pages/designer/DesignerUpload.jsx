@@ -161,7 +161,7 @@ function ZoomableImage({ src, alt, maxHeight = 100, style = {} }) {
 }
 
 /* ─── DropZone ─── */
-function DropZone({ label, preview, onFile, accept = '.png, image/png', onInvalidFile }) {
+function DropZone({ label, preview, onFile, onRemove, accept = '.png, .jpg, .jpeg, .webp, image/png, image/jpeg, image/webp', onInvalidFile }) {
     const [dragOver, setDragOver] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -176,13 +176,10 @@ function DropZone({ label, preview, onFile, accept = '.png, image/png', onInvali
 
     const validateAndProcess = (file) => {
         if (!file) return;
-        const isPngOnly = accept.includes('.png') && !accept.includes('image/*') && !accept.includes('.jpg');
-        if (isPngOnly) {
-            const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-            if (!isPng) {
-                if (onInvalidFile) onInvalidFile('Only PNG format (.png) is allowed.');
-                return;
-            }
+        const isImage = file.type.startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(file.name);
+        if (!isImage) {
+            if (onInvalidFile) onInvalidFile('Only PNG, JPG, JPEG, or WEBP image formats are allowed.');
+            return;
         }
         onFile(file);
     };
@@ -209,7 +206,18 @@ function DropZone({ label, preview, onFile, accept = '.png, image/png', onInvali
                         transition: isHovered ? 'background-size 0.2s ease' : 'all 0.3s ease'
                     }}
                 >
-                    <span className="dsn-upload__drop-change" onClick={e => { e.stopPropagation(); fileInputRef.current.click(); }}>Change</span>
+                    <div style={{ display: 'flex', gap: 6, position: 'absolute', bottom: 6, right: 6, zIndex: 10 }}>
+                        <span className="dsn-upload__drop-change" onClick={e => { e.stopPropagation(); fileInputRef.current.click(); }}>Change</span>
+                        {onRemove && (
+                            <span
+                                className="dsn-upload__drop-change"
+                                onClick={e => { e.stopPropagation(); onRemove(); }}
+                                style={{ background: '#dc2626', color: '#ffffff' }}
+                            >
+                                <i className="fas fa-trash-alt" style={{ fontSize: '0.65rem', marginRight: 3 }} /> Delete
+                            </span>
+                        )}
+                    </div>
                 </div>
             ) : (
                 <div className="dsn-upload__drop-empty">
@@ -248,14 +256,14 @@ function DesignerUpload() {
     const [primaryColor, setPrimaryColor] = useState('');
     const [productSearchQuery, setProductSearchQuery] = useState('');
 
-    /* â”€â”€ Step 2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Step 2 ────────────────────────────── */
     // colorPlacements: { colorName: [{ id, style, placementId, placementLabel, designFile, designPreview, mockupFile, mockupPreview }] }
     const [colorPlacements, setColorPlacements] = useState({});
     const [activeColorTab, setActiveColorTab] = useState('');
     const [expandedTechnique, setExpandedTechnique] = useState('');
     const [expandedPlacement, setExpandedPlacement] = useState('');
 
-    /* â”€â”€ Step 3 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Step 3 ────────────────────────────── */
     const [productionComments, setProductionComments] = useState('');
 
     /* â”€â”€ Step 4 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -269,6 +277,10 @@ function DesignerUpload() {
     const [designTitle, setDesignTitle] = useState('');
     const [designerCost, setDesignerCost] = useState('');
     const [designerNote, setDesignerNote] = useState('');
+    const [designCategory, setDesignCategory] = useState('Aesthetic');
+    const [designTags, setDesignTags] = useState([]);
+    const [tagInput, setTagInput] = useState('');
+    const [showTagInfo, setShowTagInfo] = useState(false);
 
     /* â”€â”€ Products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     const [dbProducts, setDbProducts] = useState([]);
@@ -315,11 +327,34 @@ function DesignerUpload() {
         }
     }, [dbProducts, searchParams]);
 
-    /* â”€â”€ Derived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Derived ────────────────────────── */
     const uniqueCategories = useMemo(() => {
         const cats = new Set(dbProducts.map(p => p.category).filter(Boolean));
         return Array.from(cats).sort();
     }, [dbProducts]);
+
+    /* ── Active tab follows primary color selection ─── */
+    useEffect(() => {
+        if (primaryColor && selectedColors.includes(primaryColor)) {
+            setActiveColorTab(primaryColor);
+        } else if (selectedColors.length > 0 && (!activeColorTab || !selectedColors.includes(activeColorTab))) {
+            setActiveColorTab(selectedColors[0]);
+        } else if (selectedColors.length === 0) {
+            setActiveColorTab('');
+        }
+    }, [selectedColors, primaryColor]);
+
+    /* ── Ensure primary color tab is active when entering Step 2 ─── */
+    useEffect(() => {
+        if (step === 2 && primaryColor) {
+            const isPrimaryConfigured = (colorPlacements[primaryColor] || []).some(
+                c => c.designFile && c.mockupFile
+            );
+            if (!isPrimaryConfigured || !activeColorTab || !selectedColors.includes(activeColorTab)) {
+                setActiveColorTab(primaryColor);
+            }
+        }
+    }, [step, primaryColor, colorPlacements, activeColorTab, selectedColors]);
 
     const rawProductsInCategory = useMemo(() => {
         return selectedCategory ? dbProducts.filter(p => p.category === selectedCategory) : [];
@@ -485,9 +520,9 @@ function DesignerUpload() {
 
     const setPlacementFile = (colorName, techStyle, placementId, placementLabel, field, file) => {
         if (file) {
-            const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-            if (!isPng) {
-                showToast('Only PNG format (.png) is allowed for design files and mockups in Step 2.', 'warning');
+            const isImage = file.type.startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(file.name);
+            if (!isImage) {
+                showToast('Only PNG, JPG, or WEBP image formats are allowed.', 'warning');
                 return;
             }
         }
@@ -498,7 +533,7 @@ function DesignerUpload() {
             const idx = list.findIndex(c => c.style === techStyle && c.placementId === placementId);
             if (idx >= 0) {
                 list[idx] = { ...list[idx], [field]: file, [previewField]: preview };
-            } else {
+            } else if (file) {
                 list.push({
                     id: `${techStyle}_${placementId}_${Date.now()}`,
                     style: techStyle, placementId, placementLabel,
@@ -551,7 +586,7 @@ function DesignerUpload() {
         }
         if (step === 3) return true;
         if (step === 4) return !!coverImageFile && selectedSizes.length > 0;
-        if (step === 5) return designTitle.trim() && designerCost !== '' && parseFloat(designerCost) >= 0 && designerNote.trim();
+        if (step === 5) return designTitle.trim() && designerCost !== '' && parseFloat(designerCost) >= 0 && designerNote.trim() && designCategory && designTags.length > 0;
         return true;
     };
 
@@ -675,6 +710,8 @@ function DesignerUpload() {
                 designer_id: user.id,
                 designer_username: profile?.username || user.email?.split('@')[0] || 'designer',
                 title: designTitle.trim(),
+                category: designCategory,
+                tags: designTags,
                 price: baseCost + maxPrintingCost + dCost,
                 description: JSON.stringify({
                     text: designerNote,
@@ -684,6 +721,8 @@ function DesignerUpload() {
                     placements: finalPlacements,
                     customerImages: finalColorMockups,
                     coverImage: coverImageUrl,
+                    category: designCategory,
+                    tags: designTags,
                     pricing: { baseCost, printingCost: maxPrintingCost, designerCost: dCost },
                 }),
                 status: 'pending',
@@ -966,7 +1005,11 @@ function DesignerUpload() {
                                             disabled={isDisabled}
                                             title={isDisabled ? `Configure "${primaryColor}" first` : (isPrimary ? 'Primary color' : 'Secondary color')}
                                             onClick={() => {
-                                                if (isDisabled) return;
+                                                if (isDisabled) {
+                                                    setActiveColorTab(primaryColor);
+                                                    showToast(`Please configure the primary color (${primaryColor}) first to unlock secondary colors.`, 'info');
+                                                    return;
+                                                }
                                                 setActiveColorTab(colorName);
                                                 setExpandedTechnique('');
                                                 setExpandedPlacement('');
@@ -1118,28 +1161,30 @@ function DesignerUpload() {
                                                                         </div>
                                                                     )}
 
-                                                                    {/* Two upload zones side by side (PNG ONLY) */}
+                                                                    {/* Two upload zones side by side (PNG / JPG) */}
                                                                     <div className="dsn-upload__drop-grid">
                                                                         <div>
-                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Upload Design (PNG Only) *</div>
+                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Upload Design (PNG / JPG) *</div>
                                                                             <div style={{ height: 110 }}>
                                                                                 <DropZone
-                                                                                    label="Design File (PNG Only)"
+                                                                                    label="Design File (PNG / JPG)"
                                                                                     preview={config?.designPreview || ''}
                                                                                     onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'designFile', f)}
-                                                                                    accept=".png, image/png"
+                                                                                    onRemove={() => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'designFile', null)}
+                                                                                    accept=".png, .jpg, .jpeg, .webp, image/png, image/jpeg, image/webp"
                                                                                     onInvalidFile={(msg) => showToast(msg, 'warning')}
                                                                                 />
                                                                             </div>
                                                                         </div>
                                                                         <div>
-                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Reference Mockup (PNG Only) *</div>
+                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Reference Mockup (PNG / JPG) *</div>
                                                                             <div style={{ height: 110 }}>
                                                                                 <DropZone
-                                                                                    label="Mockup Image (PNG Only)"
+                                                                                    label="Mockup Image (PNG / JPG)"
                                                                                     preview={config?.mockupPreview || ''}
                                                                                     onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'mockupFile', f)}
-                                                                                    accept=".png, image/png"
+                                                                                    onRemove={() => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'mockupFile', null)}
+                                                                                    accept=".png, .jpg, .jpeg, .webp, image/png, image/jpeg, image/webp"
                                                                                     onInvalidFile={(msg) => showToast(msg, 'warning')}
                                                                                 />
                                                                             </div>
@@ -1204,18 +1249,38 @@ function DesignerUpload() {
                                     {coverImageFile ? coverImageFile.name : 'No file uploaded'}
                                 </span>
                             </div>
-                            <label style={{
-                                padding: '7px 16px', border: '1px solid var(--gold)', color: 'var(--gold)',
-                                borderRadius: 4, cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, flexShrink: 0
-                            }}>
-                                Choose File
-                                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
-                                    if (e.target.files[0]) {
-                                        setCoverImageFile(e.target.files[0]);
-                                        setCoverImagePreview(URL.createObjectURL(e.target.files[0]));
-                                    }
-                                }} />
-                            </label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {coverImageFile && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setCoverImageFile(null);
+                                            setCoverImagePreview('');
+                                        }}
+                                        style={{
+                                            padding: '6px 14px', background: '#fef2f2', border: '1px solid #ef4444', color: '#dc2626',
+                                            borderRadius: 4, cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, flexShrink: 0,
+                                            display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = '#dc2626'; e.currentTarget.style.color = '#fff'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }}
+                                    >
+                                        <i className="fas fa-trash-alt" /> Delete
+                                    </button>
+                                )}
+                                <label style={{
+                                    padding: '7px 16px', border: '1px solid var(--gold)', color: 'var(--gold)',
+                                    borderRadius: 4, cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, flexShrink: 0
+                                }}>
+                                    {coverImageFile ? 'Change' : 'Choose File'}
+                                    <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" style={{ display: 'none' }} onChange={e => {
+                                        if (e.target.files[0]) {
+                                            setCoverImageFile(e.target.files[0]);
+                                            setCoverImagePreview(URL.createObjectURL(e.target.files[0]));
+                                        }
+                                    }} />
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -1251,14 +1316,31 @@ function DesignerUpload() {
                                                         <span style={{ fontSize: '0.78rem', fontWeight: 600, color: m[field] ? '#222' : '#777' }}>{label}:</span>
                                                         <span style={{ fontSize: '0.7rem', color: '#555' }}>{m[field] ? m[field].name : 'No file'}</span>
                                                     </div>
-                                                    <label style={{ padding: '4px 10px', border: '1px solid #ccc', color: '#777', borderRadius: 4, cursor: 'pointer', fontSize: '0.72rem', flexShrink: 0 }}
-                                                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.color = 'var(--gold)'; }}
-                                                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#777'; }}>
-                                                        Choose
-                                                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
-                                                            if (e.target.files[0]) updateColorMockup(colorName, field, e.target.files[0]);
-                                                        }} />
-                                                    </label>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                        {m[field] && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateColorMockup(colorName, field, null)}
+                                                                style={{
+                                                                    padding: '4px 10px', background: '#fef2f2', border: '1px solid #ef4444', color: '#dc2626',
+                                                                    borderRadius: 4, cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, flexShrink: 0,
+                                                                    display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s'
+                                                                }}
+                                                                onMouseEnter={e => { e.currentTarget.style.background = '#dc2626'; e.currentTarget.style.color = '#fff'; }}
+                                                                onMouseLeave={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }}
+                                                            >
+                                                                <i className="fas fa-trash-alt" /> Delete
+                                                            </button>
+                                                        )}
+                                                        <label style={{ padding: '4px 10px', border: '1px solid #ccc', color: '#777', borderRadius: 4, cursor: 'pointer', fontSize: '0.72rem', flexShrink: 0 }}
+                                                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.color = 'var(--gold)'; }}
+                                                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#ccc'; e.currentTarget.style.color = '#777'; }}>
+                                                            {m[field] ? 'Change' : 'Choose'}
+                                                            <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" style={{ display: 'none' }} onChange={e => {
+                                                                if (e.target.files[0]) updateColorMockup(colorName, field, e.target.files[0]);
+                                                            }} />
+                                                        </label>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1318,15 +1400,8 @@ function DesignerUpload() {
                     {selectedProductObj && (
                         <div style={{ marginBottom: 20, background: 'linear-gradient(135deg,#ffffff 0%,#fdfbf7 100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(212,175,55,0.35)', boxShadow: '0 4px 20px rgba(212,175,55,0.06)' }}>
                             <h4 style={{ margin: '0 0 14px', fontSize: '0.82rem', color: 'var(--gold)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
-                                ðŸ’° Price Preview
+                                💰 Price Preview
                             </h4>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, color: '#555', fontSize: '0.85rem' }}>
-                                <span>Base Product:</span><span>₹{pricePreview.baseCost.toLocaleString()}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, color: '#555', fontSize: '0.85rem' }}>
-                                <span>Max Printing Cost:</span><span>₹{pricePreview.maxPrint.toLocaleString()}</span>
-                            </div>
-                            <hr style={{ border: 'none', borderTop: '1px solid rgba(212,175,55,0.15)', margin: '8px 0' }} />
                             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8a6d3b', fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>
                                 <span>Your Royalty:</span><span>₹{pricePreview.dCost.toLocaleString()}</span>
                             </div>
@@ -1344,6 +1419,113 @@ function DesignerUpload() {
                         <textarea className="dsn-upload__textarea" rows={3}
                             placeholder="Share the story behind your design , inspiration, mood, target audience..."
                             value={designerNote} onChange={e => setDesignerNote(e.target.value)} />
+                    </div>
+
+                    {/* Select Category */}
+                    <div className="dsn-profile__group" style={{ marginTop: 16 }}>
+                        <label>Select Category *</label>
+                        <select className="dsn-upload__input" value={designCategory} onChange={e => setDesignCategory(e.target.value)} style={{ width: '100%', cursor: 'pointer' }}>
+                            <option value="Aesthetic">Aesthetic</option>
+                            <option value="Nature">Nature</option>
+                            <option value="Bold">Bold</option>
+                            <option value="Minimal">Minimal</option>
+                            <option value="Vintage">Vintage</option>
+                            <option value="Graphic">Graphic</option>
+                            <option value="Typography">Typography</option>
+                            <option value="Abstract">Abstract</option>
+                            <option value="Streetwear">Streetwear</option>
+                            <option value="Anime">Anime</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Y2K">Y2K</option>
+                        </select>
+                    </div>
+
+                    {/* Tags Input (Only 5 tags) */}
+                    <div className="dsn-profile__group" style={{ marginTop: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                            <label style={{ margin: 0 }}>Tags (Max 5 tags) *</label>
+                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowTagInfo(!showTagInfo)}
+                                    onMouseEnter={() => setShowTagInfo(true)}
+                                    onMouseLeave={() => setShowTagInfo(false)}
+                                    style={{
+                                        background: '#f3e8ff', border: '1px solid #c084fc', color: '#7e22ce',
+                                        width: 20, height: 20, borderRadius: '50%', fontSize: '0.75rem',
+                                        fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}
+                                >
+                                    i
+                                </button>
+                                {showTagInfo && (
+                                    <div style={{
+                                        position: 'absolute', top: '100%', left: 0, marginTop: 6, width: 260,
+                                        padding: '10px 12px', background: '#1e293b', color: '#f8fafc',
+                                        fontSize: '0.72rem', borderRadius: 6, zIndex: 100, boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                                        lineHeight: 1.4
+                                    }}>
+                                        ℹ️ Tags are reviewed by Master. Inappropriate, spam, or tags violating T&C will result in design rejection or removal.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                            <input
+                                type="text"
+                                className="dsn-upload__input"
+                                placeholder={designTags.length >= 5 ? "Max 5 tags reached" : "Enter tag and click Add or press Enter"}
+                                value={tagInput}
+                                disabled={designTags.length >= 5}
+                                onChange={e => setTagInput(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter' || e.key === ',') {
+                                        e.preventDefault();
+                                        const clean = tagInput.trim().replace(/^#/, '');
+                                        if (clean && !designTags.includes(clean) && designTags.length < 5) {
+                                            setDesignTags([...designTags, clean]);
+                                            setTagInput('');
+                                        }
+                                    }
+                                }}
+                            />
+                            <button
+                                type="button"
+                                disabled={designTags.length >= 5 || !tagInput.trim()}
+                                onClick={() => {
+                                    const clean = tagInput.trim().replace(/^#/, '');
+                                    if (clean && !designTags.includes(clean) && designTags.length < 5) {
+                                        setDesignTags([...designTags, clean]);
+                                        setTagInput('');
+                                    }
+                                }}
+                                style={{
+                                    padding: '8px 16px', background: designTags.length >= 5 ? '#ccc' : 'var(--gold)',
+                                    color: '#000', border: 'none', borderRadius: 4, fontWeight: 700, cursor: designTags.length >= 5 ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                Add
+                            </button>
+                        </div>
+                        {/* Tags Badges */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {designTags.map((tag, idx) => (
+                                <span key={idx} style={{
+                                    background: 'rgba(212,175,55,0.12)', border: '1px solid var(--gold)',
+                                    color: '#7a5e10', padding: '4px 10px', borderRadius: 16, fontSize: '0.78rem',
+                                    fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6
+                                }}>
+                                    #{tag}
+                                    <button
+                                        type="button"
+                                        onClick={() => setDesignTags(designTags.filter((_, i) => i !== idx))}
+                                        style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', fontSize: '0.8rem', padding: 0, lineHeight: 1 }}
+                                    >
+                                        ✕
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
                     </div>
                 </section>
             )}
