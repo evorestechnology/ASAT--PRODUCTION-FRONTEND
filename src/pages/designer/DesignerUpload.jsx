@@ -1354,18 +1354,34 @@ function DesignerUpload() {
                     <div>
                         <label style={SECTION_LABEL_ST}>Sizes Configuration *</label>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                            {(selectedProductObj?.sizes?.length ? selectedProductObj.sizes : STANDARD_SIZES).map(size => {
-                                const isSelected = selectedSizes.includes(size);
+                            {(selectedProductObj?.sizes?.length ? selectedProductObj.sizes : STANDARD_SIZES).map(sz => {
+                                const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
+                                const isAvailable = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
+                                const isSelected = selectedSizes.includes(sizeName);
+
                                 return (
-                                    <label key={size} style={{
-                                        display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
+                                    <label key={sizeName} style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px',
                                         border: `1px solid ${isSelected ? 'var(--gold)' : '#e0e0e0'}`,
-                                        borderRadius: 4, cursor: 'pointer', userSelect: 'none',
-                                        background: isSelected ? 'rgba(212,175,55,0.06)' : '#ffffff', transition: 'all 0.15s'
+                                        borderRadius: 4, cursor: isAvailable ? 'pointer' : 'not-allowed', userSelect: 'none',
+                                        background: isSelected ? 'rgba(212,175,55,0.06)' : '#ffffff', transition: 'all 0.15s',
+                                        opacity: isAvailable ? 1 : 0.55
                                     }}>
-                                        <input type="checkbox" checked={isSelected} onChange={() => toggleSize(size)}
-                                            style={{ width: 16, height: 16, accentColor: 'var(--gold)', cursor: 'pointer' }} />
-                                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: isSelected ? 'var(--gold)' : '#333' }}>{size}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={isSelected} 
+                                                disabled={!isAvailable}
+                                                onChange={() => isAvailable && toggleSize(sizeName)}
+                                                style={{ width: 16, height: 16, accentColor: 'var(--gold)', cursor: isAvailable ? 'pointer' : 'not-allowed' }} 
+                                            />
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: isSelected ? 'var(--gold)' : '#333' }}>{sizeName}</span>
+                                        </div>
+                                        {!isAvailable && (
+                                            <span style={{ fontSize: '0.7rem', color: '#dc2626', fontWeight: 600, background: '#fef2f2', padding: '2px 8px', borderRadius: 4, border: '1px solid #fecaca' }}>
+                                                Unavailable from Manufacturer
+                                            </span>
+                                        )}
                                     </label>
                                 );
                             })}

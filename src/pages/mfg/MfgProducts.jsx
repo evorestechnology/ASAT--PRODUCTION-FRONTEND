@@ -82,7 +82,8 @@ function MfgProducts() {
     // Sizing
     const [sizeChartFile, setSizeChartFile] = useState(null);
     const [sizeChartPreview, setSizeChartPreview] = useState('');
-    const [selectedSizes, setSelectedSizes] = useState(new Set());
+    const [sizesList, setSizesList] = useState([]); // [{ size: 'M', available: true }]
+    const [customSizeInput, setCustomSizeInput] = useState('');
 
     // Fetch manufacturer profile
     useEffect(() => {
@@ -249,7 +250,16 @@ function MfgProducts() {
         // Pre-fill sizes
         setSizeChartFile(null);
         setSizeChartPreview(p.size_chart_image || p.sizeChartImage || '');
-        setSelectedSizes(new Set(p.sizes || []));
+        const rawSizes = p.sizes || [];
+        const parsedSizes = rawSizes.map(s => {
+            if (typeof s === 'string') return { size: s, available: true };
+            if (typeof s === 'object' && s !== null && s.size) {
+                return { size: s.size, available: s.available !== false };
+            }
+            return { size: String(s), available: true };
+        });
+        setSizesList(parsedSizes);
+        setCustomSizeInput('');
 
         setIsCreating(true);
     };
@@ -275,7 +285,8 @@ function MfgProducts() {
         setPrintMethods([]);
         setSizeChartFile(null);
         setSizeChartPreview('');
-        setSelectedSizes(new Set());
+        setSizesList([]);
+        setCustomSizeInput('');
     };
 
     const executeDelete = async () => {
@@ -568,11 +579,25 @@ function MfgProducts() {
     };
 
 
-    const handleSizeToggle = (size) => {
-        const next = new Set(selectedSizes);
-        if (next.has(size)) next.delete(size);
-        else next.add(size);
-        setSelectedSizes(next);
+    const handleAddSize = (sizeName) => {
+        const trimmed = (sizeName || '').trim();
+        if (!trimmed) return;
+        const existingIndex = sizesList.findIndex(s => s.size.toLowerCase() === trimmed.toLowerCase());
+        if (existingIndex !== -1) {
+            showToast(`Size "${sizesList[existingIndex].size}" is already added to this product.`, 'info');
+            return;
+        }
+        setSizesList(prev => [...prev, { size: trimmed, available: true }]);
+        showToast(`Added size "${trimmed}"`, 'success');
+    };
+
+    const handleToggleSizeAvailability = (index) => {
+        setSizesList(prev => prev.map((item, idx) => {
+            if (idx === index) {
+                return { ...item, available: !item.available };
+            }
+            return item;
+        }));
     };
 
     // Main Submit
@@ -585,8 +610,8 @@ function MfgProducts() {
             showToast('Please add at least one color.', 'error');
             return;
         }
-        if (selectedSizes.size === 0) {
-            showToast('Please select at least one size.', 'error');
+        if (sizesList.length === 0) {
+            showToast('Please add at least one size.', 'error');
             return;
         }
         if (printMethods.length === 0) {
@@ -682,7 +707,7 @@ function MfgProducts() {
                 colors: finalColors,
                 printing_styles,
                 size_chart_image: finalSizeChart,
-                sizes: Array.from(selectedSizes),
+                sizes: sizesList,
                 details: formData.details.split('\n').map(s => s.trim()).filter(Boolean),
                 wash_care: formData.washCare.split('\n').map(s => s.trim()).filter(Boolean),
                 mfg_id: user.id,
@@ -1023,27 +1048,193 @@ function MfgProducts() {
                         </div>
                     </div>
 
-                    {/* Select Sizes */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #333', paddingBottom: 8 }}>Select Sizes</label>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                            {STANDARD_SIZES.map(size => {
-                                const isSelected = selectedSizes.has(size);
-                                return (
-                                    <div 
-                                        key={size}
-                                        onClick={() => handleSizeToggle(size)}
-                                        style={{ 
-                                            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 15px', 
-                                            background: isSelected ? 'rgba(212,175,55,0.1)' : '#252525', 
-                                            border: `1px solid ${isSelected ? 'var(--gold)' : '#444'}`, 
-                                            borderRadius: 4, cursor: 'pointer', userSelect: 'none', transition: 'all 0.2s'
-                                        }}>
-                                        <input type="checkbox" checked={isSelected} readOnly style={{ accentColor: 'var(--gold)' }} />
-                                        <span style={{ fontSize: '0.85rem', color: isSelected ? 'var(--gold)' : '#ccc', fontWeight: 600 }}>{size}</span>
-                                    </div>
-                                );
-                            })}
+                    {/* Select & Manage Sizes */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ borderBottom: '1px solid #333', paddingBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>
+                                    Sizes Configuration *
+                                </label>
+                                <span style={{ fontSize: '0.7rem', color: '#888' }}>
+                                    Once added, sizes cannot be deleted — only set to Available or Unavailable status.
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Add Custom Size Input */}
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <input
+                                type="text"
+                                value={customSizeInput}
+                                onChange={e => setCustomSizeInput(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        if (customSizeInput.trim()) {
+                                            handleAddSize(customSizeInput);
+                                            setCustomSizeInput('');
+                                        }
+                                    }
+                                }}
+                                placeholder="Type custom size (e.g. 4XL, 32x34, Free Size)"
+                                style={{
+                                    flex: 1,
+                                    padding: '10px 14px',
+                                    background: '#2c2c2c',
+                                    border: '1px solid #555',
+                                    color: 'white',
+                                    borderRadius: 4,
+                                    fontSize: '0.85rem',
+                                    outline: 'none'
+                                }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (customSizeInput.trim()) {
+                                        handleAddSize(customSizeInput);
+                                        setCustomSizeInput('');
+                                    } else {
+                                        showToast('Please type a size name to add.', 'warning');
+                                    }
+                                }}
+                                style={{
+                                    padding: '10px 18px',
+                                    background: 'var(--gold)',
+                                    color: 'black',
+                                    border: 'none',
+                                    borderRadius: 4,
+                                    fontWeight: 700,
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                + Add Size
+                            </button>
+                        </div>
+
+                        {/* Preset Standard Sizes */}
+                        <div>
+                            <span style={{ fontSize: '0.72rem', color: '#888', display: 'block', marginBottom: 6 }}>
+                                Quick Add Presets:
+                            </span>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {STANDARD_SIZES.map(stdSize => {
+                                    const addedItem = sizesList.find(s => s.size.toLowerCase() === stdSize.toLowerCase());
+                                    const isAdded = !!addedItem;
+                                    const isAvailable = isAdded && addedItem.available !== false;
+                                    return (
+                                        <button
+                                            key={stdSize}
+                                            type="button"
+                                            onClick={() => {
+                                                if (isAdded) {
+                                                    const idx = sizesList.findIndex(s => s.size.toLowerCase() === stdSize.toLowerCase());
+                                                    handleToggleSizeAvailability(idx);
+                                                } else {
+                                                    handleAddSize(stdSize);
+                                                }
+                                            }}
+                                            style={{
+                                                padding: '6px 14px',
+                                                borderRadius: 4,
+                                                fontSize: '0.78rem',
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.15s',
+                                                background: isAdded
+                                                    ? (isAvailable ? 'rgba(40,167,69,0.2)' : 'rgba(255,193,7,0.2)')
+                                                    : '#252525',
+                                                color: isAdded
+                                                    ? (isAvailable ? '#28a745' : '#ffc107')
+                                                    : '#aaa',
+                                                border: `1px solid ${
+                                                    isAdded
+                                                        ? (isAvailable ? 'rgba(40,167,69,0.5)' : 'rgba(255,193,7,0.5)')
+                                                        : '#444'
+                                                }`
+                                            }}
+                                            title={isAdded ? `Click to set ${stdSize} ${isAvailable ? 'Unavailable' : 'Available'}` : `Click to add ${stdSize}`}
+                                        >
+                                            {stdSize} {isAdded ? (isAvailable ? '✓' : '⏸') : '+'}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Active Product Sizes List */}
+                        <div style={{ marginTop: 6 }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ccc', display: 'block', marginBottom: 8 }}>
+                                Configured Sizes ({sizesList.length}):
+                            </span>
+
+                            {sizesList.length === 0 ? (
+                                <div style={{ padding: '16px', background: '#222', border: '1px dashed #444', borderRadius: 4, textAlign: 'center', color: '#777', fontSize: '0.8rem' }}>
+                                    No sizes added yet. Select a preset above or type a custom size.
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    {sizesList.map((item, idx) => {
+                                        const isAvail = item.available !== false;
+                                        return (
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justify: 'space-between',
+                                                    padding: '10px 14px',
+                                                    background: isAvail ? '#222' : '#1a1a1a',
+                                                    border: `1px solid ${isAvail ? 'rgba(40,167,69,0.3)' : 'rgba(255,193,7,0.3)'}`,
+                                                    borderRadius: 4
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>
+                                                        {item.size}
+                                                    </span>
+                                                    <span style={{
+                                                        fontSize: '0.65rem',
+                                                        padding: '2px 8px',
+                                                        borderRadius: 10,
+                                                        fontWeight: 700,
+                                                        background: isAvail ? 'rgba(40,167,69,0.2)' : 'rgba(255,193,7,0.2)',
+                                                        color: isAvail ? '#28a745' : '#ffc107',
+                                                        border: `1px solid ${isAvail ? 'rgba(40,167,69,0.4)' : 'rgba(255,193,7,0.4)'}`
+                                                    }}>
+                                                        {isAvail ? 'AVAILABLE' : 'UNAVAILABLE'}
+                                                    </span>
+                                                </div>
+
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleToggleSizeAvailability(idx)}
+                                                        style={{
+                                                            padding: '5px 12px',
+                                                            background: isAvail ? 'rgba(255,193,7,0.15)' : 'rgba(40,167,69,0.15)',
+                                                            color: isAvail ? '#ffc107' : '#28a745',
+                                                            border: `1px solid ${isAvail ? 'rgba(255,193,7,0.4)' : 'rgba(40,167,69,0.4)'}`,
+                                                            borderRadius: 4,
+                                                            fontSize: '0.72rem',
+                                                            fontWeight: 700,
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.15s'
+                                                        }}
+                                                    >
+                                                        {isAvail ? 'Set Unavailable' : 'Set Available'}
+                                                    </button>
+                                                    <span style={{ fontSize: '0.68rem', color: '#555', fontStyle: 'italic' }}>
+                                                        (Cannot be deleted)
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -85,7 +85,10 @@ const formatCartColor = (item) => {
 
 const styles = `
     /* ═══════ Cart Page ═══════ */
-    .cart-page { min-height: 80vh; background: var(--light); }
+    .cart-page { 
+        min-height: 80vh; 
+        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto; 
+    }
 
     .cart-hero {
         background: var(--dark);

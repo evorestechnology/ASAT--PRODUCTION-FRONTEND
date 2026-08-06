@@ -9,15 +9,13 @@ export function setAuthToken(token) {
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').trim();
 
 export async function apiFetch(path, options = {}) {
-  // 1. If no in-memory authToken, attempt to grab access token from active Supabase session
-  if (!authToken) {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        authToken = session.access_token;
-      }
-    } catch (_) {}
-  }
+  // 1. Get current access token from active Supabase session
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      authToken = session.access_token;
+    }
+  } catch (_) {}
 
   const headers = {
     'Content-Type': 'application/json',
@@ -39,7 +37,7 @@ export async function apiFetch(path, options = {}) {
   if (res.status === 401 && !options._isRetry) {
     try {
       const { data: { session } } = await supabase.auth.refreshSession();
-      const freshToken = session?.access_token || (await supabase.auth.getSession()).data.session?.access_token;
+      const freshToken = session?.access_token || (await supabase.auth.getSession()).data?.session?.access_token;
       if (freshToken) {
         authToken = freshToken;
         const retryHeaders = {
@@ -48,6 +46,7 @@ export async function apiFetch(path, options = {}) {
         };
         res = await fetch(`${API_URL}${path}`, {
           ...options,
+          _isRetry: true,
           headers: retryHeaders,
         });
       }

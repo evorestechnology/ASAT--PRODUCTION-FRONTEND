@@ -8,7 +8,10 @@ import { useAuth } from '../../context/AuthContext';
 
 const styles = `
     /* â•â•â•â•â•â•â• Product Detail  Full Width Split Layout â•â•â•â•â•â•â• */
-    .pdp-page { background: var(--light); }
+    .pdp-page { 
+        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
+        min-height: 80vh;
+    }
 
     .pdp-breadcrumb {
         font-family: 'Montserrat', sans-serif;
@@ -435,6 +438,20 @@ const styles = `
     }
     .pdp-size-btn:hover { border-color: var(--dark); }
     .pdp-size-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
+    .pdp-size-btn.disabled {
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
+        text-decoration: line-through !important;
+        background: #fafafa !important;
+        color: #444444 !important;
+        border-color: #d1d5db !important;
+        font-weight: 600 !important;
+    }
+    .pdp-size-btn.disabled:hover {
+        border-color: #d1d5db !important;
+        background: #fafafa !important;
+        color: #444444 !important;
+    }
 
     .pdp-qty-row { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
     .pdp-qty-control { display: flex; align-items: center; border: 1px solid #ddd; }
@@ -1064,9 +1081,30 @@ function ProductDetail() {
                                     return;
                                 }
 
-                                if (!designData.sizes && catData.sizes) {
-                                    dbProduct.sizes = catData.sizes;
-                                }
+                                const rawSizes = dbProduct.sizes && dbProduct.sizes.length > 0 
+                                    ? dbProduct.sizes 
+                                    : (catData.sizes || ['XS', 'S', 'M', 'L', 'XL', 'XXL']);
+
+                                const baseSizes = Array.isArray(catData.sizes) ? catData.sizes : [];
+                                const baseSizeMap = {};
+                                baseSizes.forEach(s => {
+                                    const sizeName = typeof s === 'object' && s !== null ? s.size : s;
+                                    const isAvail = typeof s === 'object' && s !== null ? (s.available !== false) : true;
+                                    baseSizeMap[sizeName] = isAvail;
+                                });
+
+                                dbProduct.sizes = rawSizes.map(sz => {
+                                    const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
+                                    const isDesignAvail = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
+                                    const isBaseAvail = baseSizeMap.hasOwnProperty(sizeName) ? baseSizeMap[sizeName] : true;
+                                    return {
+                                        size: sizeName,
+                                        available: isDesignAvail && isBaseAvail
+                                    };
+                                });
+
+                                dbProduct.allSizesOut = dbProduct.sizes.length > 0 && dbProduct.sizes.every(s => !s.available);
+
                                 if (!dbProduct.sizeChartImage && catData.size_chart_image) {
                                     dbProduct.sizeChartImage = catData.size_chart_image;
                                 }
@@ -1096,13 +1134,22 @@ function ProductDetail() {
                             }
                             return;
                         }
+                    } else {
+                        // Standardize sizes format if no base product
+                        dbProduct.sizes = (dbProduct.sizes || ['XS', 'S', 'M', 'L', 'XL', 'XXL']).map(sz => {
+                            const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
+                            const isAvail = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
+                            return { size: sizeName, available: isAvail };
+                        });
+                        dbProduct.allSizesOut = dbProduct.sizes.length > 0 && dbProduct.sizes.every(s => !s.available);
                     }
 
                     if (isMounted) {
                         setProduct(dbProduct);
                         setSelectedImage(0);
                         setSelectedColor(0);
-                        setSelectedSize(null);
+                        const firstAvailSize = dbProduct.sizes?.find(s => s.available !== false)?.size || null;
+                        setSelectedSize(firstAvailSize);
                         setSelectedPrintStyle(null);
                         setQuantity(1);
                     }
@@ -1128,8 +1175,8 @@ function ProductDetail() {
     const handleAddToBag = () => {
         if (!product) return;
 
-        if (product.available === false) {
-            showToast('This product is currently not available.', 'error');
+        if (product.available === false || product.allSizesOut) {
+            showToast('This product is currently out of stock.', 'error');
             return;
         }
         
@@ -1145,7 +1192,14 @@ function ProductDetail() {
             return;
         }
 
-        if (!selectedSize) { showToast('Please select a size', 'warning'); return; }
+        if (!selectedSize) { showToast('Please select an available size', 'warning'); return; }
+
+        const sizeObj = product.sizes?.find(s => (typeof s === 'object' ? s.size : s) === selectedSize);
+        const isSizeAvail = sizeObj ? (typeof sizeObj === 'object' ? sizeObj.available !== false : true) : true;
+        if (!isSizeAvail) {
+            showToast(`Size ${selectedSize} is currently out of stock and cannot be added.`, 'error');
+            return;
+        }
         
         if (isAlreadyInCart()) {
             navigate('/cart');
@@ -1378,10 +1432,59 @@ function ProductDetail() {
                                 </button>
                             )}
                         </div>
+                        {product.allSizesOut && (
+                            <div style={{
+                                background: '#fff5f5',
+                                border: '1px solid #fed7d7',
+                                color: '#c53030',
+                                padding: '12px 16px',
+                                borderRadius: 6,
+                                margin: '14px 0',
+                                fontSize: '0.84rem',
+                                fontWeight: 600,
+                                fontFamily: "'Montserrat', sans-serif",
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 10,
+                                boxShadow: '0 2px 6px rgba(229, 62, 62, 0.08)'
+                            }}>
+                                <i className="fas fa-exclamation-circle" style={{ color: '#e53e3e', fontSize: '1rem' }} />
+                                <span>All sizes for this product are currently out of stock.</span>
+                            </div>
+                        )}
                         <div className="pdp-sizes">
-                            {product.sizes.map(size => (
-                                <button key={size} className={`pdp-size-btn ${selectedSize === size ? 'active' : ''}`} onClick={() => setSelectedSize(size)}>{size}</button>
-                            ))}
+                            {product.sizes && product.sizes.map(sz => {
+                                const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
+                                const isAvailable = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
+                                const isActive = selectedSize === sizeName;
+
+                                return (
+                                    <button 
+                                        key={sizeName} 
+                                        disabled={!isAvailable}
+                                        className={`pdp-size-btn ${isActive ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                                        style={!isAvailable ? { 
+                                            opacity: 0.6, 
+                                            cursor: 'not-allowed', 
+                                            textDecoration: 'line-through',
+                                            background: '#fafafa',
+                                            color: '#444444',
+                                            borderColor: '#d1d5db',
+                                            fontWeight: 600
+                                        } : {}}
+                                        onClick={() => {
+                                            if (!isAvailable) {
+                                                showToast(`Size ${sizeName} is out of stock`, 'warning');
+                                                return;
+                                            }
+                                            setSelectedSize(sizeName);
+                                        }}
+                                        title={!isAvailable ? `${sizeName} (Out of Stock)` : sizeName}
+                                    >
+                                        {sizeName}
+                                    </button>
+                                );
+                            })}
                         </div>
 
 
@@ -1395,9 +1498,9 @@ function ProductDetail() {
                         </div>
 
                         <div className="pdp-actions">
-                            {product.available === false ? (
-                                <button className="pdp-add-bag" disabled style={{ background: '#555', cursor: 'not-allowed', color: '#999', width: '100%' }}>
-                                    PRODUCT NOT AVAILABLE
+                            {product.available === false || product.allSizesOut ? (
+                                <button className="pdp-add-bag" disabled style={{ background: '#555555', cursor: 'not-allowed', color: '#ffffff', width: '100%', opacity: 0.7, fontWeight: 700 }}>
+                                    <i className="fas fa-ban" style={{ marginRight: 8 }} /> OUT OF STOCK
                                 </button>
                             ) : (
                                 <>
@@ -1405,6 +1508,17 @@ function ProductDetail() {
                                         {isAlreadyInCart() ? 'VIEW CART' : (added ? '✓ ADDED TO BAG' : 'ADD TO BAG')}
                                     </button>
                                     <button className="pdp-buy-now" onClick={() => { 
+                                        if (!selectedSize) { 
+                                            showToast('Please select an available size', 'warning'); 
+                                            return; 
+                                        }
+                                        const sizeObj = product.sizes?.find(s => (typeof s === 'object' ? s.size : s) === selectedSize);
+                                        const isAvail = sizeObj ? (typeof sizeObj === 'object' ? sizeObj.available !== false : true) : true;
+                                        if (!isAvail) {
+                                            showToast(`Size ${selectedSize} is out of stock and cannot be booked.`, 'error');
+                                            return;
+                                        }
+
                                         // Guard check for Login
                                         const isLoggedIn = localStorage.getItem('asat_loggedIn') === 'true';
                                         if (!isLoggedIn) {
@@ -1415,11 +1529,6 @@ function ProductDetail() {
                                                 } 
                                             });
                                             return;
-                                        }
-
-                                        if (!selectedSize) { 
-                                            showToast('Please select a size', 'warning'); 
-                                            return; 
                                         }
 
                                         if (isAlreadyInCart()) {
