@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import '../../styles/admin.css';
 import BackButton from '../../components/BackButton';
+import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 
 function MasterOrderHistory() {
     const navigate = useNavigate();
+    const { toasts, showToast } = useToast();
     const [filter, setFilter] = useState('all');
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -196,7 +198,10 @@ function MasterOrderHistory() {
     });
 
     return (
-        <main className="adm-page">
+        <>
+            <style>{TOAST_CSS}</style>
+            <ToastContainer toasts={toasts} />
+            <main className="adm-page">
             <BackButton />
             <h1 className="adm-page__title">ORDER HISTORY</h1>
             <p className="adm-page__subtitle">Complete order records with revenue breakdown</p>
@@ -497,6 +502,7 @@ function MasterOrderHistory() {
                 </div>
             )}
         </main>
+        </>
     );
 }
 

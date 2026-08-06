@@ -626,17 +626,19 @@ export default function MfgPrintStyles() {
             const list = (data || []).map(row => {
                 let costVal = 0;
                 let placementCategories = [];
+                let catVal = row.category || 'DTF';
                 try {
-                    const parsed = JSON.parse(row.description);
+                    const parsed = typeof row.description === 'string' ? JSON.parse(row.description) : (row.description || {});
                     costVal = Number(parsed.cost) || 0;
                     placementCategories = parsed.placementCategories || [];
+                    if (parsed.category) catVal = parsed.category;
                 } catch (e) {
                     costVal = 0;
                 }
                 return {
                     id: row.id,
-                    name: row.name,
-                    category: row.category || 'DTF',
+                    name: row.name || catVal,
+                    category: catVal,
                     cost: costVal,
                     imageUrl: row.image || '',
                     active: row.active !== false,
