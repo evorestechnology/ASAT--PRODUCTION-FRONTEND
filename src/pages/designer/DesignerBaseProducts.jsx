@@ -25,6 +25,8 @@ function DesignerBaseProducts() {
                 const list = (data || []).map(p => {
                     const details = Array.isArray(p.details) ? p.details : [];
                     const isSoftDeleted = details.includes('__DELETED__');
+                    const rawSizes = Array.isArray(p.sizes) ? p.sizes : [];
+                    const sizes = rawSizes.map(s => (typeof s === 'object' && s !== null ? (s.size || s.name || '') : String(s))).filter(Boolean);
                     return {
                         id: p.id,
                         title: p.title || 'Unnamed Product',
@@ -33,7 +35,7 @@ function DesignerBaseProducts() {
                         mfgName: p.mfg_name || 'Manufacturer',
                         category: p.category || 'General',
                         cost: p.cost || 0,
-                        sizes: p.sizes || [],
+                        sizes,
                         gender: p.gender || 'Unisex',
                         isSoftDeleted
                     };

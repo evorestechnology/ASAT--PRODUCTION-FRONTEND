@@ -37,6 +37,8 @@ function DesignerProductDetail() {
         apiFetch(`/api/products/${id}?cb=${Date.now()}`)
             .then(data => {
                 if (data) {
+                    const rawSizes = Array.isArray(data.sizes) ? data.sizes : [];
+                    const sizes = rawSizes.map(s => (typeof s === 'object' && s !== null ? (s.size || s.name || '') : String(s))).filter(Boolean);
                     setProduct({
                         id: data.id,
                         title: data.title || 'Unnamed Product',
@@ -45,7 +47,7 @@ function DesignerProductDetail() {
                         mfgName: data.mfg_name || 'Manufacturer',
                         category: data.category || 'General',
                         cost: data.cost || 0,
-                        sizes: data.sizes || [],
+                        sizes,
                         gender: data.gender || 'Unisex',
                         details: data.details || [],
                         washCare: data.wash_care || data.washCare || [],
