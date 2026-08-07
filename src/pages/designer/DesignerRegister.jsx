@@ -904,10 +904,10 @@ function DesignerRegister() {
                         <div className="auth-input-group">
                             <label>Gmail Address</label>
                             <input type="email" className="auth-input" placeholder="you@gmail.com" value={form.gmail} onChange={e => set('gmail', e.target.value)} />
-                            <label className="auth-checkbox-label">
+                            {/* <label className="auth-checkbox-label">
                                 <input type="checkbox" checked={form.useAsRecovery} onChange={e => set('useAsRecovery', e.target.checked)} />
                                 Use as recovery email
-                            </label>
+                            </label> */}
                             {errors.gmail && <div className="auth-err">{errors.gmail}</div>}
                         </div>
 

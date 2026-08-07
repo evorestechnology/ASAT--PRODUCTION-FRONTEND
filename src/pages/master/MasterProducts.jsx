@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { apiFetch } from "../../api";
 import "../../styles/admin.css";
 import BackButton from "../../components/BackButton";
@@ -142,7 +142,7 @@ export default function MasterProducts() {
                                         {p.colors.length > 8 && <span style={{ fontSize:"0.75rem", color:"#888", lineHeight:"22px" }}>+{p.colors.length - 8}</span>}
                                     </div>
                                 )}
-                                {p.sizes?.length > 0 && <div className="bp-card__sizes"><strong>Sizes:</strong> {p.sizes.join(", ")}</div>}
+                                {p.sizes?.length > 0 && <div className="bp-card__sizes"><strong>Sizes:</strong> {p.sizes.map(s => typeof s === 'object' && s !== null ? s.size : s).join(", ")}</div>}
                                 {p.printing_styles?.length > 0 && (
                                     <div className="bp-printing-styles">
                                         <strong>Print:</strong> {p.printing_styles.map((ps,i) => <span key={i}>{ps.style}{ps.cost ? ` — ₹${ps.cost}` : ""}</span>)}
@@ -195,7 +195,10 @@ export default function MasterProducts() {
                         </>)}
                         <h4 style={{ marginTop:16, marginBottom:8, fontSize:"0.9rem" }}>Sizes</h4>
                         <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                            {(selected.sizes || []).map(s => <span key={s} className="bp-tag">{s}</span>)}
+                            {(selected.sizes || []).map(s => {
+                                const sizeName = typeof s === 'object' && s !== null ? s.size : s;
+                                return <span key={sizeName} className="bp-tag">{sizeName}</span>;
+                            })}
                         </div>
                         <h4 style={{ marginTop:16, marginBottom:8, fontSize:"0.9rem" }}>Printing Styles</h4>
                         {!(selected.printing_styles?.length) ? <p style={{ color:"#aaa", fontSize:"0.85rem" }}>None defined.</p>

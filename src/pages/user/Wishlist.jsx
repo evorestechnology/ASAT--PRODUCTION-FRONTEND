@@ -441,7 +441,7 @@ function Wishlist() {
                                     <div className="wishlist-sizes-list">
                                         <span className="wishlist-sizes-label">SIZES:</span>
                                         <span className="wishlist-sizes-values">
-                                            {(Array.isArray(item.sizes) ? item.sizes : (typeof item.sizes === 'string' ? item.sizes.split(',').map(s => s.trim()) : ['XS', 'S', 'M', 'L', 'XL', 'XXL'])).join(', ')}
+                                            {(Array.isArray(item.sizes) ? item.sizes : (typeof item.sizes === 'string' ? item.sizes.split(',').map(s => s.trim()) : ['XS', 'S', 'M', 'L', 'XL', 'XXL'])).map(s => typeof s === 'object' && s !== null ? s.size : s).join(', ')}
                                         </span>
                                     </div>
                                 </div>
@@ -466,15 +466,24 @@ function Wishlist() {
                                     : (typeof selectedProduct.sizes === 'string' 
                                         ? selectedProduct.sizes.split(',').map(s => s.trim()) 
                                         : ['XS', 'S', 'M', 'L', 'XL', 'XXL'])
-                                ).map(sz => (
-                                    <button 
-                                        key={sz} 
-                                        className={`wishlist-size-modal-btn ${chosenSize === sz ? 'active' : ''}`}
-                                        onClick={() => setChosenSize(sz)}
-                                    >
-                                        {sz}
-                                    </button>
-                                ))}
+                                ).map(sz => {
+                                    const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
+                                    const isAvailable = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
+                                    return (
+                                        <button 
+                                            key={sizeName} 
+                                            disabled={!isAvailable}
+                                            className={`wishlist-size-modal-btn ${chosenSize === sizeName ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                                            onClick={() => {
+                                                if (!isAvailable) return;
+                                                setChosenSize(sizeName);
+                                            }}
+                                            style={!isAvailable ? { opacity: 0.4, cursor: 'not-allowed', textDecoration: 'line-through' } : {}}
+                                        >
+                                            {sizeName}
+                                        </button>
+                                    );
+                                })}
                             </div>
                             <div className="wishlist-size-modal-actions">
                                 <button className="wishlist-size-modal-confirm" onClick={confirmQuickAdd}>
