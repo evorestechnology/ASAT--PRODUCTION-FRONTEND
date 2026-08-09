@@ -275,7 +275,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
                         {editingStyle?.id ? 'Edit Print Style' : 'Add Printing Method'}
                     </h3>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer', lineHeight: 1 }}>âœ•</button>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1, fontWeight: 300 }}>×</button>
                 </div>
 
                 <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
