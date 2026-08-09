@@ -28,6 +28,7 @@ function UserFooter() {
                 <div className="footer-info">
                     <h4 style={{margin:'2px'}}>As Simple as That</h4>
                     <span style={{ display: 'block', fontFamily: "'Montserrat', sans-serif", fontSize: '0.6rem', letterSpacing: '2.5px', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '10px' }}>**A Designer Paradise**</span>
+                    <p>Contact: +91 9177180258</p>
                     <p>Vijayawada, Andhra Pradesh 520001</p>
                     <p style={{ marginTop: '10px', fontStyle: 'italic', color: '#ddd' }}>
                         "Design is intelligence made visible." 

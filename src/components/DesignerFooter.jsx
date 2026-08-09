@@ -7,6 +7,7 @@ function DesignerFooter() {
                 <div className="footer-info">
                     <h4>DESIGNER PANEL</h4>
                     <p>Exclusive access for verified creators.</p>
+                    <p>Contact: +91 9177180258</p>
                     <p>Vijayawada, Andhra Pradesh 520001</p>
                 </div>
                 <div className="footer-socials">

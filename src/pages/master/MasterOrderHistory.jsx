@@ -85,7 +85,29 @@ function MasterOrderHistory() {
     const formatDate = (createdAt) => {
         if (!createdAt) return '—';
         const date = new Date(createdAt);
+        if (isNaN(date.getTime())) return '—';
         return date.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
+    const getCompletedDate = (order) => {
+        if (!order) return null;
+        if (order.completedAt || order.completed_at) return order.completedAt || order.completed_at;
+        if (order.deliveredAt || order.delivered_at) return order.deliveredAt || order.delivered_at;
+        
+        const history = order.statusHistory || order.status_history;
+        if (Array.isArray(history)) {
+            const completedEntry = history.slice().reverse().find(h => 
+                h && (h.status === 'completed' || h.status === 'delivered')
+            );
+            if (completedEntry && (completedEntry.time || completedEntry.timestamp || completedEntry.date)) {
+                return completedEntry.time || completedEntry.timestamp || completedEntry.date;
+            }
+        }
+
+        if (order.status === 'completed' || order.status === 'delivered') {
+            return order.updatedAt || order.updated_at || null;
+        }
+        return null;
     };
 
     const formatItemsAsLinks = (items) => {
@@ -271,7 +293,8 @@ function MasterOrderHistory() {
                         <thead>
                             <tr>
                                 <th>Order ID</th>
-                                <th>Date & Time</th>
+                                <th>Order Date</th>
+                                <th>Completed Date</th>
                                 <th>Items</th>
                                 <th>Qty</th>
                                 <th>Total Revenue</th>
@@ -290,7 +313,7 @@ function MasterOrderHistory() {
                         <tbody>
                             {filteredOrders.length === 0 ? (
                                 <tr>
-                                    <td colSpan="15" className="adm-table__empty">
+                                    <td colSpan="16" className="adm-table__empty">
                                         <i className="fas fa-inbox"></i>No matching orders found.
                                     </td>
                                 </tr>
@@ -298,7 +321,22 @@ function MasterOrderHistory() {
                                 filteredOrders.map(o => (
                                     <tr key={o.id}>
                                         <td>{o.orderId || o.id}</td>
-                                        <td>{formatDate(o.createdAt)}</td>
+                                        <td style={{ fontSize: '0.78rem', whiteSpace: 'nowrap' }}>{formatDate(o.createdAt)}</td>
+                                        <td style={{ fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
+                                            {(() => {
+                                                const cDate = getCompletedDate(o);
+                                                if (cDate) {
+                                                    return <span style={{ color: '#2e7d32', fontWeight: 600 }}>{formatDate(cDate)}</span>;
+                                                }
+                                                if (o.status === 'completed' || o.status === 'delivered') {
+                                                    return <span style={{ color: '#2e7d32', fontWeight: 600 }}>{formatDate(o.updatedAt)}</span>;
+                                                }
+                                                if (o.status === 'cancelled') {
+                                                    return <span style={{ color: '#c62828', fontStyle: 'italic' }}>Cancelled</span>;
+                                                }
+                                                return <span style={{ color: '#888' }}>—</span>;
+                                            })()}
+                                        </td>
                                         <td>{formatItemsAsLinks(o.items)}</td>
                                         <td>{getQty(o)}</td>
                                         <td>₹{(o.totalAmount || o.revenue || 0).toLocaleString()}</td>

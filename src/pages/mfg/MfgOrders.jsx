@@ -424,12 +424,6 @@ function MfgOrders() {
         }
     };
 
-    const formatOrderDate = (o) => {
-        if (!o.createdAt) return 'N/A';
-        const date = new Date(o.createdAt);
-        return date.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
-    };
-
     const filteredOrders = orders.filter(o => {
         if (statusFilter !== 'all' && (o.status || 'pending').toLowerCase() !== statusFilter) return false;
 
@@ -458,15 +452,28 @@ function MfgOrders() {
             <h1 className="adm-page__title">LIVE ORDERS</h1>
             <p className="adm-page__subtitle">Active orders currently in production queue</p>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
-                <div className="adm-page__filters" style={{ margin: 0 }}>
-                    {['all', 'pending', 'manufacturing', 'shipping'].map(s => (
-                        <button 
-                            key={s} 
-                            className={`adm-page__filter-btn ${statusFilter === s ? 'adm-page__filter-btn--active' : ''}`} 
-                            onClick={() => setStatusFilter(s)}
+            {/* Search and Filter Row */}
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#888', marginRight: '4px' }}>Filter Status:</span>
+                    {['all', 'pending', 'accepted', 'in_production', 'production_completed', 'shipping', 'issue_reported'].map(st => (
+                        <button
+                            key={st}
+                            onClick={() => setStatusFilter(st)}
+                            style={{
+                                padding: '6px 12px',
+                                fontSize: '0.75rem',
+                                borderRadius: '4px',
+                                border: '1px solid',
+                                cursor: 'pointer',
+                                textTransform: 'capitalize',
+                                borderColor: statusFilter === st ? 'var(--gold)' : 'rgba(255,255,255,0.15)',
+                                background: statusFilter === st ? 'rgba(197, 160, 89, 0.15)' : '#1c1c1c',
+                                color: statusFilter === st ? 'var(--gold)' : '#aaa',
+                                fontWeight: statusFilter === st ? '600' : 'normal'
+                            }}
                         >
-                            {s.toUpperCase()}
+                            {st.replace(/_/g, ' ')}
                         </button>
                     ))}
                 </div>
@@ -475,7 +482,7 @@ function MfgOrders() {
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                         <input
                             type="text"
-                            placeholder="Search active orders..."
+                            placeholder="Search live orders..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             style={{
@@ -503,7 +510,8 @@ function MfgOrders() {
                     <thead>
                         <tr>
                             <th>Order ID</th>
-                            <th>Date</th>
+                            <th>Order Date</th>
+                            <th>Completed Date</th>
                             <th>Items</th>
                             <th>Shipping Address</th>
                             <th>Tracking ID</th>
@@ -513,16 +521,24 @@ function MfgOrders() {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="7" className="adm-table__empty"><i className="fas fa-spinner fa-spin"></i> Loading live orders...</td></tr>
+                            <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-spinner fa-spin"></i> Loading live orders...</td></tr>
                         ) : orders.length === 0 ? (
-                            <tr><td colSpan="7" className="adm-table__empty"><i className="fas fa-bolt"></i> No active orders at the moment.</td></tr>
+                            <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-bolt"></i> No active orders at the moment.</td></tr>
                         ) : filteredOrders.length === 0 ? (
-                            <tr><td colSpan="7" className="adm-table__empty"><i className="fas fa-search"></i> No matching orders found.</td></tr>
+                            <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-search"></i> No matching orders found.</td></tr>
                         ) : (
                             filteredOrders.map(o => (
                                 <tr key={o.id}>
                                     <td style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{o.id.substring(0, 8)}...</td>
-                                    <td style={{ fontSize: '0.75rem' }}>{formatOrderDate(o)}</td>
+                                    <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{formatOrderDate(o)}</td>
+                                    <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                        {(() => {
+                                            const cDate = getCompletedDate(o);
+                                            if (cDate) return <span style={{ color: '#2e7d32', fontWeight: 600 }}>{formatOrderDate(cDate)}</span>;
+                                            if (o.status === 'completed' || o.status === 'delivered') return <span style={{ color: '#2e7d32', fontWeight: 600 }}>{formatOrderDate(o.updatedAt)}</span>;
+                                            return <span style={{ color: '#888' }}>—</span>;
+                                        })()}
+                                    </td>
                                     <td>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                             {(o.items || []).map((item, idx) => (
@@ -774,7 +790,8 @@ function MfgOrders() {
                             </div>
                             <div>
                                 <h3 style={{ fontSize: '0.9rem', color: '#C5A059', textTransform: 'uppercase', marginBottom: 8 }}>Order Info</h3>
-                                <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Date:</strong> {formatOrderDate(selectedOrder)}</p>
+                                <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Order Date:</strong> {formatOrderDate(selectedOrder)}</p>
+                                <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Completed Date:</strong> {getCompletedDate(selectedOrder) ? formatOrderDate({ createdAt: getCompletedDate(selectedOrder) }) : (selectedOrder.status === 'completed' || selectedOrder.status === 'delivered' ? formatOrderDate({ createdAt: selectedOrder.updatedAt }) : 'Pending / In Production')}</p>
                                 <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Total Amount:</strong> ₹{selectedOrder.totalAmount?.toLocaleString('en-IN')}</p>
                                 <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Mfg Earnings:</strong> ₹{Number(selectedOrder.mfgEarnings || 0).toLocaleString('en-IN')}</p>
                                 <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Status:</strong> {selectedOrder.status?.toUpperCase()}</p>

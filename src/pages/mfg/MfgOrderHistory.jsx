@@ -161,10 +161,31 @@ function MfgOrderHistory() {
         fetchHistory();
     }, [user]);
 
+    const getCompletedDate = (o) => {
+        if (!o) return null;
+        if (o.completedAt || o.completed_at) return o.completedAt || o.completed_at;
+        if (o.deliveredAt || o.delivered_at) return o.deliveredAt || o.delivered_at;
+        const history = o.statusHistory || o.status_history;
+        if (Array.isArray(history)) {
+            const completedEntry = history.slice().reverse().find(h => 
+                h && (h.status === 'completed' || h.status === 'delivered')
+            );
+            if (completedEntry && (completedEntry.time || completedEntry.timestamp || completedEntry.date)) {
+                return completedEntry.time || completedEntry.timestamp || completedEntry.date;
+            }
+        }
+        if (o.status === 'completed' || o.status === 'delivered') {
+            return o.updatedAt || o.updated_at || null;
+        }
+        return null;
+    };
+
     const formatOrderDate = (o) => {
-        if (!o.createdAt) return 'N/A';
-        const date = new Date(o.createdAt);
-        return date.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+        const raw = o?.createdAt || o?.created_at || (typeof o === 'string' ? o : null);
+        if (!raw) return '—';
+        const date = new Date(raw);
+        if (isNaN(date.getTime())) return '—';
+        return date.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     };
 
     const getItemsTotalQty = (items) => {
@@ -230,7 +251,8 @@ function MfgOrderHistory() {
                     <thead>
                         <tr>
                             <th>Order ID</th>
-                            <th>Date</th>
+                            <th>Order Date</th>
+                            <th>Completed Date</th>
                             <th>Items</th>
                             <th>Shipping Address</th>
                             <th>Earnings</th>
@@ -241,16 +263,25 @@ function MfgOrderHistory() {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-spinner fa-spin"></i> Loading order history...</td></tr>
+                            <tr><td colSpan="9" className="adm-table__empty"><i className="fas fa-spinner fa-spin"></i> Loading order history...</td></tr>
                         ) : orders.length === 0 ? (
-                            <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-history"></i> No order history yet.</td></tr>
+                            <tr><td colSpan="9" className="adm-table__empty"><i className="fas fa-history"></i> No order history yet.</td></tr>
                         ) : filteredOrders.length === 0 ? (
-                            <tr><td colSpan="8" className="adm-table__empty"><i className="fas fa-search"></i> No matching orders found.</td></tr>
+                            <tr><td colSpan="9" className="adm-table__empty"><i className="fas fa-search"></i> No matching orders found.</td></tr>
                         ) : (
                             filteredOrders.map(o => (
                                 <tr key={o.id}>
                                     <td style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{o.id.substring(0, 8)}...</td>
-                                    <td style={{ fontSize: '0.75rem' }}>{formatOrderDate(o)}</td>
+                                    <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{formatOrderDate(o)}</td>
+                                    <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                        {(() => {
+                                            const cDate = getCompletedDate(o);
+                                            if (cDate) return <span style={{ color: '#2e7d32', fontWeight: 600 }}>{formatOrderDate(cDate)}</span>;
+                                            if (o.status === 'completed' || o.status === 'delivered') return <span style={{ color: '#2e7d32', fontWeight: 600 }}>{formatOrderDate(o.updatedAt)}</span>;
+                                            if (o.status === 'cancelled') return <span style={{ color: '#c62828', fontStyle: 'italic' }}>Cancelled</span>;
+                                            return <span style={{ color: '#888' }}>—</span>;
+                                        })()}
+                                    </td>
                                     <td>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                             {(o.items || []).map((item, idx) => (
@@ -366,7 +397,8 @@ function MfgOrderHistory() {
                             </div>
                             <div>
                                 <h3 style={{ fontSize: '0.9rem', color: '#C5A059', textTransform: 'uppercase', marginBottom: 8 }}>Order Info</h3>
-                                <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Date:</strong> {formatOrderDate(selectedOrder)}</p>
+                                <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Order Date:</strong> {formatOrderDate(selectedOrder)}</p>
+                                <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Completed Date:</strong> {getCompletedDate(selectedOrder) ? formatOrderDate(getCompletedDate(selectedOrder)) : (selectedOrder.status === 'completed' || selectedOrder.status === 'delivered' ? formatOrderDate(selectedOrder.updatedAt) : (selectedOrder.status === 'cancelled' ? 'Order Cancelled' : '—'))}</p>
                                 <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Total Amount:</strong> ₹{selectedOrder.totalAmount?.toLocaleString('en-IN')}</p>
                                 <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Mfg Earnings:</strong> ₹{Number(selectedOrder.mfgEarnings || 0).toLocaleString('en-IN')}</p>
                                 <p style={{ fontSize: '0.85rem', margin: '4px 0' }}><strong>Status:</strong> {selectedOrder.status?.toUpperCase()}</p>
