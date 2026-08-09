@@ -76,6 +76,7 @@ import MasterFinance      from './pages/master/MasterFinance';
 import MasterDelivery     from './pages/master/MasterDelivery';
 import MasterWithdrawals  from './pages/master/MasterWithdrawals';
 import MasterTutorials    from './pages/master/MasterTutorials';
+import MasterProfile      from './pages/master/MasterProfile';
 
 // Mfg pages
 import MfgIndex        from './pages/mfg/MfgIndex';
@@ -175,6 +176,7 @@ function App() {
           <Route path="delivery"  element={<MasterDelivery />} />
           <Route path="withdrawals" element={<MasterWithdrawals />} />
           <Route path="tutorials"  element={<MasterTutorials />} />
+          <Route path="profile"    element={<MasterProfile />} />
         </Route>
 
         {/* ─── Mfg Auth (standalone — no header) ─── */}

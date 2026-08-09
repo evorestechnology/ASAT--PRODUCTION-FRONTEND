@@ -986,9 +986,14 @@ function MasterSettings() {
                         </tbody>
                     </table>
                 </div>
-                <button className="adm-settings__btn" style={{ marginTop: 16 }} onClick={() => setShowAddAdminModal(true)}>
-                    <i className="fas fa-plus" style={{ marginRight: 6 }}></i> Add Admin
-                </button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: 16 }}>
+                    <button className="adm-settings__btn" style={{ marginTop: 0 }} onClick={() => setShowAddAdminModal(true)}>
+                        <i className="fas fa-plus" style={{ marginRight: 6 }}></i> Add Admin
+                    </button>
+                    <button className="adm-settings__btn" style={{ background: '#2c2c2e', color: '#fff', marginTop: 0 }} onClick={() => navigate('/master/profile')}>
+                        <i className="fas fa-key" style={{ marginRight: 6 }}></i> Change My Password
+                    </button>
+                </div>
             </div>
 
             {showAddAdminModal && (

@@ -24,6 +24,7 @@ function MasterHeader() {
         { to: '/master/delivery', label: 'Delivery', icon: 'fas fa-truck' },
         { to: '/master/tutorials', label: 'Tutorials', icon: 'fas fa-graduation-cap' },
         { to: '/master/settings', label: 'Settings', icon: 'fas fa-cog' },
+        { to: '/master/profile', label: 'Profile', icon: 'fas fa-user-shield' },
     ];
 
 

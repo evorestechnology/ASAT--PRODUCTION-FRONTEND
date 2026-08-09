@@ -71,6 +71,13 @@ function MasterProfile() {
     const [loading, setLoading] = useState(true);
     const [saveStatus, setSaveStatus] = useState(null);
 
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordStatus, setPasswordStatus] = useState(null);
+
     useEffect(() => {
         if (!user) return;
         
@@ -118,10 +125,59 @@ function MasterProfile() {
         }
     };
 
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        setPasswordStatus(null);
+
+        if (!newPassword) {
+            setPasswordStatus({ type: 'error', text: 'Please enter a new password.' });
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setPasswordStatus({ type: 'error', text: 'Password must be at least 6 characters long.' });
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setPasswordStatus({ type: 'error', text: 'Passwords do not match.' });
+            return;
+        }
+
+        setPasswordLoading(true);
+        try {
+            // Update via backend API endpoint (reliable admin auth update)
+            await apiFetch('/api/users/change-password', {
+                method: 'POST',
+                body: JSON.stringify({ new_password: newPassword })
+            });
+
+            setPasswordStatus({ type: 'success', text: 'Password changed successfully!' });
+            setNewPassword('');
+            setConfirmPassword('');
+            setTimeout(() => setPasswordStatus(null), 5000);
+        } catch (err) {
+            // Fallback to client-side Supabase updateUser if endpoint error
+            try {
+                const { error: clientErr } = await supabase.auth.updateUser({ password: newPassword });
+                if (clientErr) throw clientErr;
+                setPasswordStatus({ type: 'success', text: 'Password changed successfully!' });
+                setNewPassword('');
+                setConfirmPassword('');
+                setTimeout(() => setPasswordStatus(null), 5000);
+            } catch (fallbackErr) {
+                console.error('Error updating password:', fallbackErr);
+                setPasswordStatus({ type: 'error', text: 'Failed to update password: ' + (err.error || fallbackErr.message) });
+            }
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
     const handlePasswordReset = async () => {
-        setSaveStatus(null);
+        setPasswordStatus(null);
         if (!email) {
-            setSaveStatus({ type: 'error', text: 'Please specify your email address.' });
+            setPasswordStatus({ type: 'error', text: 'Please specify your email address.' });
             return;
         }
         try {
@@ -129,11 +185,11 @@ function MasterProfile() {
                 redirectTo: `${window.location.origin}/reset-password`,
             });
             if (resetError) throw resetError;
-            setSaveStatus({ type: 'success', text: `Password reset email sent to ${email}!` });
-            setTimeout(() => setSaveStatus(null), 5000);
+            setPasswordStatus({ type: 'success', text: `Password reset email sent to ${email}!` });
+            setTimeout(() => setPasswordStatus(null), 5000);
         } catch (err) {
             console.error('Error sending password reset email:', err);
-            setSaveStatus({ type: 'error', text: 'Failed to send password reset: ' + err.message });
+            setPasswordStatus({ type: 'error', text: 'Failed to send password reset: ' + err.message });
         }
     };
 
@@ -160,7 +216,11 @@ function MasterProfile() {
                 </div>
             )}
 
+            {/* Profile Information Card */}
             <div className="profile-card">
+                <h2 style={{ fontFamily: 'Cinzel', fontSize: '1.2rem', marginBottom: '20px', letterSpacing: '1px', color: 'var(--admin-dark)' }}>
+                    Personal Details
+                </h2>
                 <form className="form-grid" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Username</label>
@@ -203,7 +263,105 @@ function MasterProfile() {
                     </div>
                     <div className="profile-actions full-width">
                         <button type="submit" className="adm-settings__btn">UPDATE MASTER PROFILE</button>
-                        <button type="button" className="adm-settings__btn" style={{ background: '#3a3a3c' }} onClick={handlePasswordReset}>SEND PASSWORD RESET EMAIL</button>
+                    </div>
+                </form>
+            </div>
+
+            {/* Password & Security Card */}
+            <div className="profile-card" style={{ marginTop: '30px' }}>
+                <h2 style={{ fontFamily: 'Cinzel', fontSize: '1.2rem', marginBottom: '8px', letterSpacing: '1px', color: 'var(--admin-dark)' }}>
+                    Security & Password
+                </h2>
+                <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '24px', fontFamily: 'Montserrat, sans-serif' }}>
+                    Change your master login password or send a password reset link to your email.
+                </p>
+
+                {passwordStatus && (
+                    <div className={`save-toast save-toast--${passwordStatus.type}`} style={{ marginBottom: '20px' }}>
+                        {passwordStatus.type === 'success' ? '✦ ' : '⚠️ '} {passwordStatus.text}
+                    </div>
+                )}
+
+                <form className="form-grid" onSubmit={handlePasswordChange}>
+                    <div className="form-group">
+                        <label>New Password</label>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type={showNewPassword ? "text" : "password"}
+                                placeholder="Enter new password (min. 6 characters)"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                style={{ paddingRight: '40px' }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                style={{
+                                    position: 'absolute',
+                                    right: '12px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: '#888',
+                                    fontSize: '0.9rem',
+                                    padding: 0
+                                }}
+                            >
+                                <i className={`fas ${showNewPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Confirm New Password</label>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirm new password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                style={{ paddingRight: '40px' }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                style={{
+                                    position: 'absolute',
+                                    right: '12px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: '#888',
+                                    fontSize: '0.9rem',
+                                    padding: 0
+                                }}
+                            >
+                                <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="profile-actions full-width" style={{ marginTop: '10px' }}>
+                        <button
+                            type="submit"
+                            className="adm-settings__btn"
+                            disabled={passwordLoading}
+                            style={{ background: 'var(--admin-gold)', color: '#000' }}
+                        >
+                            {passwordLoading ? 'UPDATING PASSWORD...' : 'CHANGE PASSWORD'}
+                        </button>
+                        <button
+                            type="button"
+                            className="adm-settings__btn"
+                            style={{ background: '#3a3a3c', color: '#fff' }}
+                            onClick={handlePasswordReset}
+                        >
+                            SEND RESET LINK TO EMAIL
+                        </button>
                     </div>
                 </form>
             </div>
