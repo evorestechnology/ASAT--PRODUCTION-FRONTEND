@@ -29,6 +29,7 @@ function DesignerProductDetail() {
     const { user } = useAuth();
     const { toasts, showToast } = useToast();
     const [product, setProduct] = useState(null);
+    const [dbPrintStyles, setDbPrintStyles] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -41,6 +42,7 @@ function DesignerProductDetail() {
                     const sizes = rawSizes.map(s => (typeof s === 'object' && s !== null ? (s.size || s.name || '') : String(s))).filter(Boolean);
                     setProduct({
                         id: data.id,
+                        mfg_id: data.mfg_id,
                         title: data.title || 'Unnamed Product',
                         coverImage: data.cover_image || data.coverImage || '',
                         colors: data.colors || [],
@@ -63,6 +65,24 @@ function DesignerProductDetail() {
                 showToast('Failed to load product details.', 'error');
             })
             .finally(() => setLoading(false));
+
+        apiFetch(`/api/print-styles?cb=${Date.now()}`)
+            .then(data => {
+                const list = (data || []).map(row => {
+                    let desc = {};
+                    try { desc = typeof row.description === 'string' ? JSON.parse(row.description) : (row.description || {}); } catch(e){}
+                    return {
+                        id: row.id,
+                        mfg_id: row.mfg_id,
+                        name: row.name,
+                        category: (desc.category || row.category || 'DTF').toLowerCase().trim(),
+                        active: row.active !== false,
+                        placementCategories: desc.placementCategories || []
+                    };
+                });
+                setDbPrintStyles(list);
+            })
+            .catch(() => setDbPrintStyles([]));
     }, [user, id]);
 
     const handleCreateDesign = () => {
@@ -320,7 +340,55 @@ function DesignerProductDetail() {
                         {product.printingStyles && product.printingStyles.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                 {product.printingStyles.map((ps, idx) => {
-                                    const activePlacements = (ps.placements || []).filter(pl => pl.active !== false);
+                                    const key = (ps.style || ps.name || ps.type || '').toLowerCase().trim();
+                                    const matchingLiveStyle = dbPrintStyles.find(st => {
+                                        return (product.mfg_id && st.mfg_id && st.mfg_id === product.mfg_id) &&
+                                            (st.id === ps.id || st.category === key || (st.name && st.name.toLowerCase().trim() === key));
+                                    }) || dbPrintStyles.find(st => {
+                                        return st.id === ps.id || st.category === key || (st.name && st.name.toLowerCase().trim() === key);
+                                    });
+
+                                    if (matchingLiveStyle && matchingLiveStyle.active === false) return null;
+
+                                    const rawPlacements = (ps.placements || []).filter(pl => pl.active !== false && pl.available !== false);
+                                    const activePlacements = rawPlacements.filter(pl => {
+                                        const id = typeof pl === 'object' ? (pl.id || pl.label) : pl;
+                                        const rawLabel = typeof pl === 'object' ? (pl.label || pl.name || id) : pl;
+                                        let category = typeof pl === 'object' ? (pl.category || '') : '';
+                                        let positionLabel = rawLabel;
+
+                                        if (!category && id) {
+                                            if (rawLabel && id.endsWith('_' + rawLabel)) {
+                                                category = id.substring(0, id.length - rawLabel.length - 1);
+                                            } else if (id.includes('_')) {
+                                                const pidx = id.lastIndexOf('_');
+                                                category = id.substring(0, pidx);
+                                                if (!rawLabel || rawLabel === id) positionLabel = id.substring(pidx + 1);
+                                            }
+                                        }
+
+                                        if (matchingLiveStyle && Array.isArray(matchingLiveStyle.placementCategories) && matchingLiveStyle.placementCategories.length > 0) {
+                                            const normCat = (category || '').toLowerCase().trim().replace(/[\s_\-]/g, '');
+                                            const normPos = (positionLabel || rawLabel || '').toLowerCase().trim().replace(/[\s_\-]/g, '');
+
+                                            for (const pc of matchingLiveStyle.placementCategories) {
+                                                const pcNorm = (pc.category || '').toLowerCase().trim().replace(/[\s_\-]/g, '');
+                                                if (pcNorm && (pcNorm === normCat || normCat.includes(pcNorm) || pcNorm.includes(normCat))) {
+                                                    if (pc.available === false || pc.active === false) return false;
+                                                    const opts = pc.placements || {};
+                                                    const optItems = Array.isArray(opts) ? opts : Object.entries(opts).map(([k, v]) => ({ label: k, ...v }));
+                                                    for (const opt of optItems) {
+                                                        const optNorm = (opt.label || opt.name || '').toLowerCase().trim().replace(/[\s_\-]/g, '');
+                                                        if (optNorm && (optNorm === normPos || normPos === optNorm || normPos.includes(optNorm) || optNorm.includes(normPos))) {
+                                                            if (opt.available === false || opt.active === false) return false;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        return true;
+                                    });
+
                                     return (
                                         <div key={idx} style={{ paddingBottom: idx < product.printingStyles.length - 1 ? 14 : 0, borderBottom: idx < product.printingStyles.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
                                             <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#222', textTransform: 'uppercase', marginBottom: 6 }}>
@@ -339,9 +407,9 @@ function DesignerProductDetail() {
                                                                 if (rawLabel && id.endsWith('_' + rawLabel)) {
                                                                     cat = id.substring(0, id.length - rawLabel.length - 1);
                                                                 } else if (id.includes('_')) {
-                                                                    const idx = id.lastIndexOf('_');
-                                                                    cat = id.substring(0, idx);
-                                                                    if (!rawLabel || rawLabel === id) pos = id.substring(idx + 1);
+                                                                    const pidx = id.lastIndexOf('_');
+                                                                    cat = id.substring(0, pidx);
+                                                                    if (!rawLabel || rawLabel === id) pos = id.substring(pidx + 1);
                                                                 }
                                                             }
                                                             const fCat = cat ? cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'General';

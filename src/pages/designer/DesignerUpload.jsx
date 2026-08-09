@@ -284,6 +284,7 @@ function DesignerUpload() {
 
     /* â”€â”€ Products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     const [dbProducts, setDbProducts] = useState([]);
+    const [dbPrintStyles, setDbPrintStyles] = useState([]);
     const [productsLoading, setProductsLoading] = useState(true);
 
     useEffect(() => {
@@ -291,6 +292,7 @@ function DesignerUpload() {
             .then(data => {
                 const list = (data || []).map(d => ({
                     id: d.id,
+                    mfg_id: d.mfg_id,
                     title: d.title,
                     coverImage: d.cover_image,
                     colors: d.colors || [],
@@ -308,6 +310,24 @@ function DesignerUpload() {
             })
             .catch(err => { console.error('Error loading products:', err); setDbProducts([]); })
             .finally(() => setProductsLoading(false));
+
+        apiFetch(`/api/print-styles?cb=${Date.now()}`)
+            .then(data => {
+                const list = (data || []).map(row => {
+                    let desc = {};
+                    try { desc = typeof row.description === 'string' ? JSON.parse(row.description) : (row.description || {}); } catch(e){}
+                    return {
+                        id: row.id,
+                        mfg_id: row.mfg_id,
+                        name: row.name,
+                        category: (desc.category || row.category || 'DTF').toLowerCase().trim(),
+                        active: row.active !== false,
+                        placementCategories: desc.placementCategories || []
+                    };
+                });
+                setDbPrintStyles(list);
+            })
+            .catch(() => setDbPrintStyles([]));
     }, []);
 
     useEffect(() => {
@@ -384,8 +404,22 @@ function DesignerUpload() {
             if (!merged[key]) {
                 merged[key] = { ...ps, style: key, placements: [] };
             }
-            const activePlacements = (ps.placements || []).filter(pl => pl.active !== false && pl.available !== false);
-            activePlacements.forEach(pl => {
+
+            // Find matching live print style from dbPrintStyles if available
+            const matchingLiveStyle = dbPrintStyles.find(st => {
+                return (selectedProductObj.mfg_id && st.mfg_id && st.mfg_id === selectedProductObj.mfg_id) &&
+                    (st.id === ps.id || st.category === key || (st.name && st.name.toLowerCase().trim() === key));
+            }) || dbPrintStyles.find(st => {
+                return st.id === ps.id || st.category === key || (st.name && st.name.toLowerCase().trim() === key);
+            });
+
+            // If the whole print style is inactive, skip it
+            if (matchingLiveStyle && matchingLiveStyle.active === false) {
+                return;
+            }
+
+            const rawPlacements = (ps.placements || []).filter(pl => pl.active !== false && pl.available !== false);
+            rawPlacements.forEach(pl => {
                 const id = typeof pl === 'object' ? (pl.id || pl.label) : pl;
                 const rawLabel = typeof pl === 'object' ? (pl.label || pl.name || id) : pl;
                 let category = typeof pl === 'object' ? (pl.category || '') : '';
@@ -401,6 +435,44 @@ function DesignerUpload() {
                             positionLabel = id.substring(idx + 1);
                         }
                     }
+                }
+
+                // Check live availability from matchingLiveStyle & placement object
+                let isLiveAvailable = (typeof pl === 'object' ? (pl.active !== false && pl.available !== false) : true);
+
+                if (matchingLiveStyle && Array.isArray(matchingLiveStyle.placementCategories) && matchingLiveStyle.placementCategories.length > 0) {
+                    const normCat = (category || '').toLowerCase().trim().replace(/[\s_\-]/g, '');
+                    const normPos = (positionLabel || rawLabel || '').toLowerCase().trim().replace(/[\s_\-]/g, '');
+
+                    for (const pc of matchingLiveStyle.placementCategories) {
+                        const pcNorm = (pc.category || '').toLowerCase().trim().replace(/[\s_\-]/g, '');
+                        // If category matches
+                        if (pcNorm && (pcNorm === normCat || normCat.includes(pcNorm) || pcNorm.includes(normCat))) {
+                            if (pc.available === false || pc.active === false) {
+                                isLiveAvailable = false;
+                                break;
+                            }
+                            // Check option inside this category
+                            const opts = pc.placements || {};
+                            const optItems = Array.isArray(opts)
+                                ? opts
+                                : Object.entries(opts).map(([k, v]) => ({ label: k, ...v }));
+
+                            for (const opt of optItems) {
+                                const optNorm = (opt.label || opt.name || '').toLowerCase().trim().replace(/[\s_\-]/g, '');
+                                if (optNorm && (optNorm === normPos || normPos === optNorm || normPos.includes(optNorm) || optNorm.includes(normPos))) {
+                                    if (opt.available === false || opt.active === false) {
+                                        isLiveAvailable = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!isLiveAvailable) {
+                    return; // Skip unavailable placement!
                 }
 
                 const formattedCategory = category
@@ -423,7 +495,7 @@ function DesignerUpload() {
                     price: typeof pl === 'object' ? (pl.price ?? 0) : 0,
                     cost_dark: typeof pl === 'object' ? (pl.cost_dark ?? pl.darkPrice ?? 0) : 0,
                     cost_light: typeof pl === 'object' ? (pl.cost_light ?? pl.lightPrice ?? 0) : 0,
-                    active: typeof pl === 'object' ? (pl.active !== false && pl.available !== false) : true
+                    active: true
                 };
 
                 if (!merged[key].placements.some(existing => existing.id === id)) {
@@ -432,7 +504,7 @@ function DesignerUpload() {
             });
         });
         return Object.values(merged).filter(ps => ps.placements.length > 0);
-    }, [selectedProductObj]);
+    }, [selectedProductObj, dbPrintStyles]);
 
 
     /* ── Active tab follows color selection ─── */
