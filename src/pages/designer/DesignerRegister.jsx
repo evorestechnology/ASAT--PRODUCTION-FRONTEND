@@ -139,6 +139,37 @@ const styles = `
         background: #fff;
         box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
     }
+    .payment-label-with-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .payment-info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--gold);
+        font-size: 0.68rem;
+        text-transform: none;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+        cursor: help;
+    }
+    .payment-info-banner {
+        margin-top: 8px;
+        padding: 9px 12px;
+        background: rgba(197, 160, 89, 0.08);
+        border: 1px solid rgba(197, 160, 89, 0.3);
+        border-left: 3px solid var(--gold);
+        border-radius: 6px;
+        font-size: 0.74rem;
+        color: #6d5218;
+        line-height: 1.45;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-family: 'Montserrat', sans-serif;
+    }
     .auth-row { display: flex; gap: 20px; }
     .auth-row .auth-input-group { flex: 1; }
     .auth-phone-row { display: flex; gap: 10px; align-items: stretch; }
@@ -1222,27 +1253,51 @@ function DesignerRegister() {
                         {/* Dynamic Payout Method Input */}
                         {((form.country || '').trim().toLowerCase() === 'india' || (!form.country && form.countryCode.includes('+91'))) ? (
                             <div className="auth-input-group">
-                                <label>UPI ID (for Payouts) *</label>
+                                <div className="payment-label-with-info">
+                                    <label style={{ margin: 0 }}>UPI ID (for Payouts) *</label>
+                                    <span className="payment-info-badge" title="Ensure your UPI ID is active and correctly formatted">
+                                        <i className="fas fa-info-circle"></i> Verification Notice
+                                    </span>
+                                </div>
                                 <input 
                                     type="text" 
                                     className="auth-input" 
                                     placeholder="e.g. username@upi or phone@okaxis" 
                                     value={form.upiId} 
                                     onChange={e => set('upiId', e.target.value)} 
+                                    style={{ marginTop: '6px' }}
                                 />
                                 {errors.upiId && <div className="auth-err">{errors.upiId}</div>}
+                                <div className="payment-info-banner">
+                                    <i className="fas fa-info-circle" style={{ color: 'var(--gold)', marginTop: '2px', fontSize: '0.85rem', flexShrink: 0 }}></i>
+                                    <span>
+                                        <strong>Important:</strong> Please enter a valid and correct UPI ID for a clean and accurate transaction. Our company is not responsible for funds sent to an incorrect or mistyped UPI ID.
+                                    </span>
+                                </div>
                             </div>
                         ) : form.country ? (
                             <div className="auth-input-group">
-                                <label>PayPal ID (for Payouts) *</label>
+                                <div className="payment-label-with-info">
+                                    <label style={{ margin: 0 }}>PayPal ID (for Payouts) *</label>
+                                    <span className="payment-info-badge" title="Ensure your PayPal account email is active and verified">
+                                        <i className="fas fa-info-circle"></i> Verification Notice
+                                    </span>
+                                </div>
                                 <input 
                                     type="email" 
                                     className="auth-input" 
                                     placeholder="e.g. designer@example.com" 
                                     value={form.paypalId} 
                                     onChange={e => set('paypalId', e.target.value)} 
+                                    style={{ marginTop: '6px' }}
                                 />
                                 {errors.paypalId && <div className="auth-err">{errors.paypalId}</div>}
+                                <div className="payment-info-banner">
+                                    <i className="fas fa-info-circle" style={{ color: 'var(--gold)', marginTop: '2px', fontSize: '0.85rem', flexShrink: 0 }}></i>
+                                    <span>
+                                        <strong>Important:</strong> Please enter a valid and correct PayPal email address for clean and accurate international payouts. Our company is not responsible for funds sent to an incorrect PayPal ID.
+                                    </span>
+                                </div>
                             </div>
                         ) : null}
 
