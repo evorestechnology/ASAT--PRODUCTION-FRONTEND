@@ -379,14 +379,55 @@ function DesignerUpload() {
         // Merge all entries sharing the same style into one, deduplicating placements by id.
         const merged = {};
         selectedProductObj.printingStyles.forEach(ps => {
-            const key = (ps.style || '').toLowerCase();
+            const key = (ps.style || ps.name || ps.type || '').toLowerCase().trim();
+            if (!key) return;
             if (!merged[key]) {
-                merged[key] = { ...ps, placements: [] };
+                merged[key] = { ...ps, style: key, placements: [] };
             }
-            const activePlacements = (ps.placements || []).filter(pl => pl.active !== false);
+            const activePlacements = (ps.placements || []).filter(pl => pl.active !== false && pl.available !== false);
             activePlacements.forEach(pl => {
-                if (!merged[key].placements.some(existing => existing.id === pl.id)) {
-                    merged[key].placements.push(pl);
+                const id = typeof pl === 'object' ? (pl.id || pl.label) : pl;
+                const rawLabel = typeof pl === 'object' ? (pl.label || pl.name || id) : pl;
+                let category = typeof pl === 'object' ? (pl.category || '') : '';
+                let positionLabel = rawLabel;
+
+                if (!category && id) {
+                    if (rawLabel && id.endsWith('_' + rawLabel)) {
+                        category = id.substring(0, id.length - rawLabel.length - 1);
+                    } else if (id.includes('_')) {
+                        const idx = id.lastIndexOf('_');
+                        category = id.substring(0, idx);
+                        if (!rawLabel || rawLabel === id) {
+                            positionLabel = id.substring(idx + 1);
+                        }
+                    }
+                }
+
+                const formattedCategory = category
+                    ? category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                    : 'General';
+                const formattedPosLabel = positionLabel
+                    ? positionLabel.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                    : 'Position';
+                const fullDisplayLabel = formattedCategory !== 'General'
+                    ? `${formattedCategory} - ${formattedPosLabel}`
+                    : formattedPosLabel;
+
+                const item = {
+                    id,
+                    label: fullDisplayLabel,
+                    positionLabel: formattedPosLabel,
+                    category: formattedCategory,
+                    refImage: typeof pl === 'object' ? (pl.refImage || pl.image) : null,
+                    image: typeof pl === 'object' ? (pl.refImage || pl.image) : null,
+                    price: typeof pl === 'object' ? (pl.price ?? 0) : 0,
+                    cost_dark: typeof pl === 'object' ? (pl.cost_dark ?? pl.darkPrice ?? 0) : 0,
+                    cost_light: typeof pl === 'object' ? (pl.cost_light ?? pl.lightPrice ?? 0) : 0,
+                    active: typeof pl === 'object' ? (pl.active !== false && pl.available !== false) : true
+                };
+
+                if (!merged[key].placements.some(existing => existing.id === id)) {
+                    merged[key].placements.push(item);
                 }
             });
         });
@@ -394,7 +435,7 @@ function DesignerUpload() {
     }, [selectedProductObj]);
 
 
-    /* â”€â”€ Active tab follows color selection â”€â”€â”€ */
+    /* ── Active tab follows color selection ─── */
     useEffect(() => {
         if (selectedColors.length > 0 && (!activeColorTab || !selectedColors.includes(activeColorTab))) {
             setActiveColorTab(primaryColor || selectedColors[0]);
@@ -403,7 +444,7 @@ function DesignerUpload() {
         }
     }, [selectedColors, primaryColor]);
 
-    /* â”€â”€ Step 1 handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Step 1 handlers ────────────────────────── */
     const handleCategoryChange = (cat) => {
         setSelectedCategory(cat);
         setSelectedProductId('');
@@ -433,56 +474,14 @@ function DesignerUpload() {
         });
     };
 
-    /* â”€â”€ Step 2 helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Step 2 helpers ─────────────────────────── */
     const getPlacementsForStyle = useCallback((styleName) => {
         if (!selectedProductObj) return [];
-        // Collect placements from ALL entries matching this style name (DB stores one row per category)
-        const matchingStyles = (selectedProductObj.printingStyles || []).filter(
+        const match = availableTechniques.find(
             x => x.style === styleName || x.style?.toLowerCase() === styleName?.toLowerCase()
         );
-        if (matchingStyles.length === 0) return [];
-
-        const seenIds = new Set();
-        const allPlacements = [];
-        matchingStyles.forEach(ps => {
-            if (!Array.isArray(ps.placements)) return;
-            ps.placements.filter(pl => pl.active !== false).forEach(pl => {
-                const id = typeof pl === 'object' ? pl.id : pl;
-                if (seenIds.has(id)) return; // deduplicate
-                seenIds.add(id);
-                allPlacements.push(pl);
-            });
-        });
-
-        return allPlacements.map(pl => {
-            const id = typeof pl === 'object' ? pl.id : pl;
-            const label = typeof pl === 'object' ? (pl.label || pl.id) : pl;
-
-            // Extract category name from placement id and label
-            let categoryName = '';
-            if (typeof pl === 'object' && pl.id) {
-                const opt = pl.label || '';
-                if (opt && pl.id.endsWith('_' + opt)) {
-                    categoryName = pl.id.substring(0, pl.id.length - opt.length - 1);
-                } else if (pl.id.includes('_')) {
-                    const idx = pl.id.lastIndexOf('_');
-                    categoryName = pl.id.substring(0, idx);
-                } else {
-                    categoryName = pl.id;
-                }
-            }
-
-            const formattedCategory = categoryName
-                ? categoryName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-                : '';
-            const formattedLabel = label ? label.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
-            const displayLabel = formattedCategory
-                ? `${formattedCategory} - ${formattedLabel}`
-                : formattedLabel;
-
-            return { id, label: displayLabel, refImage: typeof pl === 'object' ? pl.image : null };
-        });
-    }, [selectedProductObj]);
+        return match ? match.placements : [];
+    }, [selectedProductObj, availableTechniques]);
 
     // visibleTechniques: for primary color shows ALL techniques;
     // for secondary colors shows ONLY the techniques/placements already configured on the primary.
@@ -1055,7 +1054,7 @@ function DesignerUpload() {
                             ) : visibleTechniques.map(tech => {
                                 const techKey = tech.style;
                                 const isOpen = expandedTechnique === techKey;
-                                const placements = tech.placements;
+                                const placements = tech.placements || [];
                                 const configuredCount = placements.filter(pl => {
                                     const c = getPlacementConfig(activeColorTab, techKey, pl.id);
                                     return c && c.designFile && c.mockupFile;
@@ -1064,6 +1063,15 @@ function DesignerUpload() {
                                     : techKey === 'dtg' ? 'Direct to Garment (DTG)'
                                     : techKey === 'embrio' ? 'Embroidery'
                                     : techKey.toUpperCase();
+
+                                // Group placements by category within this technique
+                                const categoryGroups = {};
+                                placements.forEach(pl => {
+                                    const cat = pl.category || 'General';
+                                    if (!categoryGroups[cat]) categoryGroups[cat] = [];
+                                    categoryGroups[cat].push(pl);
+                                });
+                                const categoryEntries = Object.entries(categoryGroups);
 
                                 return (
                                     <div key={techKey} style={{
@@ -1101,97 +1109,170 @@ function DesignerUpload() {
                                             </div>
                                         </div>
 
-                                        {/* Placement rows */}
+                                        {/* Placement Category Groups */}
                                         {isOpen && (
                                             <div style={{
                                                 borderTop: '1px solid rgba(212,175,55,0.15)',
-                                                padding: '10px 14px',
+                                                padding: '12px 14px',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                gap: 8,
+                                                gap: 12,
                                                 background: '#fdfdfd'
                                             }}>
-                                                {placements.map(pl => {
-                                                    const config = getPlacementConfig(activeColorTab, techKey, pl.id);
-                                                    const isConfigured = !!(config?.designFile && config?.mockupFile);
-                                                    const plKey = `${techKey}_${pl.id}`;
-                                                    const isPlExpanded = expandedPlacement === plKey;
+                                                {categoryEntries.map(([catName, catPlacements]) => {
+                                                    const catDoneCount = catPlacements.filter(pl => {
+                                                        const c = getPlacementConfig(activeColorTab, techKey, pl.id);
+                                                        return c && c.designFile && c.mockupFile;
+                                                    }).length;
+                                                    const isCatAllDone = catDoneCount === catPlacements.length && catDoneCount > 0;
+
                                                     return (
-                                                        <div key={pl.id} style={{
-                                                            border: `1px solid ${isConfigured ? 'rgba(46,204,113,0.45)' : '#e8e8e8'}`,
-                                                            borderRadius: 4, overflow: 'hidden'
+                                                        <div key={catName} style={{
+                                                            border: '1px solid #e2e8f0',
+                                                            borderRadius: 6,
+                                                            overflow: 'hidden',
+                                                            background: '#ffffff',
+                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
                                                         }}>
-                                                            {/* Placement row header */}
-                                                            <div
-                                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', background: isPlExpanded ? '#fbfaf8' : '#ffffff', cursor: 'pointer' }}
-                                                                onClick={() => setExpandedPlacement(isPlExpanded ? '' : plKey)}>
+                                                            {/* Placement Category Header */}
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                                padding: '10px 14px',
+                                                                background: '#f8fafc',
+                                                                borderBottom: '1px solid #edf2f7'
+                                                            }}>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                                                                    <div style={{
-                                                                        width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
-                                                                        border: `2px solid ${isConfigured ? '#2ecc71' : '#bbbbbb'}`,
-                                                                        background: isConfigured ? '#2ecc71' : 'transparent',
-                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                                    <i className="fas fa-layer-group" style={{ color: 'var(--gold)', fontSize: '0.78rem' }} />
+                                                                    <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#1e293b', textTransform: 'capitalize' }}>
+                                                                        {catName}
+                                                                    </span>
+                                                                    <span style={{
+                                                                        fontSize: '0.62rem',
+                                                                        padding: '2px 8px',
+                                                                        background: isCatAllDone ? 'rgba(46,204,113,0.15)' : (catDoneCount > 0 ? 'rgba(212,175,55,0.15)' : '#f1f5f9'),
+                                                                        color: isCatAllDone ? '#27ae60' : (catDoneCount > 0 ? 'var(--gold)' : '#64748b'),
+                                                                        borderRadius: 10,
+                                                                        fontWeight: 700
                                                                     }}>
-                                                                        {isConfigured && <i className="fas fa-check" style={{ color: 'white', fontSize: '0.45rem' }} />}
-                                                                    </div>
-                                                                    <span style={{ fontSize: '0.82rem', color: '#333', fontWeight: 500, textTransform: 'capitalize' }}>
-                                                                        {pl.label}
-                                                                        {activeColorTab !== primaryColor && (
-                                                                            <span style={{ marginLeft: 6, fontSize: '0.6rem', fontWeight: 800, color: '#e67e22', textTransform: 'uppercase', letterSpacing: 0.5 }}>Mandatory</span>
-                                                                        )}
+                                                                        {catDoneCount}/{catPlacements.length} done
                                                                     </span>
                                                                 </div>
-                                                                <i className={`fas fa-chevron-${isPlExpanded ? 'up' : 'down'}`} style={{ color: '#888', fontSize: '0.65rem' }} />
+                                                                <span style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 500 }}>
+                                                                    {catPlacements.length} position{catPlacements.length !== 1 ? 's' : ''}
+                                                                </span>
                                                             </div>
 
-                                                            {/* Placement config area */}
-                                                            {isPlExpanded && (
-                                                                <div style={{ padding: '14px 12px', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: 14, borderTop: '1px solid #f0f0f0' }}>
-                                                                    {/* Reference boundary image */}
-                                                                    {(pl.refImage || pl.image) ? (
-                                                                        <div>
-                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Print Position Reference (Hover to Zoom)</div>
-                                                                            <div style={{ border: '1px dashed rgba(212,175,55,0.35)', borderRadius: 6, padding: 8, textAlign: 'center', background: '#fafafa' }}>
-                                                                                <ZoomableImage src={pl.refImage || pl.image} alt={`Print Position: ${pl.label}`} maxHeight={120} />
-                                                                            </div>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div style={{ border: '1px dashed #e0e0e0', borderRadius: 4, padding: '10px', textAlign: 'center', background: '#fafafa', fontSize: '0.72rem', color: '#777' }}>
-                                                                            [ Print Position Reference Boundary Area ]
-                                                                        </div>
-                                                                    )}
+                                                            {/* Positions inside this Placement Category */}
+                                                            <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 8, background: '#ffffff' }}>
+                                                                {catPlacements.map(pl => {
+                                                                    const config = getPlacementConfig(activeColorTab, techKey, pl.id);
+                                                                    const isConfigured = !!(config?.designFile && config?.mockupFile);
+                                                                    const plKey = `${techKey}_${pl.id}`;
+                                                                    const isPlExpanded = expandedPlacement === plKey;
 
-                                                                    {/* Two upload zones side by side (PNG / JPG) */}
-                                                                    <div className="dsn-upload__drop-grid">
-                                                                        <div>
-                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Upload Design (PNG / JPG) *</div>
-                                                                            <div style={{ height: 110 }}>
-                                                                                <DropZone
-                                                                                    label="Design File (PNG / JPG)"
-                                                                                    preview={config?.designPreview || ''}
-                                                                                    onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'designFile', f)}
-                                                                                    onRemove={() => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'designFile', null)}
-                                                                                    accept=".png, .jpg, .jpeg, .webp, image/png, image/jpeg, image/webp"
-                                                                                    onInvalidFile={(msg) => showToast(msg, 'warning')}
-                                                                                />
+                                                                    return (
+                                                                        <div key={pl.id} style={{
+                                                                            border: `1px solid ${isConfigured ? 'rgba(46,204,113,0.45)' : (isPlExpanded ? 'var(--gold)' : '#e2e8f0')}`,
+                                                                            borderRadius: 5,
+                                                                            overflow: 'hidden',
+                                                                            transition: 'all 0.15s'
+                                                                        }}>
+                                                                            {/* Position row header */}
+                                                                            <div
+                                                                                style={{
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'space-between',
+                                                                                    padding: '9px 12px',
+                                                                                    background: isPlExpanded ? 'rgba(212,175,55,0.03)' : '#ffffff',
+                                                                                    cursor: 'pointer'
+                                                                                }}
+                                                                                onClick={() => setExpandedPlacement(isPlExpanded ? '' : plKey)}>
+                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                                                                                    <div style={{
+                                                                                        width: 16,
+                                                                                        height: 16,
+                                                                                        borderRadius: '50%',
+                                                                                        flexShrink: 0,
+                                                                                        border: `2px solid ${isConfigured ? '#2ecc71' : '#cbd5e1'}`,
+                                                                                        background: isConfigured ? '#2ecc71' : 'transparent',
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        justifyContent: 'center'
+                                                                                    }}>
+                                                                                        {isConfigured && <i className="fas fa-check" style={{ color: 'white', fontSize: '0.45rem' }} />}
+                                                                                    </div>
+                                                                                    <span style={{ fontSize: '0.82rem', color: '#1e293b', fontWeight: 600, textTransform: 'capitalize' }}>
+                                                                                        {pl.positionLabel || pl.label}
+                                                                                        {activeColorTab !== primaryColor && (
+                                                                                            <span style={{ marginLeft: 6, fontSize: '0.6rem', fontWeight: 800, color: '#e67e22', textTransform: 'uppercase', letterSpacing: 0.5 }}>Mandatory</span>
+                                                                                        )}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                                    {isConfigured && (
+                                                                                        <span style={{ fontSize: '0.65rem', color: '#27ae60', fontWeight: 600 }}>Ready</span>
+                                                                                    )}
+                                                                                    <i className={`fas fa-chevron-${isPlExpanded ? 'up' : 'down'}`} style={{ color: isPlExpanded ? 'var(--gold)' : '#94a3b8', fontSize: '0.65rem' }} />
+                                                                                </div>
                                                                             </div>
+
+                                                                            {/* Position config area */}
+                                                                            {isPlExpanded && (
+                                                                                <div style={{ padding: '14px 12px', background: '#fcfcfc', display: 'flex', flexDirection: 'column', gap: 14, borderTop: '1px solid #f1f5f9' }}>
+                                                                                    {/* Reference boundary image */}
+                                                                                    {(pl.refImage || pl.image) ? (
+                                                                                        <div>
+                                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                                                                                                Print Position Reference (Hover to Zoom)
+                                                                                            </div>
+                                                                                            <div style={{ border: '1px dashed rgba(212,175,55,0.35)', borderRadius: 6, padding: 8, textAlign: 'center', background: '#ffffff' }}>
+                                                                                                <ZoomableImage src={pl.refImage || pl.image} alt={`Print Position: ${pl.positionLabel || pl.label}`} maxHeight={120} />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <div style={{ border: '1px dashed #e2e8f0', borderRadius: 4, padding: '10px', textAlign: 'center', background: '#ffffff', fontSize: '0.72rem', color: '#94a3b8' }}>
+                                                                                            [ Print Position Reference Boundary Area ]
+                                                                                        </div>
+                                                                                    )}
+
+                                                                                    {/* Two upload zones side by side (PNG / JPG) */}
+                                                                                    <div className="dsn-upload__drop-grid">
+                                                                                        <div>
+                                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Upload Design (PNG / JPG) *</div>
+                                                                                            <div style={{ height: 110 }}>
+                                                                                                <DropZone
+                                                                                                    label="Design File (PNG / JPG)"
+                                                                                                    preview={config?.designPreview || ''}
+                                                                                                    onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'designFile', f)}
+                                                                                                    onRemove={() => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'designFile', null)}
+                                                                                                    accept=".png, .jpg, .jpeg, .webp, image/png, image/jpeg, image/webp"
+                                                                                                    onInvalidFile={(msg) => showToast(msg, 'warning')}
+                                                                                                />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Reference Mockup (PNG / JPG) *</div>
+                                                                                            <div style={{ height: 110 }}>
+                                                                                                <DropZone
+                                                                                                    label="Mockup Image (PNG / JPG)"
+                                                                                                    preview={config?.mockupPreview || ''}
+                                                                                                    onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'mockupFile', f)}
+                                                                                                    onRemove={() => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'mockupFile', null)}
+                                                                                                    accept=".png, .jpg, .jpeg, .webp, image/png, image/jpeg, image/webp"
+                                                                                                    onInvalidFile={(msg) => showToast(msg, 'warning')}
+                                                                                                />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
-                                                                        <div>
-                                                                            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Reference Mockup (PNG / JPG) *</div>
-                                                                            <div style={{ height: 110 }}>
-                                                                                <DropZone
-                                                                                    label="Mockup Image (PNG / JPG)"
-                                                                                    preview={config?.mockupPreview || ''}
-                                                                                    onFile={f => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'mockupFile', f)}
-                                                                                    onRemove={() => setPlacementFile(activeColorTab, techKey, pl.id, pl.label, 'mockupFile', null)}
-                                                                                    accept=".png, .jpg, .jpeg, .webp, image/png, image/jpeg, image/webp"
-                                                                                    onInvalidFile={(msg) => showToast(msg, 'warning')}
-                                                                                />
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                                    );
+                                                                })}
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}

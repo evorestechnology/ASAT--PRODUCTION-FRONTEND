@@ -327,56 +327,60 @@ function DesignerProductDetail() {
                                                 {ps.style === 'dtf' ? 'Direct to Film (DTF)' : ps.style === 'dtg' ? 'Direct to Garment (DTG)' : ps.style === 'embrio' ? 'Embroidery' : ps.style}
                                             </div>
                                             {activePlacements.length > 0 ? (
-                                                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                                    {activePlacements.map(pl => {
-                                                        const id = pl.id || '';
-                                                        const label = pl.label || id || '';
-                                                        
-                                                        // Extract category name from placement id and label
-                                                        let categoryName = '';
-                                                        if (id) {
-                                                            const opt = label || '';
-                                                            if (opt && id.endsWith('_' + opt)) {
-                                                                categoryName = id.substring(0, id.length - opt.length - 1);
-                                                            } else if (id.includes('_')) {
-                                                                const idx = id.lastIndexOf('_');
-                                                                categoryName = id.substring(0, idx);
-                                                            } else {
-                                                                categoryName = id;
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                    {(() => {
+                                                        const catGroups = {};
+                                                        activePlacements.forEach(pl => {
+                                                            const id = pl.id || '';
+                                                            const rawLabel = pl.label || id || '';
+                                                            let cat = pl.category || '';
+                                                            let pos = rawLabel;
+                                                            if (!cat && id) {
+                                                                if (rawLabel && id.endsWith('_' + rawLabel)) {
+                                                                    cat = id.substring(0, id.length - rawLabel.length - 1);
+                                                                } else if (id.includes('_')) {
+                                                                    const idx = id.lastIndexOf('_');
+                                                                    cat = id.substring(0, idx);
+                                                                    if (!rawLabel || rawLabel === id) pos = id.substring(idx + 1);
+                                                                }
                                                             }
-                                                        }
-                                                        
-                                                        const formattedCategory = categoryName
-                                                            ? categoryName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-                                                            : '';
-                                                        const formattedLabel = label ? label.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
-                                                        const displayLabel = formattedCategory 
-                                                            ? `${formattedCategory} - ${formattedLabel}` 
-                                                            : formattedLabel;
+                                                            const fCat = cat ? cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'General';
+                                                            const fPos = pos ? pos.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Position';
+                                                            if (!catGroups[fCat]) catGroups[fCat] = [];
+                                                            catGroups[fCat].push({ ...pl, posLabel: fPos });
+                                                        });
 
-                                                        const pr = Number(pl.price) || 0;
-                                                        const cd = Number(pl.cost_dark ?? pl.darkPrice) || 0;
-                                                        const cl = Number(pl.cost_light ?? pl.lightPrice) || 0;
-                                                        let priceDisplay = '';
-                                                        if (pr > 0) {
-                                                            priceDisplay = `₹${pr}`;
-                                                        } else if (cd > 0 || cl > 0) {
-                                                            if (cd === cl) priceDisplay = `₹${cd}`;
-                                                            else priceDisplay = `Dark: ₹${cd} | Light: ₹${cl}`;
-                                                        } else {
-                                                            priceDisplay = `₹${pr}`;
-                                                        }
+                                                        return Object.entries(catGroups).map(([cName, cPls]) => (
+                                                            <div key={cName} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '8px 12px' }}>
+                                                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                    <i className="fas fa-layer-group" style={{ color: 'var(--gold)', fontSize: '0.7rem' }} />
+                                                                    <span>{cName}</span>
+                                                                </div>
+                                                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                                    {cPls.map(pl => {
+                                                                        const pr = Number(pl.price) || 0;
+                                                                        const cd = Number(pl.cost_dark ?? pl.darkPrice) || 0;
+                                                                        const cl = Number(pl.cost_light ?? pl.lightPrice) || 0;
+                                                                        let priceDisplay = '';
+                                                                        if (pr > 0) priceDisplay = `₹${pr}`;
+                                                                        else if (cd > 0 || cl > 0) {
+                                                                            priceDisplay = cd === cl ? `₹${cd}` : `Dark: ₹${cd} | Light: ₹${cl}`;
+                                                                        } else priceDisplay = `₹${pr}`;
 
-                                                        return (
-                                                            <span key={pl.id} style={{
-                                                                fontSize: '0.7rem', padding: '2px 8px',
-                                                                background: '#fafafa', border: '1px solid #eee',
-                                                                color: '#666', borderRadius: 12, textTransform: 'capitalize'
-                                                            }}>
-                                                                {displayLabel} ({priceDisplay})
-                                                            </span>
-                                                        );
-                                                    })}
+                                                                        return (
+                                                                            <span key={pl.id} style={{
+                                                                                fontSize: '0.7rem', padding: '3px 9px',
+                                                                                background: '#ffffff', border: '1px solid #cbd5e1',
+                                                                                color: '#1e293b', borderRadius: 4, fontWeight: 500
+                                                                            }}>
+                                                                                {pl.posLabel} <span style={{ color: '#64748b' }}>({priceDisplay})</span>
+                                                                            </span>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        ));
+                                                    })()}
                                                 </div>
                                             ) : (
                                                 <span style={{ fontSize: '0.75rem', color: '#999', fontStyle: 'italic' }}>No active placements configured</span>

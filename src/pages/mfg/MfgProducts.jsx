@@ -207,8 +207,8 @@ function MfgProducts() {
             const grouped = {};
             (ps.placements || []).forEach(pl => {
                 const opt = pl.label || '';
-                let cat = 'default';
-                if (pl.id) {
+                let cat = pl.category || 'default';
+                if (cat === 'default' && pl.id) {
                     if (opt && pl.id.endsWith('_' + opt)) {
                         cat = pl.id.substring(0, pl.id.length - opt.length - 1);
                     } else if (pl.id.includes('_')) {
@@ -224,15 +224,17 @@ function MfgProducts() {
                     imageFile: null,
                     price: pl.price || '',
                     darkPrice: pl.cost_dark || '',
-                    lightPrice: pl.cost_light || ''
+                    lightPrice: pl.cost_light || '',
+                    available: pl.active !== false && pl.available !== false
                 };
             });
             Object.keys(grouped).forEach(cat => {
                 const placementsInCat = ps.placements.filter(pl => {
                     const optId = pl.id || '';
-                    return optId.startsWith(cat + '_') || optId === cat;
+                    const plCat = pl.category || '';
+                    return plCat === cat || optId.startsWith(cat + '_') || optId === cat;
                 });
-                const isActive = placementsInCat.length > 0 ? placementsInCat.some(pl => pl.active !== false) : true;
+                const isActive = placementsInCat.length > 0 ? placementsInCat.some(pl => pl.active !== false && pl.available !== false) : true;
 
                 parsedMethods.push({
                     id: fromStyleId + '_' + cat + '_' + Date.now() + Math.random(),
@@ -529,7 +531,8 @@ function MfgProducts() {
                         darkPrice: pl.darkPrice !== undefined ? String(pl.darkPrice) : '',
                         lightPrice: pl.lightPrice !== undefined ? String(pl.lightPrice) : '',
                         imageFile: null,
-                        imagePreview: pl.imagePreview || ''
+                        imagePreview: pl.imagePreview || '',
+                        available: pl.available !== false
                     };
                 });
                 newEntries.push({
@@ -537,7 +540,8 @@ function MfgProducts() {
                     type: getNormalizedType(selectedStyle.category),
                     category: pc.category,
                     options: opts,
-                    fromStyleId: styleId
+                    fromStyleId: styleId,
+                    active: pc.available !== false
                 });
             });
             setPrintMethods(prev => [...prev, ...newEntries]);
@@ -560,7 +564,8 @@ function MfgProducts() {
                     darkPrice: pl.darkPrice !== undefined ? String(pl.darkPrice) : '',
                     lightPrice: pl.lightPrice !== undefined ? String(pl.lightPrice) : '',
                     imageFile: null,
-                    imagePreview: pl.imagePreview || ''
+                    imagePreview: pl.imagePreview || '',
+                    available: pl.available !== false
                 };
             });
             const newEntry = {
@@ -569,7 +574,8 @@ function MfgProducts() {
                 category: pc.category,
                 options: opts,
                 fromStyleId: styleId,
-                fromCategory: pc.category
+                fromCategory: pc.category,
+                active: pc.available !== false
             };
             setPrintMethods(prev => [...prev, newEntry]);
         } else {
@@ -683,11 +689,12 @@ function MfgProducts() {
                     styleGroups[pm.type].push({
                         id: `${pm.category}_${optName}`,
                         label: optName,
+                        category: pm.category,
                         image: imgUrl,
                         price: pm.type === 'dtg' ? (darkP || lightP || flatP) : flatP,
                         cost_dark: darkP,
                         cost_light: lightP,
-                        active: pm.active !== false
+                        active: (pm.active !== false && opt.available !== false)
                     });
                 }
             }
