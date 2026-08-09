@@ -1014,6 +1014,8 @@ function ProductDetail() {
                         description: parsedDesc ? (parsedDesc.text || '') : (designData.description || 'No description available for this premium designer item.'),
                         customerImages: parsedDesc ? parsedDesc.customerImages : null,
                         baseProductId: parsedDesc ? parsedDesc.baseProductId : null,
+                        available: designData.is_available !== false && designData.available !== false,
+                        unavailableReason: designData.unavailable_reason || '',
                         details: designData.details || [
                             'Premium heavyweight fabric construction',
                             'Precision tailoring designed for modern drape',
@@ -1058,11 +1060,8 @@ function ProductDetail() {
                             if (catData) {
                                 const catDetails = catData.details || [];
                                 if (catData.available === false || catDetails.includes('__DELETED__')) {
-                                    if (isMounted) {
-                                        setProduct(null);
-                                        setLoading(false);
-                                    }
-                                    return;
+                                    dbProduct.available = false;
+                                    dbProduct.unavailableReason = 'Base product is currently unavailable';
                                 }
 
                                 if (catData.colors && Array.isArray(catData.colors)) {
@@ -1074,11 +1073,8 @@ function ProductDetail() {
                                 }
 
                                 if (dbProduct.colors.length === 0) {
-                                    if (isMounted) {
-                                        setProduct(null);
-                                        setLoading(false);
-                                    }
-                                    return;
+                                    dbProduct.available = false;
+                                    dbProduct.unavailableReason = 'No available colors for this product';
                                 }
 
                                 const rawSizes = dbProduct.sizes && dbProduct.sizes.length > 0 
@@ -1499,9 +1495,26 @@ function ProductDetail() {
 
                         <div className="pdp-actions">
                             {product.available === false || product.allSizesOut ? (
-                                <button className="pdp-add-bag" disabled style={{ background: '#555555', cursor: 'not-allowed', color: '#ffffff', width: '100%', opacity: 0.7, fontWeight: 700 }}>
-                                    <i className="fas fa-ban" style={{ marginRight: 8 }} /> OUT OF STOCK
-                                </button>
+                                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{
+                                        padding: '11px 16px',
+                                        background: '#fff1f2',
+                                        border: '1px solid #fecdd3',
+                                        borderRadius: 6,
+                                        color: '#be123c',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 8
+                                    }}>
+                                        <i className="fas fa-exclamation-circle" />
+                                        <span>{product.unavailableReason || (product.allSizesOut ? 'All sizes are currently out of stock.' : 'This product or its printing configuration is currently unavailable.')}</span>
+                                    </div>
+                                    <button className="pdp-add-bag" disabled style={{ background: '#475569', cursor: 'not-allowed', color: '#ffffff', width: '100%', opacity: 0.8, fontWeight: 700 }}>
+                                        <i className="fas fa-ban" style={{ marginRight: 8 }} /> {product.allSizesOut ? 'OUT OF STOCK' : 'CURRENTLY UNAVAILABLE'}
+                                    </button>
+                                </div>
                             ) : (
                                 <>
                                     <button className="pdp-add-bag" onClick={handleAddToBag}>
