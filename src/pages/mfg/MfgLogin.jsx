@@ -178,7 +178,7 @@ function MfgLogin() {
         if (role === null) return;
 
         if (role === 'mfg') {
-            // Verify manufacturer profile exists
+            // Verify manufacturer profile exists and account is active
             const verifyManufacturer = async () => {
                 try {
                     const mfgData = await apiFetch('/api/manufacturers/me');
@@ -189,9 +189,18 @@ function MfgLogin() {
                         setError('Access denied. This account is not a manufacturer.');
                     }
                 } catch (err) {
-                    console.error('Failed to fetch manufacturer profile:', err);
                     logout();
-                    setError('Unable to verify manufacturer profile. Please try again.');
+                    // Surface specific account status errors from the backend
+                    if (err?.accountDeleted) {
+                        setError('This manufacturer account has been deleted. Please contact ASAT support.');
+                    } else if (err?.accountBlocked) {
+                        setError('Your manufacturer account has been blocked by the admin. Please contact support.');
+                    } else if (err?.accountSuspended) {
+                        setError('Your manufacturer account is currently suspended. Please contact support.');
+                    } else {
+                        console.error('Failed to fetch manufacturer profile:', err);
+                        setError('Unable to verify manufacturer profile. Please try again.');
+                    }
                 }
             };
             verifyManufacturer();
