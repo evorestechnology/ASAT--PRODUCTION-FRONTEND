@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/admin.css';
 import BackButton from '../../components/BackButton';
 import { apiFetch, uploadFile } from '../../api';
@@ -371,6 +372,7 @@ const inlineStyles = `
 `;
 
 function MasterSettings() {
+    const navigate = useNavigate();
     const [terms, setTerms] = useState('');
     const [shippingNote, setShippingNote] = useState('');
     const [admins, setAdmins] = useState([]);
