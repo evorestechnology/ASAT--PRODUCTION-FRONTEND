@@ -439,6 +439,186 @@ const styles = `
         margin-bottom: 20px;
         border-radius: 2px;
     }
+
+    /* ─── Terms & Conditions Modal ─── */
+    .tc-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10001;
+        background: rgba(5, 5, 5, 0.97);
+        backdrop-filter: blur(20px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .tc-container {
+        width: 100%;
+        max-width: 780px;
+        max-height: 92vh;
+        background: #0e0e0e;
+        border: 1px solid rgba(197, 160, 89, 0.3);
+        border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.9), 0 0 60px rgba(197,160,89,0.07);
+        overflow: hidden;
+    }
+    .tc-header {
+        padding: 28px 36px 22px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        background: linear-gradient(180deg, rgba(197,160,89,0.06) 0%, transparent 100%);
+    }
+    .tc-header-left { display: flex; flex-direction: column; gap: 4px; }
+    .tc-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #fff;
+    }
+    .tc-title span { color: var(--gold); }
+    .tc-subtitle {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.4);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+    .tc-scroll-hint {
+        font-size: 0.72rem;
+        color: rgba(197,160,89,0.7);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 0.5px;
+        animation: tc-pulse 2s ease infinite;
+    }
+    @keyframes tc-pulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+    .tc-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 30px 36px;
+        color: rgba(255,255,255,0.82);
+        font-size: 0.88rem;
+        line-height: 1.75;
+        scroll-behavior: smooth;
+    }
+    .tc-body::-webkit-scrollbar { width: 5px; }
+    .tc-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+    .tc-body::-webkit-scrollbar-thumb { background: rgba(197,160,89,0.4); border-radius: 10px; }
+    .tc-section {
+        margin-bottom: 32px;
+        padding-bottom: 28px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .tc-section:last-child { border-bottom: none; margin-bottom: 0; }
+    .tc-section-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1rem;
+        color: var(--gold);
+        margin-bottom: 16px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .tc-section-title::before {
+        content: '';
+        display: inline-block;
+        width: 3px;
+        height: 18px;
+        background: var(--gold);
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+    .tc-clause {
+        margin-bottom: 12px;
+        padding-left: 14px;
+        border-left: 1px solid rgba(197,160,89,0.12);
+        color: rgba(255,255,255,0.78);
+    }
+    .tc-clause-num {
+        font-weight: 700;
+        color: rgba(197,160,89,0.9);
+        margin-right: 6px;
+    }
+    .tc-bullet-list {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 10px;
+    }
+    .tc-bullet-list li {
+        padding: 5px 0 5px 22px;
+        position: relative;
+        color: rgba(255,255,255,0.72);
+    }
+    .tc-bullet-list li::before {
+        content: '✦';
+        position: absolute;
+        left: 0;
+        color: rgba(197,160,89,0.6);
+        font-size: 0.65rem;
+        top: 8px;
+    }
+    .tc-footer {
+        padding: 22px 36px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        flex-shrink: 0;
+        background: #0e0e0e;
+    }
+    .tc-accept-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        background: rgba(197, 160, 89, 0.05);
+        border: 1px solid rgba(197, 160, 89, 0.2);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .tc-accept-row.enabled:hover {
+        border-color: rgba(197, 160, 89, 0.5);
+        background: rgba(197, 160, 89, 0.09);
+    }
+    .tc-accept-row.disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+    .tc-accept-row input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--gold);
+        cursor: inherit;
+        flex-shrink: 0;
+    }
+    .tc-accept-row span {
+        font-size: 0.83rem;
+        color: rgba(255,255,255,0.88);
+        line-height: 1.5;
+    }
+    .tc-scroll-progress {
+        font-size: 0.7rem;
+        color: rgba(197,160,89,0.6);
+        text-align: center;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+    .tc-btn-row {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
 `;
 
 function DesignerRegister() {
@@ -474,6 +654,12 @@ function DesignerRegister() {
     const [videoLoading, setVideoLoading] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Terms & Conditions states
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [termsScrolledToBottom, setTermsScrolledToBottom] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [termsCheckboxTicked, setTermsCheckboxTicked] = useState(false);
 
     // Profile Photo States
     const [avatarFile, setAvatarFile] = useState(null);
@@ -686,8 +872,25 @@ function DesignerRegister() {
         }
     };
 
+    const handleTermsScroll = (e) => {
+        const el = e.target;
+        const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 30;
+        if (isAtBottom) setTermsScrolledToBottom(true);
+    };
+
+    const handleAcceptTerms = () => {
+        if (!termsScrolledToBottom) return;
+        setTermsCheckboxTicked(prev => !prev);
+    };
+
+    const handleConfirmTerms = () => {
+        if (!termsCheckboxTicked) return;
+        setTermsAccepted(true);
+        setShowTermsModal(false);
+    };
+
     const handleCompleteRegistration = async () => {
-        if (!agreedToTerms || otpSending || registerLoading) return;
+        if (!agreedToTerms || !termsAccepted || otpSending || registerLoading) return;
         await triggerSendOtp();
     };
 
@@ -724,6 +927,7 @@ function DesignerRegister() {
                     country: form.country,
                     upiId: form.upiId,
                     paypalId: form.paypalId,
+                    termsAccepted: termsAccepted,
                 })
             });
             
@@ -1120,13 +1324,33 @@ function DesignerRegister() {
                                 </div>
                             )}
 
-                            <div className="ppt-terms-checkbox" style={{ width: '100%' }} onClick={() => setAgreedToTerms(prev => !prev)}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={agreedToTerms} 
-                                    onChange={(e) => e.stopPropagation()} 
-                                />
-                                <span>I have completed the onboarding training and fully accept the ASAT Designer Terms and Conditions.</span>
+                            {/* Terms & Conditions acceptance row */}
+                            <div style={{ width: '100%', marginTop: '22px' }}>
+                                {termsAccepted ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 18px', background: 'rgba(40,167,69,0.08)', border: '1px solid rgba(40,167,69,0.35)', borderRadius: '8px', marginBottom: '10px' }}>
+                                        <i className="fas fa-check-circle" style={{ color: '#4caf50', fontSize: '1.1rem' }}></i>
+                                        <span style={{ fontFamily: 'Montserrat,sans-serif', fontSize: '0.83rem', color: 'rgba(255,255,255,0.85)' }}>Terms &amp; Conditions accepted ✓</span>
+                                        <button type="button" onClick={() => { setShowTermsModal(true); setTermsScrolledToBottom(false); setTermsCheckboxTicked(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(197,160,89,0.7)', fontSize: '0.72rem', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Montserrat,sans-serif', letterSpacing: '0.5px' }}>Review</button>
+                                    </div>
+                                ) : (
+                                    <button type="button" onClick={() => { setShowTermsModal(true); setTermsScrolledToBottom(false); setTermsCheckboxTicked(false); }} style={{ width: '100%', padding: '14px 18px', background: 'rgba(197,160,89,0.06)', border: '1px solid rgba(197,160,89,0.25)', borderRadius: '8px', color: 'rgba(255,255,255,0.85)', fontFamily: 'Montserrat,sans-serif', fontSize: '0.83rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.3s', marginBottom: '10px' }}
+                                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(197,160,89,0.5)'; e.currentTarget.style.background = 'rgba(197,160,89,0.1)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(197,160,89,0.25)'; e.currentTarget.style.background = 'rgba(197,160,89,0.06)'; }}
+                                    >
+                                        <i className="fas fa-file-contract" style={{ color: 'var(--gold)', fontSize: '1rem' }}></i>
+                                        <span>Read &amp; Accept Designer Terms &amp; Conditions <span style={{ color: 'rgba(229,57,53,0.9)', marginLeft: '4px' }}>*</span></span>
+                                        <i className="fas fa-chevron-right" style={{ marginLeft: 'auto', color: 'rgba(197,160,89,0.5)', fontSize: '0.75rem' }}></i>
+                                    </button>
+                                )}
+                                <div className="ppt-terms-checkbox" style={{ width: '100%', boxSizing: 'border-box', opacity: termsAccepted ? 1 : 0.4, cursor: termsAccepted ? 'pointer' : 'not-allowed' }} onClick={() => { if (termsAccepted) setAgreedToTerms(prev => !prev); }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={agreedToTerms} 
+                                        disabled={!termsAccepted}
+                                        onChange={(e) => e.stopPropagation()} 
+                                    />
+                                    <span>I have completed the onboarding training and fully accept the ASAT Designer Terms &amp; Conditions.</span>
+                                </div>
                             </div>
                         </div>
 
@@ -1149,11 +1373,159 @@ function DesignerRegister() {
                             <button 
                                 type="button" 
                                 className="ppt-btn ppt-btn--next"
-                                disabled={!agreedToTerms || registerLoading || otpSending || !onboardingMedia || !onboardingMedia.urls || onboardingMedia.urls.length === 0}
+                                disabled={!agreedToTerms || !termsAccepted || registerLoading || otpSending || !onboardingMedia || !onboardingMedia.urls || onboardingMedia.urls.length === 0}
                                 onClick={handleCompleteRegistration}
                             >
                                 {otpSending ? 'Sending Code…' : (registerLoading ? 'Creating Account…' : 'Register & Join')}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ─── Terms & Conditions Modal ─── */}
+            {showTermsModal && (
+                <div className="tc-overlay">
+                    <div className="tc-container">
+                        <div className="tc-header">
+                            <div className="tc-header-left">
+                                <div className="tc-title">ASAT <span>DESIGNER</span> TERMS</div>
+                                <div className="tc-subtitle">Please read all sections carefully before accepting</div>
+                            </div>
+                            {!termsScrolledToBottom && (
+                                <div className="tc-scroll-hint">
+                                    <i className="fas fa-arrow-down"></i> Scroll to read
+                                </div>
+                            )}
+                            {termsScrolledToBottom && (
+                                <div style={{ color: 'rgba(76,175,80,0.9)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <i className="fas fa-check-circle"></i> Fully read
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="tc-body" onScroll={handleTermsScroll}>
+
+                            {/* Section 1 */}
+                            <div className="tc-section">
+                                <div className="tc-section-title">1. Eligibility &amp; Account Requirements</div>
+                                <div className="tc-clause"><span className="tc-clause-num">1.1</span>Any individual or legally registered business that wishes to sell fashion designs through the Platform may create a Designer Account by completing the registration process and accepting these Designer Terms &amp; Conditions and all applicable Platform Policies.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">1.2</span>By registering as a designer, you confirm that all information, documents, and details provided during registration are accurate, complete, and up to date. You agree to promptly update your information whenever any changes occur.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">1.3</span>Upon successful registration, designers are encouraged to review the tutorials, guidelines, and educational resources provided by the Platform to understand the marketplace, listing standards, operational procedures, and applicable policies before publishing any products or designs.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">1.4</span>Each designer may maintain only one active Designer Account. If duplicate accounts are found, the Platform reserves the right to suspend or terminate any or all associated accounts, including freezing any wallet balances until the matter is reviewed and resolved in accordance with the applicable Platform Policies.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">1.5</span>The Platform reserves the right to verify the identity, business information, or any other information provided by the designer at the time of registration or at any time thereafter.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">1.6</span>The Platform reserves the sole right to suspend, restrict, or terminate any Designer Account that violates these Terms &amp; Conditions, applicable Platform Policies, or applicable laws.</div>
+                            </div>
+
+                            {/* Section 2 */}
+                            <div className="tc-section">
+                                <div className="tc-section-title">2. Designer Responsibilities</div>
+                                <div className="tc-clause"><span className="tc-clause-num">2.1</span>Designers are solely responsible for all designs, artwork, product listings, descriptions, images, and other content published through their Designer Account.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">2.2</span>Every design uploaded to the Platform must be the designer's own original creative work. Designers are solely responsible for ensuring that they have all necessary rights, permissions, and ownership to publish and commercialize their designs.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">2.3</span>Designers shall ensure that all designs comply with these Terms &amp; Conditions, the Designer Design Policy, the Intellectual Property Policy, and all applicable laws.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">2.4</span>The following types of designs and content are strictly <strong style={{color:'rgba(229,57,53,0.85)'}}>prohibited</strong> on the Platform, including but not limited to:
+                                    <ul className="tc-bullet-list">
+                                        <li>AI-generated designs or artwork. (AI-generated models, mockups, and product presentation images may be permitted, provided the actual design itself is original and complies with the Platform's policies.)</li>
+                                        <li>Copyrighted, trademarked, or otherwise protected content without the necessary legal rights or authorization.</li>
+                                        <li>Designs that copy, imitate, or substantially resemble another designer's work.</li>
+                                        <li>Duplicate or repeatedly uploaded versions of the same design without legitimate variation.</li>
+                                        <li>Religious content, symbols, or artwork intended for commercial sale.</li>
+                                        <li>Political content, political party logos, symbols, slogans, or campaign materials.</li>
+                                        <li>National flags, government emblems, or official insignia used as the primary design element.</li>
+                                        <li>Merchandise, fan art, or designs based on movies, television shows, games, music, celebrities, sports teams, brands, or other third-party intellectual property, even if the designer claims to have obtained permission, unless expressly approved by the Platform.</li>
+                                        <li>Hate speech, discriminatory content, extremist symbols, or content promoting violence, harassment, or intolerance against any individual or group.</li>
+                                        <li>Offensive, obscene, defamatory, sexually explicit, illegal, or otherwise inappropriate content.</li>
+                                        <li>Any design that violates applicable laws or infringes upon the rights of any individual, organization, or third party.</li>
+                                    </ul>
+                                </div>
+                                <div className="tc-clause"><span className="tc-clause-num">2.5</span>The Platform encourages originality and creativity and does not impose unnecessary restrictions on a designer's artistic expression.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">2.6</span>The Platform reserves the right to review, reject, remove, suspend, or permanently prohibit any design or Designer Account that violates these Terms &amp; Conditions or any applicable Platform Policy. Repeated violations may result in suspension or permanent termination of the Designer Account.</div>
+                            </div>
+
+                            {/* Section 3 */}
+                            <div className="tc-section">
+                                <div className="tc-section-title">3. Marketplace Role</div>
+                                <div className="tc-clause"><span className="tc-clause-num">3.1</span>The Platform operates as a technology-enabled fashion marketplace that connects independent fashion designers with customers seeking original and creative fashion products.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">3.2</span>The Platform provides designers with the digital infrastructure to showcase, promote, and offer their original designs to customers through the marketplace.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">3.3</span>The Platform operates under a partial marketplace model. While designers create and own their original designs, the Platform manages the manufacturing, quality control, packaging, shipping, and delivery of products in accordance with the designer's approved design specifications and the customer's confirmed order.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">3.4</span>Designers acknowledge that the Platform may engage manufacturers, logistics partners, payment service providers, and other third-party service providers as necessary to facilitate the production and fulfillment of customer orders.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">3.5</span>For each successfully completed order, the designer shall receive the design remuneration specified by the designer, subject to the applicable Payment Policy.</div>
+                            </div>
+
+                            {/* Section 4 */}
+                            <div className="tc-section">
+                                <div className="tc-section-title">4. Payment Policy</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.1</span><strong>Designer Wallet —</strong> Every registered designer shall be provided with a dedicated Wallet on the Platform enabling them to view earnings, payment history, withdrawal requests, and completed settlements.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.2</span><strong>Royalty Credits —</strong> For every successfully completed customer order, the designer shall receive the design royalty specified at the time of listing, subject to these Terms &amp; Conditions and the applicable Platform Policies.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.3</span><strong>Withdrawal Requests —</strong> Designers may submit a withdrawal request for the available Wallet balance at any time. Approved withdrawal requests shall be processed and settled within <strong>72 hours</strong> from the time the withdrawal request is submitted.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.4</span><strong>No Platform Deductions —</strong> The Platform does not deduct any platform fees, withdrawal charges, or administrative fees from the designer's Wallet balance or withdrawal amount, unless otherwise required by applicable law or a valid legal order.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.5</span><strong>Taxes —</strong> The Platform does not deduct taxes from the designer's Wallet credits or withdrawals unless required by applicable law. Designers are solely responsible for determining, reporting, and paying any taxes applicable to their earnings in their respective jurisdictions.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.6</span><strong>Base Currency —</strong> The Platform's base settlement currency is <strong>Indian Rupees (INR)</strong>. All Wallet credits, balances, settlements, and withdrawals are maintained and processed in INR.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.7</span><strong>Currency Exchange —</strong> For designers residing outside India, the amount received in their local currency may vary depending on exchange rates, banking practices, and intermediary fees. The Platform is not responsible for any gain or loss arising from exchange rate fluctuations or charges imposed by banks or payment service providers.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.8</span><strong>Payment Verification —</strong> The Platform reserves the right to verify a designer's identity, bank account details, payment information, or supporting documents before processing any withdrawal request in order to prevent fraud, unauthorized transactions, or regulatory violations.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">4.9</span><strong>Payment Holds —</strong> The Platform may temporarily place a hold on Wallet balances or delay withdrawals where reasonably necessary to investigate suspected fraud, policy violations, duplicate accounts, payment disputes, chargebacks, legal requirements, or security concerns.</div>
+                            </div>
+
+                            {/* Section 5 */}
+                            <div className="tc-section">
+                                <div className="tc-section-title">5. Intellectual Property Policy</div>
+                                <div className="tc-clause"><span className="tc-clause-num">5.1</span><strong>Ownership of Designs —</strong> All original designs, artwork, graphics, and other creative content uploaded by a designer remain the exclusive intellectual property of the respective designer. Nothing in these Terms &amp; Conditions transfers the ownership of the designer's intellectual property to the Platform.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">5.2</span><strong>License Granted to the Platform —</strong> By uploading a design to the Platform, the designer grants the Platform a non-exclusive, worldwide, royalty-free, revocable (upon removal of the design, except where necessary to complete pending orders), and limited license to:
+                                    <ul className="tc-bullet-list">
+                                        <li>Display, publish, and promote the design on the Platform.</li>
+                                        <li>Manufacture products incorporating the design solely for fulfilling customer orders.</li>
+                                        <li>Store, reproduce, and process the design for operational purposes.</li>
+                                        <li>Use the design in advertisements, social media, promotional campaigns, email marketing, and other marketing materials related to the Platform.</li>
+                                        <li>Create product mockups, previews, thumbnails, and promotional images using the uploaded design.</li>
+                                    </ul>
+                                </div>
+                                <div className="tc-clause"><span className="tc-clause-num">5.3</span><strong>Designer Warranty —</strong> The designer represents and warrants that they are the lawful owner of the uploaded design or possess all necessary rights to use and commercialize it; that the design does not infringe any copyright, trademark, patent, design right, or other intellectual property rights of any third party; and that the design complies with all applicable Platform Policies and applicable laws.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">5.4</span><strong>Copyright Complaints —</strong> If the Platform receives a copyright or intellectual property complaint regarding a design, it may review the complaint and request additional information or supporting documentation from the concerned designer.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">5.5</span><strong>Content Removal —</strong> The Platform reserves the right to reject, disable, remove, or permanently prohibit any design that violates these Terms &amp; Conditions or any Platform Policy, infringes or is suspected of infringing third-party intellectual property rights, or is subject to a valid legal notice or regulatory requirement.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">5.6</span><strong>Platform Marketing Rights —</strong> The designer authorizes the Platform to use the uploaded designs, product images, designer name, brand name, logo, and related promotional content for marketing, advertising, social media, public relations, marketplace promotions, exhibitions, newsletters, and other promotional activities related to the Platform without requiring additional approval or compensation, unless otherwise agreed in writing.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">5.7</span><strong>Reservation of Rights —</strong> Except for the limited license expressly granted under this Policy, all intellectual property rights remain with their respective owners.</div>
+                            </div>
+
+                            {/* Section 6 */}
+                            <div className="tc-section">
+                                <div className="tc-section-title">6. Product Appearance Policy</div>
+                                <div className="tc-clause"><span className="tc-clause-num">6.1</span><strong>Product Images —</strong> Designers shall upload clear, accurate, and high-quality images that fairly represent their original designs. Product images must not contain misleading edits, watermarks, promotional text, or any content that may misrepresent the final product.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">6.2</span><strong>AI-Generated Images —</strong> AI-generated models, lifestyle images, mockups, and product presentation images are permitted for showcasing products, provided they accurately represent the original design. However, AI-generated designs or artwork are strictly prohibited.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">6.3</span><strong>Product Representation —</strong> The Platform makes reasonable efforts to ensure that product images accurately represent the final manufactured product. However, the final delivered product may differ slightly from the images displayed on the Platform due to manufacturing processes, lighting conditions, photography, display settings, and material characteristics.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">6.4</span><strong>Color Variation Disclaimer —</strong> Actual product colors may vary slightly from the images displayed on the Platform due to differences in camera settings, lighting conditions, printing processes, fabric materials, and individual screen or device display settings. Such variations shall not be considered manufacturing defects.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">6.5</span><strong>Size Tolerance —</strong> Minor variations in product dimensions may occur during the manufacturing process. Unless otherwise specified, a reasonable manufacturing tolerance shall be considered acceptable and shall not constitute a defect.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">6.6</span><strong>Fabric Variation —</strong> The appearance, texture, weight, finish, and feel of fabrics may vary slightly due to differences in fabric batches, manufacturing processes, dye lots, and material characteristics. Such variations are considered normal and do not affect the intended quality of the product.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">6.7</span><strong>Photography Standards —</strong> All product photographs, mockups, and promotional images must accurately represent the uploaded design and must not intentionally mislead customers regarding product features, colors, quality, dimensions, or overall appearance.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">6.8</span><strong>Platform Disclaimer —</strong> Minor variations in color, size, print placement, stitching, fabric texture, or overall appearance resulting from standard manufacturing and production processes shall not be considered defects and shall not, by themselves, qualify a product for return, exchange, or refund unless otherwise provided under the applicable Return, Exchange &amp; Refund Policy.</div>
+                            </div>
+
+                            {/* Section 7 */}
+                            <div className="tc-section">
+                                <div className="tc-section-title">7. Privacy Policy</div>
+                                <div className="tc-clause"><span className="tc-clause-num">7.1</span><strong>Data Collection —</strong> To provide and operate the Platform, we may collect personal, business, and technical information from designers during registration, account verification, product listing, order processing, payment processing, and ongoing use of the Platform.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">7.2</span><strong>Business Information —</strong> The Platform may collect and store information including, but not limited to: full name or business name; contact information including email address and phone number; business registration details, where applicable; bank account and payout information; tax-related information, where required by applicable law; and product listings, design information, and other content uploaded by the designer.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">7.3</span><strong>Payment Information —</strong> To facilitate settlements and withdrawals, the Platform may collect payment-related information such as bank account details, payment preferences, transaction history, wallet balances, withdrawal requests, and payment records. Sensitive financial information is handled using appropriate security measures and trusted payment service providers where applicable.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">7.4</span><strong>Customer Information —</strong> Designers may receive limited customer information necessary for fulfilling customer orders. Designers shall use such information solely for the purpose of fulfilling orders through the Platform and shall not copy, disclose, sell, misuse, or use such information for marketing or any purpose unrelated to the Platform.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">7.5</span><strong>Data Sharing —</strong> The Platform may share information with manufacturers, logistics partners, payment service providers, verification agencies, technology service providers, or government and regulatory authorities where necessary to operate the Platform, process orders, comply with legal obligations, or protect the rights, safety, and security of the Platform, its users, and third parties. The Platform does not sell designers' personal information to third parties.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">7.6</span><strong>Data Security —</strong> The Platform implements reasonable administrative, technical, and organizational measures to protect personal and business information against unauthorized access, alteration, disclosure, misuse, or destruction.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">7.7</span><strong>Data Retention —</strong> The Platform may retain designer information, transaction records, payment history, and related data for as long as necessary to operate the Platform, comply with legal obligations, resolve disputes, enforce these Terms &amp; Conditions, and satisfy regulatory or accounting requirements.</div>
+                                <div className="tc-clause"><span className="tc-clause-num">7.8</span><strong>Policy Updates —</strong> The Platform reserves the right to update or modify this Privacy Policy from time to time. Any revised version shall become effective upon publication on the Platform unless otherwise required by applicable law.</div>
+                            </div>
+
+                        </div>{/* end tc-body */}
+
+                        <div className="tc-footer">
+                            {!termsScrolledToBottom && (
+                                <div className="tc-scroll-progress">↓ Scroll down to read all sections before accepting</div>
+                            )}
+                            <div className={`tc-accept-row ${termsScrolledToBottom ? 'enabled' : 'disabled'}`} onClick={handleAcceptTerms}>
+                                <input type="checkbox" checked={termsCheckboxTicked} disabled={!termsScrolledToBottom} onChange={e => e.stopPropagation()} />
+                                <span>I have read and understood all the Terms &amp; Conditions, Policies, and Guidelines of the ASAT Designer Platform.</span>
+                            </div>
+                            <div className="tc-btn-row">
+                                <button type="button" className="ppt-btn ppt-btn--prev" onClick={() => setShowTermsModal(false)}>Cancel</button>
+                                <button type="button" className="ppt-btn ppt-btn--next" disabled={!termsCheckboxTicked} onClick={handleConfirmTerms}>Accept &amp; Continue</button>
+                            </div>
                         </div>
                     </div>
                 </div>
