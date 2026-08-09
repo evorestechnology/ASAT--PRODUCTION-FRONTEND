@@ -11,11 +11,12 @@ const AuthContext = createContext(null);
  * Exposes: { user, role, profile, loading, logout, idToken }
  */
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null);   // Supabase auth user object
-  const [role,    setRole]    = useState(null);   // 'admin' | 'designer' | 'mfg' | 'user'
-  const [profile, setProfile] = useState(null);  // Database profile data
-  const [loading, setLoading] = useState(true);  // Resolving auth state
-  const [idToken, setIdToken] = useState(null);  // JWT token (access_token) for API calls
+  const [user,      setUser]      = useState(null);   // Supabase auth user object
+  const [role,      setRole]      = useState(null);   // 'admin' | 'designer' | 'mfg' | 'user'
+  const [profile,   setProfile]   = useState(null);  // Database profile data
+  const [loading,   setLoading]   = useState(true);  // Resolving auth state
+  const [idToken,   setIdToken]   = useState(null);  // JWT token (access_token) for API calls
+  const [authError, setAuthError] = useState(null);  // Last role-resolution error (accountDeleted, accountBlocked, etc.)
 
   // Track current user ID to skip unnecessary re-fetches on token refresh
   const currentUserIdRef = useRef(null);
@@ -117,6 +118,7 @@ export function AuthProvider({ children }) {
 
       if (!resolvedRole) throw Object.assign(new Error('No role returned'), { status: 404 });
 
+      setAuthError(null); // Clear any previous auth error
       setRole(resolvedRole);
       setProfile(resolvedProfile);
 
@@ -133,6 +135,14 @@ export function AuthProvider({ children }) {
       window.dispatchEvent(new Event('storage'));
     } catch (err) {
       console.error('Error resolving user role profile:', err);
+      // Capture the specific error (accountDeleted, accountBlocked, etc.) BEFORE clearing state
+      // so login pages can read it from the context
+      setAuthError({
+        message:        err?.error || err?.message || 'Authentication failed.',
+        accountDeleted: err?.accountDeleted || false,
+        accountBlocked: err?.accountBlocked || false,
+        status:         err?.status || 0,
+      });
       // Sign out, but mark it as internal so the listener doesn't re-trigger resolveAuth
       clearAuthState();
       internalSignOutRef.current = true;
@@ -149,7 +159,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, profile, loading, logout, idToken }}>
+    <AuthContext.Provider value={{ user, role, profile, loading, logout, idToken, authError, setAuthError }}>
       {children}
     </AuthContext.Provider>
   );

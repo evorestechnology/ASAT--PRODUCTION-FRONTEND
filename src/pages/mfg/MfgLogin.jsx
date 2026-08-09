@@ -161,15 +161,28 @@ function MfgLogin() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const { user, role, loading: authLoading, logout } = useAuth();
+    const { user, role, loading: authLoading, logout, authError, setAuthError } = useAuth();
     const [justLoggedIn, setJustLoggedIn] = useState(false);
+
+    // Clear any stale auth errors when the component unmounts
+    useEffect(() => {
+        return () => { if (setAuthError) setAuthError(null); };
+    }, [setAuthError]);
 
     useEffect(() => {
         // Wait until login was attempted AND auth is no longer loading
         if (!justLoggedIn || authLoading) return;
 
         if (user === null) {
-            setError('Authentication failed. Please try again.');
+            // Check if AuthContext captured a specific account-status error from resolve-role
+            if (authError?.accountDeleted) {
+                setError('This manufacturer account has been deleted. Please contact ASAT support.');
+            } else if (authError?.accountBlocked) {
+                setError('Your manufacturer account has been blocked by admin. Please contact support.');
+            } else {
+                setError('Authentication failed. Please try again.');
+            }
+            if (setAuthError) setAuthError(null); // Clear so it doesn't persist
             setJustLoggedIn(false);
             return;
         }
@@ -210,7 +223,7 @@ function MfgLogin() {
             setError('Access denied. This account is not a manufacturer.');
         }
         setJustLoggedIn(false);
-    }, [justLoggedIn, authLoading, user, role, logout, navigate]);
+    }, [justLoggedIn, authLoading, user, role, logout, navigate, authError, setAuthError]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

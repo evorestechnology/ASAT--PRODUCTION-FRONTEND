@@ -316,8 +316,13 @@ function DesignerLogin() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const { user, role, loading: authLoading, logout } = useAuth();
+    const { user, role, loading: authLoading, logout, authError, setAuthError } = useAuth();
     const [justLoggedIn, setJustLoggedIn] = useState(false);
+
+    // Clear any stale auth errors when the component unmounts
+    useEffect(() => {
+        return () => { if (setAuthError) setAuthError(null); };
+    }, [setAuthError]);
 
     // T&C gate for existing designers who haven't accepted yet
     const [showTcGate, setShowTcGate] = useState(false);
@@ -337,7 +342,13 @@ function DesignerLogin() {
         if (!justLoggedIn || authLoading) return;
 
         if (user === null) {
-            setError('Authentication failed. Please try again.');
+            // Check if AuthContext captured a specific account-status error from resolve-role
+            if (authError?.accountBlocked) {
+                setError('Your designer account has been blocked by admin. Please contact ASAT support.');
+            } else {
+                setError('Authentication failed. Please try again.');
+            }
+            if (setAuthError) setAuthError(null); // Clear so it doesn't persist
             setJustLoggedIn(false);
             return;
         }
@@ -377,7 +388,7 @@ function DesignerLogin() {
             setError('Access denied. This account is not a designer.');
         }
         setJustLoggedIn(false);
-    }, [justLoggedIn, authLoading, user, role, logout, navigate]);
+    }, [justLoggedIn, authLoading, user, role, logout, navigate, authError, setAuthError]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
