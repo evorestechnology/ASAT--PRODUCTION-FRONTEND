@@ -163,16 +163,26 @@ function MasterLogin() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const { user, role, loading: authLoading, logout } = useAuth();
+    const { user, role, loading: authLoading, logout, authError, setAuthError } = useAuth();
     const [justLoggedIn, setJustLoggedIn] = useState(false);
+
+    // Clear any stale auth errors when the component unmounts
+    useEffect(() => {
+        return () => { if (setAuthError) setAuthError(null); };
+    }, [setAuthError]);
 
     useEffect(() => {
         // Wait until we have attempted a login AND auth is no longer loading
         if (!justLoggedIn || authLoading) return;
 
         if (user === null) {
-            // Supabase session gone — auth failed entirely (bad credentials etc.)
-            setError('Authentication failed. Please try again.');
+            // Check if AuthContext captured a specific account-status error from resolve-role
+            if (authError?.accountDisabled || authError?.accountBlocked) {
+                setError('Your administrator account has been disabled. Please contact the Master Admin.');
+            } else {
+                setError('Authentication failed. Please try again.');
+            }
+            if (setAuthError) setAuthError(null);
             setJustLoggedIn(false);
             return;
         }
@@ -192,7 +202,7 @@ function MasterLogin() {
             setError('Access denied. This account does not have admin privileges.');
             setJustLoggedIn(false);
         }
-    }, [justLoggedIn, authLoading, user, role, logout, navigate]);
+    }, [justLoggedIn, authLoading, user, role, logout, navigate, authError, setAuthError]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
