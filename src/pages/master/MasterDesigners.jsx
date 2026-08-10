@@ -505,6 +505,33 @@ function MasterDesigners() {
                                         {selectedDesignerDetails.designer.address && (
                                             <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="fas fa-map-marker-alt" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.address}, {selectedDesignerDetails.designer.country}</span>
                                         )}
+                                        {(selectedDesignerDetails.designer.description || selectedDesignerDetails.designer.bio) && (
+                                            <div style={{ marginTop: '6px', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.08)', fontSize: '0.78rem', color: '#ddd' }}>
+                                                <strong style={{ color: 'var(--gold)' }}>Bio: </strong>{selectedDesignerDetails.designer.description || selectedDesignerDetails.designer.bio}
+                                            </div>
+                                        )}
+                                        <div style={{ display: 'flex', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
+                                            {selectedDesignerDetails.designer.instagram && (
+                                                <a 
+                                                    href={selectedDesignerDetails.designer.instagram.startsWith('http') ? selectedDesignerDetails.designer.instagram : `https://instagram.com/${selectedDesignerDetails.designer.instagram.replace('@', '')}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    style={{ color: '#E1306C', fontSize: '0.78rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+                                                >
+                                                    <i className="fab fa-instagram"></i> {selectedDesignerDetails.designer.instagram}
+                                                </a>
+                                            )}
+                                            {selectedDesignerDetails.designer.linkedin && (
+                                                <a 
+                                                    href={selectedDesignerDetails.designer.linkedin.startsWith('http') ? selectedDesignerDetails.designer.linkedin : `https://linkedin.com/in/${selectedDesignerDetails.designer.linkedin}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    style={{ color: '#0077B5', fontSize: '0.78rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+                                                >
+                                                    <i className="fab fa-linkedin"></i> {selectedDesignerDetails.designer.linkedin}
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 

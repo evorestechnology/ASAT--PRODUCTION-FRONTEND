@@ -672,7 +672,8 @@ function DesignerRegister() {
         return {
             fullName: '', countryCode: '+91 India', contact: '', gmail: '', useAsRecovery: true,
             username: '', password: '', confirmPassword: '',
-            gender: '', dob: '', address: '', country: '', upiId: '', paypalId: ''
+            gender: '', dob: '', address: '', country: '', upiId: '', paypalId: '',
+            description: '', instagram: '', linkedin: ''
         };
     });
     const [errors, setErrors] = useState({});
@@ -880,6 +881,11 @@ function DesignerRegister() {
         if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
         if (!form.gender) e.gender = 'Select gender';
         if (!form.dob) e.dob = 'Date of birth is required';
+        if (!form.description.trim()) {
+            e.description = 'Designer description is required';
+        } else if (form.description.trim().length < 5) {
+            e.description = 'Please write at least 5 characters describing your design style or brand';
+        }
         if (!form.address.trim()) e.address = 'Address is required';
         if (!form.country) e.country = 'Select country';
 
@@ -958,6 +964,9 @@ function DesignerRegister() {
                     country: form.country,
                     upiId: form.upiId,
                     paypalId: form.paypalId,
+                    description: form.description,
+                    instagram: form.instagram,
+                    linkedin: form.linkedin,
                     termsAccepted: termsAccepted,
                 })
             });
@@ -1232,6 +1241,68 @@ function DesignerRegister() {
                                 <label>Date of Birth</label>
                                 <input type="date" className="auth-input" value={form.dob} onChange={e => set('dob', e.target.value)} />
                                 {errors.dob && <div className="auth-err">{errors.dob}</div>}
+                            </div>
+                        </div>
+
+                        <div className="auth-input-group">
+                            <label>Designer Description / Bio *</label>
+                            <textarea 
+                                className="auth-input" 
+                                rows="3" 
+                                placeholder="Describe yourself, your design style, artistic vision, or brand..." 
+                                value={form.description} 
+                                onChange={e => set('description', e.target.value)} 
+                                style={{ resize: 'vertical', minHeight: '75px', lineHeight: '1.4' }}
+                            />
+                            {errors.description && <div className="auth-err">{errors.description}</div>}
+                            <div style={{
+                                marginTop: '8px',
+                                padding: '10px 14px',
+                                background: 'rgba(239, 68, 68, 0.08)',
+                                border: '1px solid rgba(239, 68, 68, 0.25)',
+                                borderRadius: '6px',
+                                fontSize: '0.74rem',
+                                color: '#b91c1c',
+                                lineHeight: '1.45',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '8px'
+                            }}>
+                                <i className="fas fa-exclamation-triangle" style={{ marginTop: '2px', fontSize: '0.85rem', flexShrink: 0, color: '#dc2626' }}></i>
+                                <span>
+                                    <strong>Platform Policy Notice:</strong> If any violence, hate speech, explicit content, copyright infringement, or violation of community standards is observed, the account will be disabled or blocked by the platform.
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="auth-row">
+                            <div className="auth-input-group">
+                                <label>Instagram Handle (Optional)</label>
+                                <div style={{ position: 'relative' }}>
+                                    <i className="fab fa-instagram" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#E1306C', fontSize: '1rem' }}></i>
+                                    <input 
+                                        type="text" 
+                                        className="auth-input" 
+                                        style={{ paddingLeft: '40px' }} 
+                                        placeholder="@username or profile URL" 
+                                        value={form.instagram} 
+                                        onChange={e => set('instagram', e.target.value)} 
+                                    />
+                                </div>
+                            </div>
+                            <div className="auth-input-group">
+                                <label>LinkedIn Profile (Optional)</label>
+                                <div style={{ position: 'relative' }}>
+                                    <i className="fab fa-linkedin" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#0077B5', fontSize: '1rem' }}></i>
+                                    <input 
+                                        type="text" 
+                                        className="auth-input" 
+                                        style={{ paddingLeft: '40px' }} 
+                                        placeholder="Profile ID or URL" 
+                                        value={form.linkedin} 
+                                        onChange={e => set('linkedin', e.target.value)} 
+                                    />
+                                </div>
                             </div>
                         </div>
 

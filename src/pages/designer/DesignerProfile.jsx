@@ -13,7 +13,7 @@ function DesignerProfile() {
     const [form, setForm] = useState({
         fullName: '', contact: '', address: '',
         country: '', gender: '', dob: '', profilePhoto: null,
-        upiId: '', paypalId: ''
+        upiId: '', paypalId: '', description: '', instagram: '', linkedin: ''
     });
     const [username, setUsername] = useState('');
     const [toast, setToast] = useState('');
@@ -42,7 +42,10 @@ function DesignerProfile() {
                         dob: data.dob || '',
                         profilePhoto: data.avatar_url || null,
                         upiId: data.upi_id || '',
-                        paypalId: data.paypal_id || ''
+                        paypalId: data.paypal_id || '',
+                        description: data.description || data.bio || '',
+                        instagram: data.instagram || '',
+                        linkedin: data.linkedin || ''
                     });
                     setUsername(data.username || '');
                     setRankBadge(data.points >= 5000 ? 'Gold Designer' : data.points >= 1500 ? 'Silver Designer' : 'Bronze Designer');
@@ -111,6 +114,9 @@ function DesignerProfile() {
                     dob: form.dob,
                     upi_id: form.upiId,
                     paypal_id: form.paypalId,
+                    description: form.description,
+                    instagram: form.instagram,
+                    linkedin: form.linkedin,
                     username
                 })
             });
@@ -218,6 +224,61 @@ function DesignerProfile() {
                             </select>
                         </div>
                     </div>
+
+                    <div className="dsn-profile__group dsn-profile__group--full">
+                        <label>Designer Description / Bio</label>
+                        <div className="dsn-auth__field" style={{ alignItems: 'flex-start', padding: '10px 14px' }}>
+                            <i className="fas fa-pen-nib" style={{ marginTop: '4px' }}></i>
+                            <textarea 
+                                value={form.description} 
+                                onChange={e => set('description', e.target.value)} 
+                                placeholder="Tell us about yourself, your artistic style, brand vision, or creative background..." 
+                                rows="3"
+                                style={{
+                                    width: '100%',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    outline: 'none',
+                                    color: 'inherit',
+                                    fontFamily: 'inherit',
+                                    fontSize: '0.88rem',
+                                    resize: 'vertical',
+                                    minHeight: '65px'
+                                }}
+                            />
+                        </div>
+                        <div style={{
+                            marginTop: '6px',
+                            padding: '8px 12px',
+                            background: 'rgba(239, 68, 68, 0.08)',
+                            border: '1px solid rgba(239, 68, 68, 0.25)',
+                            borderRadius: '4px',
+                            fontSize: '0.72rem',
+                            color: '#ef4444',
+                            lineHeight: '1.4',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}>
+                            <i className="fas fa-shield-alt"></i>
+                            <span>If any violence, copyright infringement, or violation of community standards is observed, the account will be disabled or blocked by the platform.</span>
+                        </div>
+                    </div>
+
+                    <div className="dsn-profile__group">
+                        <label>Instagram Handle (Optional)</label>
+                        <div className="dsn-auth__field"><i className="fab fa-instagram" style={{ color: '#E1306C' }}></i>
+                            <input type="text" value={form.instagram} onChange={e => set('instagram', e.target.value)} placeholder="@username or profile URL" />
+                        </div>
+                    </div>
+
+                    <div className="dsn-profile__group">
+                        <label>LinkedIn Profile (Optional)</label>
+                        <div className="dsn-auth__field"><i className="fab fa-linkedin" style={{ color: '#0077B5' }}></i>
+                            <input type="text" value={form.linkedin} onChange={e => set('linkedin', e.target.value)} placeholder="Profile ID or URL" />
+                        </div>
+                    </div>
+
                     <div className="dsn-profile__group dsn-profile__group--full">
                         <label>Address</label>
                         <div className="dsn-auth__field"><i className="fas fa-map-marker-alt"></i>
