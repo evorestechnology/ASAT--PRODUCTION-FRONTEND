@@ -7,51 +7,382 @@ import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 import { useAuth } from '../../context/AuthContext';
 
 const styles = `
-    /* â•â•â•â•â•â•â• Product Detail  Full Width Split Layout â•â•â•â•â•â•â• */
+    /* ─── Product Detail Clean Streetwear Layout (BLUORNG PDP) ─── */
     .pdp-page { 
-        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
+        background: #FFFFFF;
         min-height: 80vh;
+        width: 100%;
+        box-sizing: border-box;
+        padding-bottom: 80px;
     }
 
     .pdp-breadcrumb {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.78rem;
-        letter-spacing: 1px;
-        color: #999;
-        padding: 20px 4%;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        color: #888888;
+        padding: 16px clamp(16px, 3.5vw, 48px);
     }
     .pdp-breadcrumb a {
-        color: #999;
+        color: #888888;
         text-decoration: none;
-        transition: color 0.3s;
+        transition: color 0.2s;
     }
-    .pdp-breadcrumb a:hover { color: var(--gold); }
-    .pdp-breadcrumb span { color: var(--dark); font-weight: 600; }
+    .pdp-breadcrumb a:hover { color: #000000; }
+    .pdp-breadcrumb span { color: #000000; font-weight: 600; }
 
-    /* Split layout — gallery left, info right */
-    .pdp-split {
+    /* ─── 3-COLUMN PDP LAYOUT (BLUORNG EXACT) ─── */
+    .pdp-split-3col {
         display: grid;
-        grid-template-columns: 55% 45%;
-        min-height: 80vh;
+        grid-template-columns: 1.1fr 1fr 380px;
+        gap: 20px;
+        padding: 0 clamp(16px, 2.5vw, 36px);
+        align-items: start;
+        min-height: calc(100vh - 100px);
     }
 
-    /* â”€â”€ Gallery â”€â”€ */
-    .pdp-gallery {
-        padding: 0 0 60px 4%;
-    }
-    .pdp-main-image-container {
-        position: relative;
-        cursor: zoom-in;
+    /* Column 1: Non-scrollable Fixed Primary Cover Shot */
+    .pdp-col-cover {
+        position: sticky;
+        top: 85px;
+        height: calc(100vh - 110px);
+        max-height: 820px;
+        border-radius: 20px;
         overflow: hidden;
-        border-radius: 6px;
-        margin-bottom: 14px;
+        background: #F8F8F8;
+        cursor: zoom-in;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+
+    .pdp-col-cover-img {
         width: 100%;
-        aspect-ratio: 4/5;
-        max-height: 520px;
-        background: #fafafa;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pdp-col-cover:hover .pdp-col-cover-img {
+        transform: scale(1.03);
+    }
+
+    /* Column 2: In-place Scrollable Stream of Remaining Angles */
+    .pdp-col-stream {
+        height: calc(100vh - 110px);
+        max-height: 820px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0,0,0,0.15) transparent;
+    }
+
+    .pdp-col-stream::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .pdp-col-stream::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,0.15);
+        border-radius: 4px;
+    }
+
+    .pdp-stream-card {
+        width: 100%;
+        aspect-ratio: 4 / 5;
+        border-radius: 20px;
+        overflow: hidden;
+        background: #F8F8F8;
+        cursor: zoom-in;
+        position: relative;
+        flex-shrink: 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+
+    .pdp-stream-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pdp-stream-card:hover .pdp-stream-img {
+        transform: scale(1.03);
+    }
+
+    /* Column 3: Sticky Details Card & Accordion */
+    .pdp-col-details {
+        position: sticky;
+        top: 85px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-height: calc(100vh - 110px);
+        overflow-y: auto;
+        scrollbar-width: none;
+    }
+    .pdp-col-details::-webkit-scrollbar {
+        display: none;
+    }
+
+    .pdp-info-card {
+        background: #FFFFFF;
+        border: 1px solid #EBEBEB;
+        border-radius: 18px;
+        padding: 24px 24px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+    }
+
+    .pdp-header-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 6px;
+    }
+
+    .pdp-product-name {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.3px;
+        color: #000000;
+        margin: 0;
+        line-height: 1.25;
+    }
+
+    .pdp-bookmark-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        color: #000000;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: transform 0.2s;
+        flex-shrink: 0;
+    }
+
+    .pdp-bookmark-btn:hover {
+        transform: scale(1.15);
+    }
+
+    .pdp-price-row {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #000000;
+        margin-bottom: 16px;
+    }
+
+    /* Recommended Section */
+    .pdp-recommended-section {
+        margin-top: 80px;
+        padding: 0 clamp(16px, 2.5vw, 36px);
+    }
+
+    @media (max-width: 1150px) {
+        .pdp-split-3col {
+            grid-template-columns: 1fr 1fr;
+        }
+        .pdp-col-details {
+            grid-column: 1 / -1;
+            position: static;
+            max-height: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pdp-split-3col {
+            grid-template-columns: 1fr;
+        }
+        .pdp-col-cover {
+            position: static;
+            height: 65vh;
+        }
+        .pdp-col-stream {
+            height: auto;
+            max-height: none;
+            overflow-y: visible;
+        }
+    }
+
+    .pdp-bookmark-btn:hover {
+        transform: scale(1.15);
+    }
+
+    .pdp-price-row {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #000000;
+        margin-bottom: 20px;
+    }
+
+    .pdp-size-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .pdp-size-guide-btn {
+        background: #F4F4F4;
+        border: none;
+        border-radius: 14px;
+        padding: 4px 12px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        color: #444444;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .pdp-size-guide-btn:hover {
+        background: #E8E8E8;
+        color: #000000;
+    }
+
+    /* Size selector pill chips */
+    .pdp-pill-sizes {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .pdp-pill-size-btn {
+        padding: 10px 22px;
+        border-radius: 24px;
+        border: 1px solid #E5E5E5;
+        background: #FFFFFF;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        color: #000000;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .pdp-pill-size-btn:hover {
+        border-color: #000000;
+    }
+
+    .pdp-pill-size-btn.active {
+        background: #000000;
+        color: #FFFFFF;
+        border-color: #000000;
+    }
+
+    .pdp-pill-size-btn.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        text-decoration: line-through;
+    }
+
+    /* Action Buttons Row */
+    .pdp-action-pills-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+
+    .pdp-add-bag-pill {
+        flex: 1;
+        background: #FFFFFF;
+        color: #000000;
+        border: 1px solid #000000;
+        border-radius: 28px;
+        padding: 14px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .pdp-add-bag-pill:hover {
+        background: #000000;
+        color: #FFFFFF;
+    }
+
+    .pdp-buy-now-pill {
+        flex: 1;
+        background: #000000;
+        color: #FFFFFF;
+        border: 1px solid #000000;
+        border-radius: 28px;
+        padding: 14px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .pdp-buy-now-pill:hover {
+        background: #222222;
+        transform: translateY(-1px);
+    }
+
+    /* Accordion / Tab container */
+    .pdp-accordion-card {
+        background: #FFFFFF;
+        border: 1px solid #EBEBEB;
+        border-radius: 18px;
+        padding: 20px 24px;
+    }
+
+    .pdp-tabs-nav {
+        display: flex;
+        gap: 20px;
+        border-bottom: 1px solid #F0F0F0;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .pdp-tab-btn {
+        background: none;
+        border: none;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #888888;
+        cursor: pointer;
+        padding: 0;
+        transition: color 0.2s;
+    }
+
+    .pdp-tab-btn.active {
+        color: #000000;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 6px;
+    }
+
+    .pdp-tab-body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: #555555;
+    }
+
+    @media (max-width: 960px) {
+        .pdp-split {
+            grid-template-columns: 1fr;
+        }
+        .pdp-sticky-wrap {
+            position: static;
+        }
+    }content: center;
         border: 1px solid rgba(0, 0, 0, 0.05);
     }
     
@@ -63,7 +394,7 @@ const styles = `
         width: 100%;
         height: 100%;
         object-fit: contain;
-        border-radius: 6px;
+        border-radius: 2px;
         display: block;
         transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.35s ease;
         animation: pdpFadeIn 0.4s ease-out;
@@ -136,7 +467,7 @@ const styles = `
         justify-content: space-between;
         align-items: center;
         color: white;
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         letter-spacing: 2px;
         padding: 0 20px;
         z-index: 10002;
@@ -338,83 +669,90 @@ const styles = `
     }
     .pdp-thumbs {
         display: flex;
-        gap: 10px;
+        gap: 12px;
+        margin-top: 14px;
+        overflow-x: auto;
     }
     .pdp-thumb {
-        width: 80px;
-        height: 100px;
+        width: 72px;
+        height: 90px;
         object-fit: cover;
-        border: 2px solid transparent;
-        border-radius: 4px;
+        border: 1.5px solid transparent;
+        border-radius: 8px;
         cursor: pointer;
-        transition: border-color 0.3s, opacity 0.3s;
+        transition: border-color 0.2s, opacity 0.2s;
         opacity: 0.5;
     }
     .pdp-thumb:hover { opacity: 0.85; }
     .pdp-thumb.active {
-        border-color: var(--gold);
+        border-color: #000000;
         opacity: 1;
     }
 
-    /* â”€â”€ Info panel — sticky â”€â”€ */
+    /* ── Info panel — sticky ── */
     .pdp-info {
-        padding: 0 5% 60px 40px;
+        padding: 0 0 60px 20px;
         position: sticky;
         top: 80px;
         align-self: start;
         max-height: calc(100vh - 80px);
         overflow-y: auto;
         scrollbar-width: thin;
-        scrollbar-color: rgba(197,160,89,0.3) transparent;
     }
     .pdp-info::-webkit-scrollbar { width: 4px; }
-    .pdp-info::-webkit-scrollbar-thumb { background: rgba(197,160,89,0.3); border-radius: 4px; }
+    .pdp-info::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 4px; }
 
     .pdp-collection-tag {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.65rem;
-        letter-spacing: 3.5px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.7rem;
+        letter-spacing: 1.5px;
         text-transform: uppercase;
-        color: var(--gold);
-        margin-bottom: 10px;
+        color: #888888;
+        font-weight: 700;
+        margin-bottom: 8px;
         display: block;
     }
     .pdp-product-name {
-        font-family: 'Cinzel', serif;
-        font-size: 2.4rem;
-        font-weight: 700;
-        letter-spacing: 3px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+        font-weight: 900;
+        letter-spacing: -0.5px;
+        text-transform: uppercase;
         margin: 0 0 8px;
-        color: var(--dark);
+        color: #000000;
         line-height: 1.15;
     }
     .pdp-designer {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.82rem;
-        color: #888;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.8rem;
+        color: var(--gold, #C5A059);
+        font-weight: 700;
         letter-spacing: 1px;
-        margin-bottom: 24px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
     }
     .pdp-price {
-        font-family: 'Cinzel', serif;
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--dark);
-        margin-bottom: 28px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #000000;
+        margin-bottom: 24px;
+        letter-spacing: -0.5px;
     }
     .pdp-divider {
         height: 1px;
-        background: #e5e5e5;
+        background: #EEEEEE;
         margin: 24px 0;
     }
 
     /* Color / Size / Qty selectors */
     .pdp-section-label {
-        font-family: 'Montserrat', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.72rem;
-        letter-spacing: 2px;
+        letter-spacing: 1.2px;
         text-transform: uppercase;
-        color: #666;
+        font-weight: 700;
+        color: #000000;
         margin-bottom: 12px;
         display: block;
     }
@@ -426,67 +764,68 @@ const styles = `
     }
     .pdp-color-swatch:hover { transform: scale(1.15); }
     .pdp-color-swatch.active {
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(197,160,89,0.25);
+        border-color: #000000;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15);
     }
     .pdp-sizes { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
     .pdp-size-btn {
         min-width: 52px; padding: 10px 16px;
-        border: 1px solid #ddd; background: white;
-        font-family: 'Montserrat', sans-serif; font-size: 0.82rem;
-        letter-spacing: 1px; cursor: pointer; transition: 0.3s; text-align: center;
+        border: 1px solid #E5E5E5; background: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.8rem; font-weight: 700;
+        letter-spacing: 1px; cursor: pointer; transition: 0.2s; text-align: center;
+        border-radius: 4px;
     }
-    .pdp-size-btn:hover { border-color: var(--dark); }
-    .pdp-size-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
+    .pdp-size-btn:hover { border-color: #000000; }
+    .pdp-size-btn.active { background: #000000; color: white; border-color: #000000; }
     .pdp-size-btn.disabled {
-        opacity: 0.6 !important;
+        opacity: 0.4 !important;
         cursor: not-allowed !important;
         text-decoration: line-through !important;
         background: #fafafa !important;
-        color: #444444 !important;
-        border-color: #d1d5db !important;
-        font-weight: 600 !important;
-    }
-    .pdp-size-btn.disabled:hover {
-        border-color: #d1d5db !important;
-        background: #fafafa !important;
-        color: #444444 !important;
+        color: #888888 !important;
+        border-color: #e5e5e5 !important;
     }
 
     .pdp-qty-row { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
-    .pdp-qty-control { display: flex; align-items: center; border: 1px solid #ddd; }
+    .pdp-qty-control { display: flex; align-items: center; border: 1px solid #E5E5E5; border-radius: 2px; }
     .pdp-qty-btn {
-        width: 40px; height: 40px; border: none; background: white;
-        font-size: 1.2rem; cursor: pointer; transition: 0.3s;
+        width: 42px; height: 42px; border: none; background: white;
+        font-size: 1.1rem; cursor: pointer; transition: 0.2s;
         display: flex; align-items: center; justify-content: center;
     }
     .pdp-qty-btn:hover { background: #f5f5f5; }
     .pdp-qty-value {
         width: 50px; text-align: center;
-        font-family: 'Montserrat', sans-serif; font-size: 0.9rem;
-        border-left: 1px solid #ddd; border-right: 1px solid #ddd; padding: 10px 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 0.9rem; font-weight: 700;
+        border-left: 1px solid #E5E5E5; border-right: 1px solid #E5E5E5; padding: 11px 0;
     }
 
     /* Actions */
     .pdp-actions { display: flex; gap: 12px; margin-bottom: 28px; }
     .pdp-add-bag {
-        flex: 1; padding: 16px 32px; background: var(--dark); color: white;
-        border: none; font-family: 'Cinzel', serif; font-size: 0.85rem;
-        letter-spacing: 2.5px; cursor: pointer; transition: 0.3s;
+        flex: 1; padding: 18px 32px; background: #000000; color: white;
+        border: none; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 0.8rem; font-weight: 800;
+        letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.25s;
+        border-radius: 2px;
     }
-    .pdp-add-bag:hover { background: var(--gold); }
+    .pdp-add-bag:hover { background: var(--gold, #C5A059); color: #000000; }
     .pdp-buy-now {
-        flex: 1; padding: 16px 32px; background: var(--gold); color: white;
-        border: none; font-family: 'Cinzel', serif; font-size: 0.85rem;
-        letter-spacing: 2.5px; cursor: pointer; transition: 0.3s;
+        flex: 1; padding: 18px 32px; background: var(--gold, #C5A059); color: #000000;
+        border: none; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 0.8rem; font-weight: 800;
+        letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.25s;
+        border-radius: 2px;
     }
-    .pdp-buy-now:hover { background: var(--dark); }
+    .pdp-buy-now:hover { background: #000000; color: #FFFFFF; }
     .pdp-wishlist-btn {
-        width: 54px; height: 54px; border: 1px solid #ddd; background: white;
+        width: 54px; height: 54px; border: 1px solid #E5E5E5; background: white;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        transition: 0.3s; font-size: 1.3rem; flex-shrink: 0;
+        transition: 0.2s; font-size: 1.2rem; flex-shrink: 0; border-radius: 2px;
     }
-    .pdp-wishlist-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .pdp-wishlist-btn:hover { border-color: #000000; color: #000000; }
     .pdp-share-btn {
         width: 54px; height: 54px; border: 1px solid #ddd; background: white;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -552,7 +891,7 @@ const styles = `
         text-align: center; padding: 120px 5%;
     }
     .pdp-not-found h2 {
-        font-family: 'Cinzel', serif; letter-spacing: 3px; margin-bottom: 16px;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif; letter-spacing: 3px; margin-bottom: 16px;
     }
     .pdp-not-found p { color: #888; margin-bottom: 30px; }
 
@@ -631,7 +970,7 @@ const styles = `
         background: #fafafa;
     }
     .pdp-sizechart-title {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1.1rem;
         letter-spacing: 1.5px;
         color: var(--dark);
@@ -709,6 +1048,7 @@ function ProductDetail() {
         }
     }, [location]);
 
+    const [recommendedProducts, setRecommendedProducts] = useState([]);
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedColor, setSelectedColor] = useState(0);
     const [selectedSize, setSelectedSize] = useState(null);
@@ -771,67 +1111,62 @@ function ProductDetail() {
     const activeImages = React.useMemo(() => {
         if (!product) return [];
 
-        // â”€â”€ Designer products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        if (!product.isMfgProduct) {
-            const colorName = product.colors && product.colors[selectedColor]; // e.g. "BLACK"
+        const rawColor = product.colors && product.colors[selectedColor];
+        const colorName = typeof rawColor === 'object' && rawColor !== null 
+            ? (rawColor.colorName || rawColor.name || '') 
+            : String(rawColor || '');
 
-            // 1. Try explicit customerImages map (from new uploads)
-            if (product.customerImages && colorName) {
-                const key = Object.keys(product.customerImages).find(
-                    k => k.toLowerCase() === String(colorName).toLowerCase()
-                );
-                if (key) {
-                    const imgs = product.customerImages[key];
-                    if (Array.isArray(imgs) && imgs.length > 0) {
-                        const finalImgs = [...imgs];
-                        if (product.sizeChartImage && !finalImgs.includes(product.sizeChartImage))
-                            finalImgs.push(product.sizeChartImage);
-                        return finalImgs;
-                    }
-                }
+        // 1. Explicit customerImages map from designer uploads
+        if (product.customerImages && colorName) {
+            const key = Object.keys(product.customerImages).find(
+                k => k.toLowerCase() === colorName.toLowerCase()
+            );
+            if (key && Array.isArray(product.customerImages[key]) && product.customerImages[key].length > 0) {
+                return product.customerImages[key];
             }
-
-            // 2. Parse color from filename â€” pattern: *_customer_COLORNAME_*.ext
-            //    Works for existing designs uploaded via DesignerUpload
-            if (colorName && product.images && product.images.length > 0) {
-                const colorUpper = String(colorName).toUpperCase();
-                // Try to match e.g. "_customer_BLACK_" or "_BLACK_" in URL
-                const colorSpecific = product.images.filter(url => {
-                    const filename = url.split('/').pop().toUpperCase();
-                    return filename.includes(`_${colorUpper}_`) ||
-                           filename.includes(`_CUSTOMER_${colorUpper}_`) ||
-                           filename.startsWith(`${colorUpper}_`);
-                });
-                if (colorSpecific.length > 0) {
-                    const finalImgs = [...colorSpecific];
-                    if (product.sizeChartImage && !finalImgs.includes(product.sizeChartImage))
-                        finalImgs.push(product.sizeChartImage);
-                    return finalImgs;
-                }
-            }
-
-            // 3. Fallback: show all images when no color-specific ones found
-            const baseImgs = product.images || [];
-            if (product.sizeChartImage && !baseImgs.includes(product.sizeChartImage))
-                return [...baseImgs, product.sizeChartImage];
-            return baseImgs;
         }
 
-        // â”€â”€ Manufacturer (base) products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        const colorObj = product.colors && product.colors[selectedColor];
-        if (colorObj) {
+        // 2. Manufacturer / Color object containing front/back images
+        if (typeof rawColor === 'object' && rawColor !== null) {
             const imgs = [];
-            if (colorObj.frontImage) imgs.push(colorObj.frontImage);
-            if (colorObj.backImage) imgs.push(colorObj.backImage);
-            const finalImgs = imgs.length > 0 ? imgs : [product.coverImage || product.colors?.[0]?.frontImage || ''];
-            if (product.sizeChartImage && !finalImgs.includes(product.sizeChartImage))
-                return [...finalImgs, product.sizeChartImage];
-            return finalImgs;
+            if (Array.isArray(rawColor.images) && rawColor.images.length > 0) {
+                imgs.push(...rawColor.images);
+            } else {
+                if (rawColor.frontImage) imgs.push(rawColor.frontImage);
+                if (rawColor.backImage)  imgs.push(rawColor.backImage);
+                if (rawColor.sideImage)  imgs.push(rawColor.sideImage);
+            }
+            if (imgs.length > 0) return imgs;
         }
-        const fallback = [product.coverImage || product.colors?.[0]?.frontImage || ''];
-        if (product.sizeChartImage && !fallback.includes(product.sizeChartImage))
-            return [...fallback, product.sizeChartImage];
-        return fallback;
+
+        // 3. Filter product.images by color name in URL
+        if (colorName && Array.isArray(product.images) && product.images.length > 0) {
+            const cleanColor = colorName.trim().toUpperCase();
+            const colorSpecific = product.images.filter(url => {
+                const upperUrl = String(url).toUpperCase();
+                return upperUrl.includes(`_${cleanColor}_`) ||
+                       upperUrl.includes(`_CUSTOMER_${cleanColor}_`) ||
+                       upperUrl.includes(`/${cleanColor}/`) ||
+                       upperUrl.includes(`-${cleanColor.toLowerCase()}-`) ||
+                       upperUrl.includes(`_${cleanColor.toLowerCase()}_`);
+            });
+            if (colorSpecific.length > 0) {
+                return colorSpecific;
+            }
+
+            // 4. Partition product.images evenly per color variant
+            if (Array.isArray(product.colors) && product.colors.length > 1) {
+                const perColor = Math.floor(product.images.length / product.colors.length);
+                if (perColor >= 1) {
+                    const start = selectedColor * perColor;
+                    const subset = product.images.slice(start, start + perColor);
+                    if (subset.length > 0) return subset;
+                }
+            }
+        }
+
+        // 5. If only 1 image exists or single color, return only primary image
+        return product.images && product.images.length > 0 ? [product.images[0]] : [product.coverImage || product.colors?.[0]?.frontImage || ''];
     }, [product, selectedColor]);
 
 
@@ -954,6 +1289,55 @@ function ProductDetail() {
         };
     }, [isEnlarged, product, activeImages]);
 
+    // Dynamic context-aware recommendation scoring algorithm
+    const computeRecommendations = (allDesigns, currentProd) => {
+        if (!Array.isArray(allDesigns) || !currentProd) return [];
+
+        const currId = String(currentProd.id);
+        const currCat = String(currentProd.category || '').toLowerCase();
+        const currTitle = String(currentProd.name || currentProd.title || '').toLowerCase();
+        const currDesigner = String(currentProd.designerId || currentProd.designer_id || '');
+        const currPrice = Number(currentProd.price) || 0;
+
+        // Keywords from product title (e.g. "wave", "cap", "oversized", "tee", "hoodie")
+        const keywords = currTitle.split(/\s+/).filter(w => w.length > 2);
+
+        const candidates = allDesigns.filter(d => String(d.id) !== currId && d.is_available !== false);
+
+        const scored = candidates.map(d => {
+            let score = 0;
+            const dCat = String(d.category || '').toLowerCase();
+            const dTitle = String(d.title || d.name || '').toLowerCase();
+            const dDesigner = String(d.designer_id || d.designerId || '');
+            const dPrice = Number(d.price) || 0;
+
+            // 1. Same garment category (+40 points)
+            if (currCat && dCat === currCat) score += 40;
+
+            // 2. Keyword relevance (+20 points per match)
+            keywords.forEach(kw => {
+                if (dTitle.includes(kw)) score += 20;
+            });
+
+            // 3. Same designer drop (+30 points)
+            if (currDesigner && dDesigner === currDesigner) score += 30;
+
+            // 4. Price bracket proximity (+15 points if within 35% range)
+            if (currPrice > 0 && Math.abs(dPrice - currPrice) / currPrice < 0.35) {
+                score += 15;
+            }
+
+            // 5. Deterministic hash variance so products have distinct recommendation sets
+            const hash = (String(d.id).charCodeAt(0) * 7 + currId.charCodeAt(0) * 13) % 19;
+            score += hash;
+
+            return { item: d, score };
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+        return scored.slice(0, 4).map(s => s.item);
+    };
+
     useEffect(() => {
         let isMounted = true;
         setLoading(true);
@@ -961,14 +1345,7 @@ function ProductDetail() {
         const loadProduct = async () => {
             try {
                 const settings = await apiFetch('/api/settings/global_shipping_note').catch(() => null);
-                if (settings && settings.value && settings.value.text) {
-                    setGlobalShippingNote(settings.value.text);
-                }
-            } catch (e) {
-                console.error("Failed to fetch shipping note");
-            }
 
-            try {
                 // Try fetching design from backend first
                 let designData = null;
                 try {
@@ -1148,6 +1525,17 @@ function ProductDetail() {
                         setSelectedSize(firstAvailSize);
                         setSelectedPrintStyle(null);
                         setQuantity(1);
+
+                        // Compute tailored recommendations specifically for this product
+                        try {
+                            const allDesigns = await apiFetch('/api/designs');
+                            if (Array.isArray(allDesigns) && isMounted) {
+                                const recommended = computeRecommendations(allDesigns, dbProduct);
+                                setRecommendedProducts(recommended);
+                            }
+                        } catch (e) {
+                            console.error("Failed to load recommendations");
+                        }
                     }
                 } else {
                     // Design not found â€” base products are not publicly visible
@@ -1326,7 +1714,6 @@ function ProductDetail() {
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />
             <div className="pdp-page">
-                <BackButton />
                 <div className="pdp-breadcrumb">
                     <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }}>HOME</a>
                     {' / '}
@@ -1335,335 +1722,213 @@ function ProductDetail() {
                     <span>{product.name}</span>
                 </div>
 
-                <div className="pdp-split">
-                    {/* â”€â”€ Gallery (left 55%) â”€â”€ */}
-                    <div className="pdp-gallery">
-                        <div className="pdp-main-image-container" onClick={() => setIsEnlarged(true)}>
-                            <img key={selectedImage} className="pdp-main-image" src={activeImages[selectedImage] || product.coverImage || product.colors?.[0]?.frontImage || ''} alt={product.name} />
-                            <div className="pdp-image-zoom-badge">
-                                <i className="fa-solid fa-expand"></i> Click to Zoom
-                            </div>
-                        </div>
-                        <div className="pdp-thumbs">
-                            {activeImages.map((img, i) => (
-                                <img key={i} className={`pdp-thumb ${i === selectedImage ? 'active' : ''}`} src={img} alt={`${product.name} view ${i + 1}`} onClick={() => setSelectedImage(i)} />
-                            ))}
-                        </div>
+                {/* ── 3-COLUMN PDP LAYOUT (BLUORNG EXACT) ── */}
+                <div className="pdp-split-3col">
+                    {/* Column 1: Non-scrollable Fixed Primary Cover Shot */}
+                    <div 
+                        className="pdp-col-cover"
+                        onClick={() => { setSelectedImage(0); setIsEnlarged(true); }}
+                        title="Click to expand"
+                    >
+                        <img
+                            className="pdp-col-cover-img"
+                            src={activeImages[0] || product.coverImage || product.colors?.[0]?.frontImage || ''}
+                            alt={product.name}
+                        />
                     </div>
 
-                    {/* â”€â”€ Info panel (right 45%) â”€â”€ */}
-                    <div className="pdp-info">
-                        <span className="pdp-collection-tag">{product.collection}</span>
-                        <h1 className="pdp-product-name">{product.name}</h1>
-                        <p className="pdp-designer">
-                            By{' '}
-                            <span 
-                                onClick={() => navigate(`/designers/${product.designerId}`)} 
-                                style={{ color: 'var(--gold)', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }}
+                    {/* Column 2: In-place Scrollable Stream of Remaining Angles */}
+                    <div className="pdp-col-stream">
+                        {(activeImages.length > 1 ? activeImages.slice(1) : activeImages).map((imgUrl, idx) => (
+                            <div
+                                key={idx}
+                                className="pdp-stream-card"
+                                onClick={() => { setSelectedImage(activeImages.length > 1 ? idx + 1 : idx); setIsEnlarged(true); }}
                             >
-                                {product.designer}
-                            </span>
-                        </p>
-                        <div className="pdp-price">
-                            {formatPrice(applyMarkup((product.price) + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0)))}
-                            <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Montserrat', sans-serif", letterSpacing: '1.5px', color: '#888', fontWeight: 400, marginTop: '4px' }}>excl. GST &amp; shipping</span>
-                        </div>
+                                <img
+                                    className="pdp-stream-img"
+                                    src={imgUrl}
+                                    alt={`${product.name} angle ${idx + 2}`}
+                                    loading="lazy"
+                                />
+                            </div>
+                        ))}
+                    </div>
 
-                        <div className="pdp-divider" />
-
-                        <span className="pdp-section-label">
-                            COLOR{(() => {
-                                if (product.isMfgProduct) {
-                                    return product.colors[selectedColor]?.colorName
-                                        ? ` — ${product.colors[selectedColor].colorName.toUpperCase()}`
-                                        : '';
-                                }
-                                // Designer product — colors are plain strings
-                                const c = product.colors?.[selectedColor];
-                                return c ? ` — ${String(c).toUpperCase()}` : '';
-                            })()}
-                        </span>
-                        <div className="pdp-colors">
-                            {product.colors.map((c, i) => {
-                                const swatchBg = (() => {
-                                    if (product.isMfgProduct) return c.color;
-                                    if (product.colorDetails && Array.isArray(product.colorDetails)) {
-                                        const found = product.colorDetails.find(bc => bc.colorName === c);
-                                        if (found) return found.color;
-                                    }
-                                    return getColorHexByName(c);
-                                })();
-                                const swatchTitle = product.isMfgProduct ? c.colorName : c;
-                                return (
-                                    <div 
-                                        key={i} 
-                                        className={`pdp-color-swatch ${i === selectedColor ? 'active' : ''}`} 
-                                        style={{ backgroundColor: swatchBg }} 
-                                        title={swatchTitle}
-                                        onClick={() => setSelectedColor(i)} 
-                                    />
-                                );
-                            })}
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                            <span className="pdp-section-label" style={{ marginBottom: 0 }}>SIZE</span>
-                            {product.sizeChartImage && (
-                                <button 
-                                    onClick={() => setShowSizeChart(true)} 
-                                    style={{ 
-                                        background: 'none', 
-                                        border: 'none', 
-                                        color: 'var(--gold)', 
-                                        fontFamily: "'Montserrat', sans-serif", 
-                                        fontSize: '0.72rem', 
-                                        letterSpacing: '1.5px', 
-                                        textTransform: 'uppercase', 
-                                        textDecoration: 'underline', 
-                                        cursor: 'pointer',
-                                        padding: 0
-                                    }}
+                    {/* Column 3: Sticky Details Card & Accordion */}
+                    <div className="pdp-col-details">
+                        <div className="pdp-info-card">
+                            <div className="pdp-header-row">
+                                <h1 className="pdp-product-name">{product.name}</h1>
+                                <button
+                                    className="pdp-bookmark-btn"
+                                    onClick={handleWishlistToggle}
+                                    title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                                    aria-label="Wishlist"
                                 >
-                                    Size Guide
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill={wishlisted ? "#000000" : "none"} stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                    </svg>
                                 </button>
-                            )}
-                        </div>
-                        {product.allSizesOut && (
-                            <div style={{
-                                background: '#fff5f5',
-                                border: '1px solid #fed7d7',
-                                color: '#c53030',
-                                padding: '12px 16px',
-                                borderRadius: 6,
-                                margin: '14px 0',
-                                fontSize: '0.84rem',
-                                fontWeight: 600,
-                                fontFamily: "'Montserrat', sans-serif",
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 10,
-                                boxShadow: '0 2px 6px rgba(229, 62, 62, 0.08)'
-                            }}>
-                                <i className="fas fa-exclamation-circle" style={{ color: '#e53e3e', fontSize: '1rem' }} />
-                                <span>All sizes for this product are currently out of stock.</span>
                             </div>
-                        )}
-                        <div className="pdp-sizes">
-                            {product.sizes && product.sizes.map(sz => {
-                                const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
-                                const isAvailable = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
-                                const isActive = selectedSize === sizeName;
 
-                                return (
-                                    <button 
-                                        key={sizeName} 
-                                        disabled={!isAvailable}
-                                        className={`pdp-size-btn ${isActive ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
-                                        style={!isAvailable ? { 
-                                            opacity: 0.6, 
-                                            cursor: 'not-allowed', 
-                                            textDecoration: 'line-through',
-                                            background: '#fafafa',
-                                            color: '#444444',
-                                            borderColor: '#d1d5db',
-                                            fontWeight: 600
-                                        } : {}}
-                                        onClick={() => {
-                                            if (!isAvailable) {
-                                                showToast(`Size ${sizeName} is out of stock`, 'warning');
-                                                return;
-                                            }
-                                            setSelectedSize(sizeName);
-                                        }}
-                                        title={!isAvailable ? `${sizeName} (Out of Stock)` : sizeName}
-                                    >
-                                        {sizeName}
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-
-                        <span className="pdp-section-label">QUANTITY</span>
-                        <div className="pdp-qty-row">
-                            <div className="pdp-qty-control">
-                                <button className="pdp-qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
-                                <div className="pdp-qty-value">{quantity}</div>
-                                <button className="pdp-qty-btn" onClick={() => setQuantity(quantity + 1)}>+</button>
+                            <div className="pdp-price-row">
+                                {formatPrice(applyMarkup((product.price) + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0)))}
                             </div>
-                        </div>
 
-                        <div className="pdp-actions">
-                            {product.available === false || product.allSizesOut ? (
-                                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                    <div style={{
-                                        padding: '11px 16px',
-                                        background: '#fff1f2',
-                                        border: '1px solid #fecdd3',
-                                        borderRadius: 6,
-                                        color: '#be123c',
-                                        fontSize: '0.8rem',
-                                        fontWeight: 600,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 8
-                                    }}>
-                                        <i className="fas fa-exclamation-circle" />
-                                        <span>{product.unavailableReason || (product.allSizesOut ? 'All sizes are currently out of stock.' : 'This product or its printing configuration is currently unavailable.')}</span>
+                            {/* Color Selector */}
+                            {product.colors && product.colors.length > 1 && (
+                                <div style={{ marginBottom: '18px' }}>
+                                    <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', color: '#000' }}>
+                                        COLOR: {typeof product.colors[selectedColor] === 'object' ? (product.colors[selectedColor]?.colorName || '') : product.colors[selectedColor]}
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        {product.colors.map((c, i) => {
+                                            const swatchBg = typeof c === 'object' ? c.color : getColorHexByName(c);
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    className={`pdp-color-swatch ${i === selectedColor ? 'active' : ''}`}
+                                                    style={{ backgroundColor: swatchBg, width: '28px', height: '28px' }}
+                                                    onClick={() => setSelectedColor(i)}
+                                                />
+                                            );
+                                        })}
                                     </div>
-                                    <button className="pdp-add-bag" disabled style={{ background: '#475569', cursor: 'not-allowed', color: '#ffffff', width: '100%', opacity: 0.8, fontWeight: 700 }}>
-                                        <i className="fas fa-ban" style={{ marginRight: 8 }} /> {product.allSizesOut ? 'OUT OF STOCK' : 'CURRENTLY UNAVAILABLE'}
-                                    </button>
                                 </div>
-                            ) : (
-                                <>
-                                    <button className="pdp-add-bag" onClick={handleAddToBag}>
-                                        {isAlreadyInCart() ? 'VIEW CART' : (added ? '✓ ADDED TO BAG' : 'ADD TO BAG')}
+                            )}
+
+                            {/* Size Header with Size Guide */}
+                            <div className="pdp-size-header-row">
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: '#000000' }}>SIZE</span>
+                                {product.sizeChartImage && (
+                                    <button className="pdp-size-guide-btn" onClick={() => setShowSizeChart(true)}>
+                                        Size Guide
                                     </button>
-                                    <button className="pdp-buy-now" onClick={() => { 
-                                        if (!selectedSize) { 
-                                            showToast('Please select an available size', 'warning'); 
-                                            return; 
-                                        }
-                                        const sizeObj = product.sizes?.find(s => (typeof s === 'object' ? s.size : s) === selectedSize);
-                                        const isAvail = sizeObj ? (typeof sizeObj === 'object' ? sizeObj.available !== false : true) : true;
-                                        if (!isAvail) {
-                                            showToast(`Size ${selectedSize} is out of stock and cannot be booked.`, 'error');
+                                )}
+                            </div>
+
+                            {/* Pill Size Buttons */}
+                            <div className="pdp-pill-sizes">
+                                {product.sizes && product.sizes.map(sz => {
+                                    const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
+                                    const isAvailable = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
+                                    const isActive = selectedSize === sizeName;
+
+                                    return (
+                                        <button
+                                            key={sizeName}
+                                            disabled={!isAvailable}
+                                            className={`pdp-pill-size-btn ${isActive ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                                            onClick={() => {
+                                                if (!isAvailable) {
+                                                    showToast(`Size ${sizeName} is out of stock`, 'warning');
+                                                    return;
+                                                }
+                                                setSelectedSize(sizeName);
+                                            }}
+                                        >
+                                            {sizeName}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Action Buttons Row */}
+                            {product.available === false || product.allSizesOut ? (
+                                <button className="pdp-buy-now-pill" disabled style={{ background: '#475569', cursor: 'not-allowed', width: '100%' }}>
+                                    OUT OF STOCK
+                                </button>
+                            ) : (
+                                <div className="pdp-action-pills-row">
+                                    <button className="pdp-add-bag-pill" onClick={handleAddToBag}>
+                                        {isAlreadyInCart() ? 'VIEW CART' : (added ? '✓ IN BAG' : 'ADD TO BAG')}
+                                    </button>
+                                    <button className="pdp-buy-now-pill" onClick={() => {
+                                        if (!selectedSize) {
+                                            showToast('Please select a size first', 'warning');
                                             return;
                                         }
-
-                                        // Guard check for Login
-                                        const isLoggedIn = localStorage.getItem('asat_loggedIn') === 'true';
-                                        if (!isLoggedIn) {
-                                            navigate('/login', { 
-                                                state: { 
-                                                    from: window.location.pathname, 
-                                                    message: 'Please sign in to buy now!' 
-                                                } 
-                                            });
-                                            return;
-                                        }
-
-                                        if (isAlreadyInCart()) {
-                                            navigate('/cart');
-                                        } else {
-                                            handleAddToBag(); 
-                                            navigate('/cart'); 
-                                        }
+                                        if (!isAlreadyInCart()) handleAddToBag();
+                                        navigate('/cart');
                                     }}>
                                         BUY NOW
                                     </button>
-                                </>
+                                </div>
                             )}
-                            <button 
-                                className="pdp-wishlist-btn" 
-                                onClick={handleWishlistToggle}
-                                title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                                style={{ color: wishlisted ? 'var(--gold)' : 'var(--dark)', borderColor: wishlisted ? 'var(--gold)' : '#ddd' }}
-                            >
-                                {wishlisted ? '♥' : '♡'}
-                            </button>
-                            <div style={{ position: 'relative' }}>
-                                <button 
-                                    className="pdp-share-btn" 
-                                    onClick={(e) => { e.stopPropagation(); setShowShareMenu(!showShareMenu); }}
-                                    title="Share this product"
-                                    style={{ color: 'var(--dark)' }}
-                                >
-                                    <i className="fa-solid fa-share-nodes"></i>
+                        </div>
+
+                        {/* Accordion / Tabs Description Card */}
+                        <div className="pdp-accordion-card">
+                            <div className="pdp-tabs-nav">
+                                <button className={`pdp-tab-btn ${activeTab === 'details' ? 'active' : ''}`} onClick={() => setActiveTab('details')}>
+                                    Details & Description
                                 </button>
-                                {showShareMenu && (
-                                    <div className="pdp-share-dropdown" onClick={(e) => e.stopPropagation()}>
-                                        <button className="pdp-share-item" onClick={() => handleShareAction('copy')}>
-                                            <i className="fa-solid fa-copy"></i> Copy Link
-                                        </button>
-                                        <button className="pdp-share-item" onClick={() => handleShareAction('whatsapp')}>
-                                            <i className="fa-brands fa-whatsapp"></i> WhatsApp
-                                        </button>
-                                        <button className="pdp-share-item" onClick={() => handleShareAction('twitter')}>
-                                            <i className="fa-brands fa-x-twitter"></i> Twitter / X
-                                        </button>
+                                <button className={`pdp-tab-btn ${activeTab === 'washcare' ? 'active' : ''}`} onClick={() => setActiveTab('washcare')}>
+                                    Washcare
+                                </button>
+                                <button className={`pdp-tab-btn ${activeTab === 'shipping' ? 'active' : ''}`} onClick={() => setActiveTab('shipping')}>
+                                    Shipping
+                                </button>
+                            </div>
+
+                            <div className="pdp-tab-body">
+                                {activeTab === 'details' && (
+                                    <div>
+                                        <p style={{ margin: '0 0 10px', fontWeight: '600', color: '#000' }}>{product.collection || '100% Premium Cotton'}</p>
+                                        <p style={{ margin: 0, color: '#555' }}>{product.description || 'Crafted from heavyweight French Terry cotton offering structured fit and breathable luxury comfort.'}</p>
+                                    </div>
+                                )}
+                                {activeTab === 'washcare' && (
+                                    <div>
+                                        <p style={{ margin: 0, color: '#555' }}>• Hand wash cold or gentle machine wash inside-out<br />• Do not bleach<br />• Iron on low heat avoiding direct graphic embroidery<br />• Flat dry in shade</p>
+                                    </div>
+                                )}
+                                {activeTab === 'shipping' && (
+                                    <div>
+                                        <p style={{ margin: 0, color: '#555' }}>• Free express domestic shipping across India<br />• Dispatched in 24-48 business hours<br />• 7-day hassle-free return and exchange policy</p>
                                     </div>
                                 )}
                             </div>
                         </div>
-
-                        {/* Certified Quality Badge */}
-                        {/* <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '14px',
-                            background: 'rgba(197, 160, 89, 0.05)',
-                            border: '1px solid rgba(197, 160, 89, 0.22)',
-                            borderRadius: '8px',
-                            padding: '12px 16px',
-                            marginTop: '20px',
-                            fontFamily: "'Montserrat', sans-serif"
-                        }}>
-                            <div style={{
-                                width: '38px',
-                                height: '38px',
-                                borderRadius: '50%',
-                                background: 'var(--gold)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyCenter: 'center',
-                                justifyContent: 'center',
-                                color: '#000',
-                                fontSize: '1.15rem',
-                                flexShrink: 0
-                            }}>
-                                <i className="fa-solid fa-award"></i>
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--dark)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                                    ASAT Certified Quality
-                                </div>
-                                <div style={{ fontSize: '0.7rem', color: '#666', marginTop: '2px', lineHeight: '1.35' }}>
-                                    100% premium fabric construction. Hand-inspected and printed with trade-certified durability.
-                                </div>
-                            </div>
-                        </div> */}
-
-                        <div className="pdp-divider" />
-
-                        <div className="pdp-tabs">
-                            {['description', 'details', 'shipping', 'designer', 'washcare', ...(product.sizeChartImage ? ['sizeguide'] : [])].map(tab => (
-                                <button key={tab} className={`pdp-tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
-                                    {tab === 'washcare' ? 'Wash Care' : tab === 'designer' ? 'Designer Note' : tab === 'sizeguide' ? 'Size Guide' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="pdp-tab-content">
-                            {activeTab === 'description' && <p>{product.description}</p>}
-                            {activeTab === 'details' && <ul>{product.details.map((d, i) => <li key={i}>{d}</li>)}</ul>}
-                            {activeTab === 'shipping' && (
-                                <div dangerouslySetInnerHTML={{ __html: globalShippingNote || '<p>Standard shipping terms apply.</p>' }} />
-                            )}
-                            {activeTab === 'designer' && <p>{product.designerNote || 'Designer note coming soon.'}</p>}
-                            {activeTab === 'washcare' && (
-                                <ul>{product.washCare && product.washCare.map((item, i) => <li key={i}>{item}</li>)}</ul>
-                            )}
-                            {activeTab === 'sizeguide' && product.sizeChartImage && (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-                                    <p style={{ alignSelf: 'flex-start', margin: 0, fontSize: '0.82rem', color: '#666', fontFamily: "'Montserrat', sans-serif" }}>Please refer to the size chart below to select your fit:</p>
-                                    <img 
-                                        src={product.sizeChartImage} 
-                                        alt="Size Guide" 
-                                        style={{ 
-                                            maxWidth: '100%', 
-                                            maxHeight: '400px', 
-                                            objectFit: 'contain',
-                                            border: '1px solid rgba(0,0,0,0.08)',
-                                            borderRadius: '4px',
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                                        }} 
-                                    />
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </div>
+
+                {/* ── Recommended Products: "YOU MAY ALSO LIKE" ── */}
+                {recommendedProducts && recommendedProducts.length > 0 && (
+                    <div className="pdp-recommended-section">
+                        <div className="blu-section__head" style={{ marginBottom: '24px' }}>
+                            <h2 className="blu-section__title" style={{ fontSize: '1.25rem' }}>YOU MAY ALSO LIKE</h2>
+                            <Link to="/products" className="blu-section__link">Discover more</Link>
+                        </div>
+                        <div className="blu-products-grid">
+                            {recommendedProducts.map((p) => {
+                                const pImgs = (p.images && p.images.length > 0) ? p.images : [p.cover_image || p.image || 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80'];
+                                return (
+                                    <div 
+                                        key={p.id} 
+                                        className="blu-card" 
+                                        onClick={() => {
+                                            navigate(`/product/${p.id}`);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <div className="blu-card__media-wrap">
+                                            <img className="blu-card__img" src={pImgs[0]} alt={p.title || p.name} />
+                                        </div>
+                                        <div className="blu-card__body">
+                                            <div className="blu-card__text">
+                                                <h3 className="blu-card__title">{p.title || p.name}</h3>
+                                                <div className="blu-card__price">{formatPrice(applyMarkup(Number(p.price) || 0))}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* â”€â”€ Size Guide Modal Overlay â”€â”€ */}

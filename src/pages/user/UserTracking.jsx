@@ -8,7 +8,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 const styles = `
     .tracking-page {
         min-height: 80vh;
-        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
+        background: var(--bg, #FAFAF8);
         padding: 40px 5%;
         font-family: 'Montserrat', sans-serif;
     }
@@ -26,7 +26,7 @@ const styles = `
         margin-top: 20px;
     }
     .tracking-title {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1.8rem;
         letter-spacing: 2px;
         color: var(--dark);
@@ -144,7 +144,7 @@ const styles = `
         margin-bottom: 15px;
     }
     .empty-tracking h4 {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1.2rem;
         letter-spacing: 2px;
         color: var(--dark);
@@ -295,7 +295,7 @@ function UserTracking() {
                                     padding: '16px 20px', marginBottom: 24, textAlign: 'center', color: '#c62828'
                                 }}>
                                     <i className="fas fa-exclamation-circle" style={{ fontSize: '1.8rem', marginBottom: 8, display: 'block' }}></i>
-                                    <h4 style={{ margin: '0 0 6px', fontFamily: "'Cinzel', serif", fontSize: '1.1rem' }}>ORDER CANCELLED</h4>
+                                    <h4 style={{ margin: '0 0 6px', fontFamily: "'Cormorant Garamond', 'Cinzel', serif", fontSize: '1.1rem' }}>ORDER CANCELLED</h4>
                                     <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, fontWeight: 500 }}>
                                         We are so sorry to inform you that your order was cancelled due to some issues. The amount will be refunded within 48 hours.
                                     </p>

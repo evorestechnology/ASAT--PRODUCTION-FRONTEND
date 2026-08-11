@@ -100,7 +100,12 @@ function useHorizontalScroll() {
 function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
   const { formatPrice, applyMarkup } = useCurrency();
   const [wishlisted, setWishlisted] = useState(false);
-  const img = product.images?.[0] || 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=500&q=80';
+  const fallbackImg = 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=600&q=80';
+  
+  // Extract images array (support 2-4 gallery images for inline transition)
+  const rawImages = product.images && product.images.length > 0 ? product.images : [product.image || fallbackImg];
+  const images = rawImages.length === 1 && product.coverImage ? [rawImages[0], product.coverImage] : rawImages;
+  const [imgIndex, setImgIndex] = useState(0);
 
   useEffect(() => {
     const checkWishlist = () => {
@@ -115,7 +120,6 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
   const toggleWishlist = (e) => {
     e.stopPropagation();
     
-    // Guard check for Login
     const isLoggedIn = localStorage.getItem('asat_loggedIn') === 'true';
     if (!isLoggedIn) {
       onNavigate('/login', { 
@@ -137,7 +141,7 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
         id: product.id,
         name: product.title || product.name,
         price: product.price,
-        image: img,
+        image: images[0],
         collection: product.collection || 'ASAT Exclusive',
         sizes: product.sizes || ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
         colors: product.colors || [],
@@ -158,36 +162,86 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
     window.dispatchEvent(new Event('wishlist_updated'));
   };
 
+  const handlePrevImg = (e) => {
+    e.stopPropagation();
+    setImgIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleNextImg = (e) => {
+    e.stopPropagation();
+    setImgIndex((prev) => (prev + 1) % images.length);
+  };
+
   return (
     <article
-      className="ui-product-card"
-      style={{ cursor: 'pointer' }}
+      className="blu-card"
       onClick={() => onNavigate(`/products/${product.id}`)}
     >
-      <div className="ui-product-card__cover" style={{ backgroundImage: `url('${img}')` }}>
-        {badge && <span className={`ui-product-card__badge ${badgeClass}`}>{badge}</span>}
-        {rank ? (
-          <div className="ui-product-card__rank">#{rank}</div>
-        ) : (
-          <button
-            className="ui-product-card__heart"
-            onClick={toggleWishlist}
-            aria-label="Wishlist"
-          >
-            <i className={wishlisted ? 'fas fa-heart' : 'far fa-heart'} />
-          </button>
-        )}
+      <div className="blu-card__image-box">
+        {/* Active Product Image */}
+        <div
+          className="blu-card__image"
+          style={{ backgroundImage: `url('${images[imgIndex] || images[0]}')` }}
+        />
+        
+        {badge && <span className="blu-card__badge">{badge}</span>}
+
+        {/* Top-right Bookmark Ribbon */}
         <button
-          className="ui-product-card__quick-add"
-          onClick={(e) => { e.stopPropagation(); onNavigate(`/products/${product.id}`); }}
+          className="blu-card__bookmark-btn"
+          onClick={toggleWishlist}
+          aria-label="Save to Wishlist"
         >
-          QUICK ADD
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={wishlisted ? "#000000" : "none"} stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
         </button>
+
+        {/* Inline Carousel Navigation Arrows on Hover (Exact Match) */}
+        {images.length > 1 && (
+          <>
+            <button className="blu-card__nav-arrow blu-card__nav-arrow--left" onClick={handlePrevImg} aria-label="Previous image">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <button className="blu-card__nav-arrow blu-card__nav-arrow--right" onClick={handleNextImg} aria-label="Next image">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Carousel Pagination Dots at Bottom Center */}
+        {images.length > 1 && (
+          <div className="blu-card__dots">
+            {images.map((_, i) => (
+              <span
+                key={i}
+                className={`blu-card__dot${i === imgIndex ? ' active' : ''}`}
+                onClick={(e) => { e.stopPropagation(); setImgIndex(i); }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="ui-product-card__info">
-        <h4 className="ui-product-card__name" title={product.title}>{product.title}</h4>
-        <span className="ui-product-card__price">{formatPrice(applyMarkup(product.price))}</span>
+      {/* Card Footer Details */}
+      <div className="blu-card__footer">
+        <div className="blu-card__meta">
+          <h4 className="blu-card__title" title={product.title || product.name}>{product.title || product.name}</h4>
+          <span className="blu-card__price">{formatPrice(applyMarkup(product.price))}</span>
+        </div>
+        <button
+          className="blu-card__plus-btn"
+          onClick={(e) => { e.stopPropagation(); onNavigate(`/products/${product.id}`); }}
+          aria-label="View product"
+        >
+          +
+        </button>
       </div>
     </article>
   );
@@ -198,11 +252,12 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function Section({ id, label, title, dark, children }) {
   return (
-    <section className={`ui-section${dark ? ' ui-section--dark' : ''}`} id={id}>
-      <div className="ui-section__head" data-animate="heading">
-        <div className="ui-section__label">{label}</div>
-        <h2 className="ui-section__title">{title}</h2>
-        <div className="ui-section__rule" />
+    <section className={`blu-section${dark ? ' blu-section--dark' : ''}`} id={id}>
+      <div className="blu-section__head">
+        <h2 className="blu-section__title">{title || label}</h2>
+        <button className="blu-section__discover-btn" onClick={() => window.location.href = '/products'}>
+          Discover more
+        </button>
       </div>
       {children}
     </section>
@@ -479,14 +534,11 @@ export default function UserIndex() {
     }
   };
 
-  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  /* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• 
      RENDER
-     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+     â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */
   return (
-    <div className="home-page" style={{
-      background: "linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto",
-      minHeight: "100vh"
-    }}>
+    <div className="home-page" style={{ background: 'var(--bg, #FAFAF8)', minHeight: '100vh' }}>
       <style>{`
         @keyframes shimmer {
           0%   { background-position: 200% 0; }
@@ -502,7 +554,7 @@ export default function UserIndex() {
 
       <PopupModal />
 
-      {/* â”â”â” 1 Â· HERO BANNER â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+      {/* ──── 1 · HERO BANNER ───────────────────────────────── */}
       <section className={`hero-banner ${heroReady ? 'hero-banner--ready' : ''}`} id="hero-banner">
         {heroSlides.map((s, i) => (
           <div
@@ -518,6 +570,7 @@ export default function UserIndex() {
           <p className="hero-subtitle">{heroSlides[slide].subtitle}</p>
           <button className="cta-gold" onClick={() => navigate('/products')}>
             {heroSlides[slide].cta.toUpperCase()}
+            <i className="fas fa-arrow-right" style={{ fontSize: '0.75em', marginLeft: '8px' }} />
           </button>
         </div>
         <div className="hero-counter">
@@ -540,18 +593,43 @@ export default function UserIndex() {
         <div className="hero-progress"><div className="hero-progress-bar" key={slide} /></div>
       </section>
 
-      {/* â”â”â” 2 Â· MARQUEE TICKER â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
-      <div className="ui-marquee" id="marquee-strip">
+      {/* ──── 2 · MARQUEE TICKER ─────────────────────────────── */}
+      <div className="ui-marquee" id="marquee-strip" aria-hidden="true">
         <div className="ui-marquee__track">
           {[0, 1].map((i) => (
             <span key={i} className="ui-marquee__content">
-              {marqueeItems.map((item, j) => <span key={j}>{item}</span>)}
+              {marqueeItems.map((item, j) => (
+                <span key={j}>
+                  {item}
+                  <span style={{ margin: '0 24px', color: 'var(--gold)', opacity: 0.5, fontWeight: 300 }}>◆</span>
+                </span>
+              ))}
             </span>
           ))}
         </div>
       </div>
 
-      {/* â”â”â” 3 Â· NEW ARRIVALS â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+      {/* ── 8 · THE DESIGNER COLLECTIVE ATELIER BANNER ── */}
+      {/* <section className="blu-atelier-banner">
+        <div className="blu-atelier-banner__content">
+          <span className="blu-atelier-banner__tag">INDEPENDENT ATELIER ARCHIVE</span>
+          <h2 className="blu-atelier-banner__title">CURATED BY INDEPENDENT DESIGNERS.<br />CRAFTED FOR STREET CULTURE.</h2>
+          <p className="blu-atelier-banner__desc">
+            ASAT empowers visionary streetwear designers to produce limited-run garments directly with premium craft manufacturers. Authentic drops, heavyweight silhouettes, and zero mass production.
+          </p>
+          <div className="blu-atelier-banner__actions">
+            <button className="blu-atelier-banner__btn" onClick={() => navigate('/products')}>
+              EXPLORE DROPS
+            </button>
+            <a href="/designer/register" className="blu-atelier-banner__btn-outline">
+              JOIN THE COLLECTIVE →
+            </a>
+          </div>
+        </div>
+      </section> */}
+
+     
+      {/* ──── 3 · NEW ARRIVALS ─────────────────────────────── */}
       <Section id="new-arrivals" label="Just In" title="New Arrivals">
         <ScrollRow
           items={newArrivals}
@@ -568,7 +646,7 @@ export default function UserIndex() {
 
 
 
-      {/* â”â”â” 4 Â· SHOP BY CATEGORY â€” BENTO GRID â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+      {/* ──── 4 · SHOP BY CATEGORY — BENTO GRID ───────────────── */}
       <Section id="shop-by-category" label="Browse" title="Shop by Category">
         <div className="bento-grid">
           {loadingCategories
@@ -655,7 +733,7 @@ export default function UserIndex() {
       </section> */}
 
       {/* â”â”â” 8 Â· DESIGNERS SPOTLIGHT â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
-      <Section id="designers-spotlight" label="Curated Talent" title="Designers Spotlight">
+      {/* <Section id="designers-spotlight" label="Curated Talent" title="Designers Spotlight">
         <ScrollRow
           items={designers}
           loading={loadingDesigners}
@@ -687,10 +765,39 @@ export default function UserIndex() {
             </div>
           )}
         />
+      </Section> */}
+ <Section id="designers-spotlight" label="Creator Ateliers" title="Featured Designers">
+        <ScrollRow
+          items={designers}
+          loading={loadingDesigners}
+          skeletonCount={6}
+          rowClass="ui-scroll-row--designers"
+          renderItem={(d, i) => (
+            <div
+              key={d.id}
+              className="blu-designer-card"
+              onClick={() => navigate(`/designers/${d.id}`)}
+            >
+              <div className="blu-designer-card__avatar-wrap">
+                <div
+                  className="blu-designer-card__avatar"
+                  style={{
+                    backgroundImage: `url('${d.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.fullName)}&background=000&color=fff`}')`,
+                  }}
+                />
+                <span className="blu-designer-card__rank-badge">#{i + 1}</span>
+              </div>
+              <span className="blu-designer-card__name">{d.fullName}</span>
+              <span className="blu-designer-card__handle">@{d.username || 'creator'}</span>
+              <span className="blu-designer-card__stats">{d.designsCount || 0} DROPS</span>
+              <span className="blu-designer-card__btn">VIEW ATELIER</span>
+            </div>
+          )}
+        />
       </Section>
 
       {/* â”â”â” 9 Â· NEWSLETTER â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
-      <section className="ui-newsletter" id="newsletter-signup">
+      {/* <section className="ui-newsletter" id="newsletter-signup">
         <div className="ui-newsletter__inner" data-animate="editorial">
           <div className="ui-newsletter__text">
             <h2>Stay In The Loop</h2>
@@ -714,7 +821,7 @@ export default function UserIndex() {
           {subscribed && <p className="ui-newsletter__success">Welcome to the ASAT family!</p>}
         </div>
         
-      </section>
+      </section> */}
 
       {welcomeToast && (
         <div style={{

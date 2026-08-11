@@ -87,27 +87,32 @@ const styles = `
     /* ═══════ Cart Page ═══════ */
     .cart-page { 
         min-height: 80vh; 
-        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto; 
+        background: #FFFFFF; 
     }
 
     .cart-hero {
-        background: var(--dark);
-        color: white;
-        padding: 50px 5% 45px;
+        background: #FFFFFF;
+        color: #000000;
+        padding: 48px 5% 24px;
         text-align: center;
+        border-bottom: 1px solid #EEEEEE;
     }
     .cart-hero h1 {
-        font-family: 'Cinzel', serif;
-        font-size: 2.2rem;
-        letter-spacing: 5px;
-        font-weight: 700;
-        margin: 0 0 8px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 1.85rem;
+        letter-spacing: -0.5px;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin: 0 0 6px;
+        color: #000000;
     }
     .cart-hero p {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.82rem;
-        letter-spacing: 1.5px;
-        color: #aaa;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #888888;
+        font-weight: 600;
     }
 
     .cart-layout {
@@ -127,12 +132,13 @@ const styles = `
         grid-template-columns: 3fr 1fr 1fr 1fr 40px;
         gap: 16px;
         padding: 14px 0;
-        border-bottom: 2px solid var(--dark);
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.7rem;
-        letter-spacing: 2px;
+        border-bottom: 2px solid #000000;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 1.5px;
         text-transform: uppercase;
-        color: #888;
+        color: #000000;
     }
 
     .cart-item {
@@ -141,7 +147,7 @@ const styles = `
         gap: 16px;
         align-items: center;
         padding: 24px 0;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid #EEEEEE;
         transition: background 0.2s;
     }
     .cart-item:hover { background: rgba(197,160,89,0.03); }
@@ -159,21 +165,21 @@ const styles = `
         flex-shrink: 0;
         cursor: pointer;
     }
-    .cart-item-details { display: flex; flex-direction: column; gap: 4px; }
     .cart-item-name {
-        font-family: 'Cinzel', serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
         font-size: 0.92rem;
-        font-weight: 600;
-        letter-spacing: 1.5px;
-        color: var(--dark);
+        font-weight: 800;
+        letter-spacing: -0.2px;
+        text-transform: uppercase;
+        color: #000000;
         cursor: pointer;
     }
-    .cart-item-name:hover { color: var(--gold); }
+    .cart-item-name:hover { opacity: 0.7; }
     .cart-item-meta {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.72rem;
-        color: #999;
-        letter-spacing: 0.5px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.74rem;
+        color: #666666;
+        letter-spacing: 0.3px;
     }
     .cart-item-color-dot {
         display: inline-block;
@@ -185,38 +191,45 @@ const styles = `
     }
 
     .cart-item-price {
-        font-family: 'Cinzel', serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--dark);
+        font-weight: 700;
+        color: #000000;
     }
 
     .cart-item-qty {
         display: flex;
         align-items: center;
-        border: 1px solid #ddd;
+        border: 1px solid #E5E5E5;
+        border-radius: 8px;
+        overflow: hidden;
         width: fit-content;
+        background: #FAFAF8;
     }
     .cart-qty-btn {
         width: 32px; height: 32px;
-        border: none; background: white;
+        border: none; background: transparent;
         font-size: 1rem; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
         transition: 0.2s;
+        font-weight: 700;
     }
-    .cart-qty-btn:hover { background: #f5f5f5; }
+    .cart-qty-btn:hover { background: #EAEAEA; }
     .cart-qty-val {
         width: 36px; text-align: center;
-        font-family: 'Montserrat', sans-serif; font-size: 0.82rem;
-        border-left: 1px solid #ddd; border-right: 1px solid #ddd;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-left: 1px solid #E5E5E5; border-right: 1px solid #E5E5E5;
         padding: 6px 0;
+        background: #FFFFFF;
     }
 
     .cart-item-total {
-        font-family: 'Cinzel', serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 1rem;
-        font-weight: 700;
-        color: var(--dark);
+        font-weight: 800;
+        color: #000000;
     }
 
     .cart-remove-btn {
@@ -231,107 +244,133 @@ const styles = `
     /* ── Order Summary ── */
     .cart-summary {
         background: white;
-        border: 1px solid #eee;
-        border-radius: 8px;
+        border: 1px solid #ECECEC;
+        border-radius: 20px;
         padding: 32px 28px;
         position: sticky;
         top: 90px;
         align-self: start;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        box-shadow: 0 4px 24px rgba(0,0,0,0.04);
     }
     .cart-summary h3 {
-        font-family: 'Cinzel', serif;
-        font-size: 1.2rem;
-        letter-spacing: 2px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        font-weight: 900;
         margin: 0 0 24px;
-        color: var(--dark);
+        color: #000000;
     }
     .cart-summary-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 10px 0;
-        font-family: 'Montserrat', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.85rem;
         color: #666;
     }
     .cart-summary-row span:last-child {
-        font-weight: 600;
-        color: var(--dark);
+        font-weight: 700;
+        color: #000000;
     }
-    .cart-summary-divider { height: 1px; background: #eee; margin: 16px 0; }
+    .cart-summary-divider { height: 1px; background: #EAEAEA; margin: 16px 0; }
     .cart-summary-total {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 14px 0;
-        font-family: 'Cinzel', serif;
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: var(--dark);
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: #000000;
     }
 
     /* Promo code */
     .cart-promo {
         display: flex;
-        gap: 8px;
         margin: 20px 0;
+        border: 1px solid #E5E5E5;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #FAFAF8;
     }
     .cart-promo input {
         flex: 1;
-        padding: 12px 14px;
-        border: 1px solid #ddd;
-        font-family: 'Montserrat', sans-serif;
+        padding: 12px 16px;
+        border: none;
+        background: transparent;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.82rem;
         letter-spacing: 1px;
         outline: none;
-        transition: border-color 0.3s;
     }
-    .cart-promo input:focus { border-color: var(--gold); }
     .cart-promo input::placeholder { color: #bbb; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 1.5px; }
     .cart-promo button {
-        padding: 12px 20px;
-        background: var(--dark);
+        padding: 12px 22px;
+        background: #000000;
         color: white;
         border: none;
-        font-family: 'Montserrat', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.72rem;
         letter-spacing: 1.5px;
         text-transform: uppercase;
+        font-weight: 800;
         cursor: pointer;
-        transition: 0.3s;
+        transition: opacity 0.2s;
         white-space: nowrap;
     }
-    .cart-promo button:hover { background: var(--gold); }
+    .cart-promo button:hover { opacity: 0.85; }
 
     .cart-checkout-btn {
         width: 100%;
         padding: 16px;
-        background: var(--gold);
+        background: #000000;
         color: white;
         border: none;
-        font-family: 'Cinzel', serif;
-        font-size: 0.9rem;
-        letter-spacing: 2.5px;
+        border-radius: 30px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-weight: 800;
         cursor: pointer;
-        transition: 0.3s;
+        transition: opacity 0.2s, transform 0.2s;
         margin-top: 16px;
     }
-    .cart-checkout-btn:hover { background: var(--dark); }
+    .cart-checkout-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    .cart-finance-note {
+        background: #F8F8F8;
+        border-left: 3px solid #000000;
+        border-radius: 6px;
+        padding: 12px 14px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.75rem;
+        color: #555555;
+        line-height: 1.5;
+        margin: 16px 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .cart-finance-note i { color: #000000; margin-top: 2px; }
 
     .cart-continue {
         display: block;
         text-align: center;
         margin-top: 14px;
-        font-family: 'Montserrat', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.75rem;
-        letter-spacing: 1.5px;
-        color: #999;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #777;
         text-decoration: none;
         cursor: pointer;
-        transition: color 0.3s;
+        transition: color 0.2s;
     }
-    .cart-continue:hover { color: var(--gold); }
+    .cart-continue:hover { color: #000; }
 
     .cart-secure {
         display: flex;
@@ -339,12 +378,105 @@ const styles = `
         justify-content: center;
         gap: 6px;
         margin-top: 18px;
-        font-family: 'Montserrat', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.68rem;
         letter-spacing: 1px;
-        color: #aaa;
+        color: #999;
+        text-transform: uppercase;
+        font-weight: 600;
     }
-    .cart-secure i { color: var(--gold); }
+    .cart-secure i { color: #000000; }
+
+    /* ══ T&C & Cancellation Confirmation Modal ══ */
+    .cart-terms-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeInTerms 0.2s ease-out;
+    }
+    @keyframes fadeInTerms {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .cart-terms-modal {
+        background: #0E0E0E;
+        border: 1px solid #262626;
+        border-radius: 24px;
+        padding: 40px 36px 36px;
+        max-width: 480px;
+        width: 100%;
+        color: #FFFFFF;
+        text-align: center;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+        animation: scaleUpTerms 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    @keyframes scaleUpTerms {
+        from { transform: scale(0.94); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    .cart-terms-badge {
+        display: inline-block;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #888888;
+        margin-bottom: 18px;
+    }
+    .cart-terms-text {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        font-weight: 500;
+        color: #F0F0F0;
+        margin-bottom: 28px;
+    }
+    .cart-terms-btn-accept {
+        display: block;
+        width: 100%;
+        padding: 15px 24px;
+        background: #FFFFFF;
+        color: #000000;
+        border: none;
+        border-radius: 30px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .cart-terms-btn-accept:hover {
+        background: #E5E5E5;
+        transform: translateY(-1px);
+    }
+    .cart-terms-btn-cancel {
+        display: block;
+        margin: 16px auto 0;
+        background: transparent;
+        border: none;
+        color: #777777;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .cart-terms-btn-cancel:hover {
+        color: #FFFFFF;
+    }
 
     /* ── Empty Cart ── */
     .cart-empty {
@@ -358,7 +490,7 @@ const styles = `
         margin-bottom: 24px;
     }
     .cart-empty h3 {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1.4rem;
         letter-spacing: 3px;
         margin-bottom: 10px;
@@ -398,7 +530,7 @@ const styles = `
     }
 
     .addr-modal h3 {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1.4rem;
         letter-spacing: 2px;
         margin-top: 0;
@@ -463,7 +595,7 @@ const styles = `
         color: white;
         border: none;
         border-radius: 4px;
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 0.9rem;
         letter-spacing: 1.5px;
         cursor: pointer;
@@ -503,7 +635,7 @@ const styles = `
         margin-top: 4px;
     }
     .addr-breakdown__title {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 0.82rem;
         font-weight: 700;
         color: #C5A059;
@@ -528,7 +660,7 @@ const styles = `
         align-items: center;
         margin-top: 10px;
         padding: 10px 0 0;
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1rem;
         font-weight: 700;
         color: #C5A059;
@@ -655,6 +787,7 @@ function Cart() {
     const [selectedAddressId, setSelectedAddressId] = useState(null);
     const [showAddressEditModal, setShowAddressEditModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState(null);
+    const [showTermsModal, setShowTermsModal] = useState(false);
 
     // Address Modal states
     const [showAddressModal, setShowAddressModal] = useState(false);
@@ -1013,6 +1146,12 @@ function Cart() {
             return;
         }
 
+        // Open Terms & Cancellation policy confirmation before proceeding to Cashfree payment
+        setShowTermsModal(true);
+    };
+
+    const handleAcceptTerms = () => {
+        setShowTermsModal(false);
         handlePlaceOrder();
     };
 
@@ -1529,28 +1668,29 @@ function Cart() {
                             </div>
 
                             {/* ── Shipping Address Management Section ── */}
-                            <div className="cart-address-section" style={{ background: 'white', border: '1px solid #eee', borderRadius: '8px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '12px' }}>
-                                    <h3 style={{ fontFamily: "'Cinzel', serif", fontSize: '1.1rem', letterSpacing: '2px', margin: 0, color: 'var(--dark)' }}>📍 Shipping Address</h3>
+                            <div className="cart-address-section" style={{ background: '#FFFFFF', border: '1px solid #ECECEC', borderRadius: '20px', padding: '28px 24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #F0F0F0', paddingBottom: '14px' }}>
+                                    <h3 style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif", fontSize: '0.95rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, color: '#000000' }}>
+                                        📍 Shipping Address
+                                    </h3>
                                     {user && (
                                         <button 
                                             type="button"
-                                            className="fin-btn fin-btn--save" 
-                                            style={{ margin: 0, padding: '8px 16px', fontSize: '0.75rem', fontFamily: "'Montserrat', sans-serif", border: '1px solid var(--gold)', borderRadius: '4px', background: 'transparent', color: 'var(--gold)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }} 
+                                            style={{ margin: 0, padding: '8px 16px', fontSize: '0.72rem', fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", borderRadius: '20px', background: '#000000', color: '#FFFFFF', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }} 
                                             onClick={openAddAddressModal}
                                         >
-                                            ➕ Add New Address
+                                            + Add New Address
                                         </button>
                                     )}
                                 </div>
                                 
                                 {!user ? (
-                                    <div style={{ padding: '20px 0', textAlign: 'center', color: '#888', fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem' }}>
-                                        <i className="fas fa-lock" style={{ fontSize: '1.5rem', color: 'var(--gold)', marginBottom: '10px', display: 'block' }}></i>
-                                        Please <span style={{ color: 'var(--gold)', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }} onClick={() => navigate('/login?redirect=/cart')}>log in</span> to add and select shipping address.
+                                    <div style={{ padding: '24px 0', textAlign: 'center', color: '#777', fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", fontSize: '0.85rem' }}>
+                                        <i className="fas fa-lock" style={{ fontSize: '1.5rem', color: '#000000', marginBottom: '10px', display: 'block' }}></i>
+                                        Please <span style={{ color: '#000000', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }} onClick={() => navigate('/login?redirect=/cart')}>log in</span> to add and select shipping address.
                                     </div>
                                 ) : userAddresses.length === 0 ? (
-                                    <div style={{ padding: '20px 0', textAlign: 'center', color: '#888', fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem' }}>
+                                    <div style={{ padding: '24px 0', textAlign: 'center', color: '#777', fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", fontSize: '0.85rem' }}>
                                         <i className="fas fa-map-marker-alt" style={{ fontSize: '1.5rem', color: '#ccc', marginBottom: '10px', display: 'block' }}></i>
                                         You have no saved addresses. Please add a shipping address to calculate tax/shipping and checkout.
                                     </div>
@@ -1565,12 +1705,12 @@ function Cart() {
                                                     style={{ 
                                                         display: 'flex', 
                                                         gap: '14px', 
-                                                        padding: '16px', 
-                                                        border: isSelected ? '2px solid var(--gold)' : '1px solid #eee', 
-                                                        borderRadius: '8px', 
+                                                        padding: '16px 18px', 
+                                                        border: isSelected ? '2px solid #000000' : '1px solid #ECECEC', 
+                                                        borderRadius: '14px', 
                                                         cursor: 'pointer',
-                                                        background: isSelected ? 'rgba(197, 160, 89, 0.02)' : 'white',
-                                                        transition: 'all 0.2s',
+                                                        background: isSelected ? '#FAFAF8' : '#FFFFFF',
+                                                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                                                         position: 'relative'
                                                     }}
                                                 >
@@ -1579,17 +1719,17 @@ function Cart() {
                                                         name="shipping_address" 
                                                         checked={isSelected}
                                                         onChange={() => selectAddress(addr)}
-                                                        style={{ marginTop: '3px', accentColor: 'var(--gold)', cursor: 'pointer' }}
+                                                        style={{ marginTop: '3px', accentColor: '#000000', cursor: 'pointer' }}
                                                     />
-                                                    <div style={{ flex: 1, fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', color: '#444', lineHeight: '1.5', paddingRight: '60px' }}>
-                                                        <div style={{ fontWeight: 700, color: 'var(--dark)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                                    <div style={{ flex: 1, fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", fontSize: '0.82rem', color: '#444', lineHeight: '1.5', paddingRight: '60px' }}>
+                                                        <div style={{ fontWeight: 800, color: '#000000', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                                             <span>{addr.full_name}</span>
-                                                            <span style={{ fontSize: '0.65rem', background: '#eee', padding: '2px 6px', borderRadius: '3px', color: '#666', textTransform: 'uppercase', fontWeight: 600 }}>{addr.label || 'Home'}</span>
-                                                            {addr.is_default && <span style={{ fontSize: '0.65rem', background: 'var(--gold)', padding: '2px 6px', borderRadius: '3px', color: 'white', fontWeight: 600 }}>Default</span>}
+                                                            <span style={{ fontSize: '0.65rem', background: '#F0F0F0', padding: '2px 8px', borderRadius: '4px', color: '#555', textTransform: 'uppercase', fontWeight: 700 }}>{addr.label || 'Home'}</span>
+                                                            {addr.is_default && <span style={{ fontSize: '0.65rem', background: '#000000', padding: '2px 8px', borderRadius: '4px', color: '#FFFFFF', fontWeight: 700, textTransform: 'uppercase' }}>Default</span>}
                                                         </div>
                                                         <div>{addr.line1}</div>
                                                         {addr.line2 && <div style={{ color: '#666', fontStyle: 'italic' }}>Landmark: {addr.line2}</div>}
-                                                        <div>{addr.city}, {addr.state ? `${addr.state}, ` : ''}{addr.country} - <span style={{ fontWeight: 600 }}>{addr.pincode}</span></div>
+                                                        <div>{addr.city}, {addr.state ? `${addr.state}, ` : ''}{addr.country} - <span style={{ fontWeight: 700 }}>{addr.pincode}</span></div>
                                                         <div style={{ marginTop: '4px', fontWeight: 600, color: '#666' }}>📞 Alt Mobile: {addr.phone}</div>
                                                     </div>
                                                     <div style={{ display: 'flex', gap: '12px', position: 'absolute', top: '16px', right: '16px' }}>
@@ -1617,6 +1757,7 @@ function Cart() {
                                 )}
                             </div>
                         </div>
+
                             {/* ── Order Summary ── */}
                             <div className="cart-summary">
                                 <h3>ORDER SUMMARY</h3>
@@ -1631,7 +1772,7 @@ function Cart() {
                                     </div>
                                 )}
 
-                                <div className="cart-summary-row" style={{ color: '#C5A059', fontWeight: 600 }}>
+                                <div className="cart-summary-row" style={{ color: '#000000', fontWeight: 600 }}>
                                     <span>{taxLabel} <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#888' }}>(applied at billing)</span></span>
                                     <span>{selectedAddressId ? (taxRate === 0 ? 'None' : `+ ${formatPrice(taxAmount)}`) : '—'}</span>
                                 </div>
@@ -1662,11 +1803,11 @@ function Cart() {
                                 </div>
                                 {currency !== 'INR' && (
                                     <div style={{
-                                        fontSize: '0.72rem', color: 'var(--gold)', letterSpacing: '1px',
-                                        fontFamily: "'Montserrat', sans-serif", textTransform: 'uppercase',
+                                        fontSize: '0.72rem', color: '#000000', letterSpacing: '1px',
+                                        fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", textTransform: 'uppercase',
                                         marginTop: '10px', marginBottom: '20px', textAlign: 'center',
-                                        background: 'rgba(197, 160, 89, 0.05)', padding: '8px 12px',
-                                        border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '2px'
+                                        background: '#FAFAF8', padding: '8px 12px',
+                                        border: '1px solid #E5E5E5', borderRadius: '4px'
                                     }}>
                                         <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
                                         Payment processed in INR (₹{total.toLocaleString('en-IN')})
@@ -1680,7 +1821,7 @@ function Cart() {
                                           border: '1.5px solid #fee2e2',
                                           borderRadius: '8px',
                                           color: '#991b1b',
-                                          fontFamily: "'Montserrat', sans-serif",
+                                          fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
                                           fontSize: '0.78rem',
                                           fontWeight: '500',
                                           display: 'flex',
@@ -1714,6 +1855,24 @@ function Cart() {
                     )}
                 </div>
             </div>
+
+            {/* ══ TERMS & CANCELLATION POLICY CONFIRMATION MODAL ══ */}
+            {showTermsModal && (
+                <div className="cart-terms-overlay" onClick={() => setShowTermsModal(false)}>
+                    <div className="cart-terms-modal" onClick={e => e.stopPropagation()}>
+                        <span className="cart-terms-badge">Cancellation &amp; Order Policy</span>
+                        <p className="cart-terms-text">
+                            I confirm that I have read the T&amp;C and I agree that there is a cancellation fee of 50% in first 36 hrs and 100% post 36 hrs.
+                        </p>
+                        <button className="cart-terms-btn-accept" onClick={handleAcceptTerms}>
+                            Accept &amp; Proceed
+                        </button>
+                        <button className="cart-terms-btn-cancel" onClick={() => setShowTermsModal(false)}>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

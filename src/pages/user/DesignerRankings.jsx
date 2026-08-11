@@ -8,7 +8,7 @@ const styles = `
     /* ═══════ Public Designer Rankings ═══════ */
     .rnk-page {
         min-height: 90vh;
-        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
+        background: var(--bg, #FAFAF8);
         padding-bottom: 80px;
         font-family: 'Montserrat', sans-serif;
     }
@@ -29,7 +29,7 @@ const styles = `
         pointer-events: none;
     }
     .rnk-hero h1 {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 2.5rem;
         letter-spacing: 6px;
         font-weight: 700;
@@ -137,7 +137,7 @@ const styles = `
     }
 
     .rnk-podium-name {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1.15rem;
         font-weight: 700;
         letter-spacing: 1px;
@@ -163,7 +163,7 @@ const styles = `
         margin-bottom: 2px;
     }
     .rnk-podium-score {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1.3rem;
         font-weight: 700;
         color: var(--gold);
@@ -225,7 +225,7 @@ const styles = `
         text-align: left;
     }
     .rnk-table th {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         padding: 18px 24px;
         border-bottom: 2px solid var(--dark);
         color: var(--dark);
@@ -250,7 +250,7 @@ const styles = `
     }
 
     .rnk-table-rank {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-weight: 700;
         font-size: 0.95rem;
         color: var(--dark);
@@ -269,7 +269,7 @@ const styles = `
         border: 1px solid #eee;
     }
     .rnk-table-name {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-weight: 600;
         letter-spacing: 0.5px;
         color: var(--dark);
@@ -290,7 +290,7 @@ const styles = `
     }
 
     .rnk-table-score {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-weight: 700;
         color: var(--dark);
     }

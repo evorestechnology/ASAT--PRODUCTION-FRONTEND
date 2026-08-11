@@ -25,18 +25,18 @@ const SORT_OPTIONS = [
 ═══════════════════════════════════════════════════════════ */
 const extraStyles = `
   .products-page {
-    background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
+    background: var(--bg, #FAFAF8);
     min-height: 80vh;
   }
 
   /* ── Enhanced Filter Bar ── */
   .pcol-filter-bar {
-    background: #1a1a1a;
-    border-bottom: 1px solid rgba(197,160,89,0.12);
+    background: white;
+    border-bottom: 1px solid var(--border, #E8E5E0);
     position: sticky;
-    top: 0;
+    top: var(--nav-h, 68px);
     z-index: 200;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
   }
 
   .pcol-filter-bar__inner {
@@ -57,7 +57,7 @@ const extraStyles = `
     align-items: center;
     padding: 14px 24px 14px 0;
     margin-right: 24px;
-    border-right: 1px solid rgba(197,160,89,0.12);
+    border-right: 1px solid var(--border, #E8E5E0);
     flex-shrink: 0;
     gap: 10px;
   }
@@ -71,9 +71,10 @@ const extraStyles = `
     font-size: 0.62rem;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: rgba(197,160,89,0.6);
+    color: var(--muted, #6B6B6B);
     white-space: nowrap;
     font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
   }
 
   /* Category Pills */
@@ -85,41 +86,42 @@ const extraStyles = `
 
   .pcol-pill {
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.5);
+    border: 1px solid var(--border, #E8E5E0);
+    color: var(--muted, #6B6B6B);
     padding: 6px 14px;
-    border-radius: 100px;
-    font-size: 0.7rem;
-    letter-spacing: 1px;
+    border-radius: 2px;
+    font-size: 0.68rem;
+    letter-spacing: 1.5px;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
     font-family: 'Montserrat', sans-serif;
     text-transform: uppercase;
+    font-weight: 500;
   }
-  .pcol-pill:hover { border-color: rgba(197,160,89,0.6); color: var(--gold); }
+  .pcol-pill:hover { border-color: var(--gold); color: var(--gold); }
   .pcol-pill.active {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: #111;
+    background: var(--fg, #0E0E0E);
+    border-color: var(--fg, #0E0E0E);
+    color: white;
     font-weight: 600;
   }
 
   .pcol-sort-select {
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.75);
+    border: 1px solid var(--border, #E8E5E0);
+    color: var(--fg, #0E0E0E);
     padding: 7px 12px;
-    border-radius: 6px;
+    border-radius: 2px;
     font-size: 0.72rem;
     font-family: 'Montserrat', sans-serif;
     cursor: pointer;
-    background: rgba(255,255,255,0.05);
+    background: white;
     outline: none;
     letter-spacing: 0.5px;
     transition: border-color 0.2s;
   }
   .pcol-sort-select:focus { border-color: var(--gold); }
-  .pcol-sort-select option { background: #1a1a1a; color: #fff; }
+  .pcol-sort-select option { background: white; color: var(--fg); }
 
   /* Price Range Inputs */
   .pcol-price-wrap {
@@ -129,23 +131,24 @@ const extraStyles = `
   }
   .pcol-price-input {
     width: 80px;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 6px;
+    border: 1px solid var(--border, #E8E5E0);
+    border-radius: 2px;
     padding: 7px 10px;
     font-size: 0.72rem;
     font-family: 'Montserrat', sans-serif;
-    color: rgba(255,255,255,0.75);
+    color: var(--fg, #0E0E0E);
     outline: none;
     transition: border-color 0.2s;
-    background: rgba(255,255,255,0.05);
+    background: white;
   }
-  .pcol-price-input::placeholder { color: rgba(255,255,255,0.25); }
+  .pcol-price-input::placeholder { color: var(--muted-light, #9A9A9A); }
   .pcol-price-input:focus { border-color: var(--gold); }
-  .pcol-price-sep { color: rgba(255,255,255,0.2); font-size: 0.75rem; }
+  .pcol-price-sep { color: var(--muted, #6B6B6B); font-size: 0.75rem; }
 
   /* Collection Tabs */
   .pcol-tabs {
-    background: var(--dark);
+    background: white;
+    border-bottom: 1px solid var(--border, #E8E5E0);
     display: flex;
     overflow-x: auto;
     scrollbar-width: none;
@@ -154,21 +157,22 @@ const extraStyles = `
   .pcol-tab {
     background: transparent;
     border: none;
-    color: rgba(255,255,255,0.55);
+    color: var(--muted, #6B6B6B);
     padding: 14px 28px;
-    font-family: 'Cinzel', serif;
-    font-size: 0.7rem;
-    letter-spacing: 3px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 2.5px;
     text-transform: uppercase;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.25s ease;
     white-space: nowrap;
     border-bottom: 2px solid transparent;
     flex-shrink: 0;
   }
-  .pcol-tab:hover { color: rgba(255,255,255,0.85); }
+  .pcol-tab:hover { color: var(--fg, #0E0E0E); }
   .pcol-tab.active {
-    color: var(--gold);
+    color: var(--fg, #0E0E0E);
     border-bottom-color: var(--gold);
   }
 
@@ -216,10 +220,10 @@ const extraStyles = `
 
   /* Loading Skeleton */
   .pcard-skeleton {
-    border-radius: 12px;
+    border-radius: 2px;
     overflow: hidden;
     background: #fff;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    border: 1px solid var(--border, #E8E5E0);
   }
   .pcard-skeleton__img {
     width: 100%;
@@ -252,16 +256,16 @@ const extraStyles = `
   ══════════════════════════════════════════════════════════ */
   .pcard--standard {
     position: relative;
-    border-radius: 14px;
+    border-radius: 2px;
     overflow: hidden;
     cursor: pointer;
-    background: #161616;
+    background: var(--surface, #F4F2EE);
     opacity: 0;
     transform: translateY(22px);
     transition: transform 0.4s cubic-bezier(0.25,1,0.5,1), box-shadow 0.4s ease;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--border, #E8E5E0);
   }
   .pcard--standard.pcard-visible {
     animation: pcStdReveal 0.55s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
@@ -272,8 +276,9 @@ const extraStyles = `
     to   { opacity:1; transform:translateY(0); }
   }
   .pcard--standard:hover {
-    transform: translateY(-7px) scale(1.015);
-    box-shadow: 0 22px 52px rgba(0,0,0,0.22);
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+    border-color: rgba(197,160,89,0.3);
   }
   .pcard--standard__cover {
     position: relative;
@@ -309,45 +314,84 @@ const extraStyles = `
   /* Details panel placed BELOW cover image */
   .pcard--standard__panel {
     position: relative;
-    background: #161616;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    padding: 14px 16px 16px;
+    background: white;
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
     z-index: 2;
-    transition: background 0.3s ease;
-  }
-  .pcard--standard:hover .pcard--standard__panel {
-    background: #1e1e1e;
-  }
-  .pcard--standard__brand {
-    display: block;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.52rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 5px;
-    font-weight: 600;
   }
   .pcard--standard__name {
-    font-family: 'Cinzel', serif;
-    font-size: 0.92rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+    font-size: 0.82rem;
     font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.5px;
-    margin: 0 0 8px;
-    line-height: 1.35;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    color: #000000;
+    letter-spacing: -0.2px;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1.3;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .pcard--standard__brand {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #888888;
+    font-weight: 600;
+  }
   .pcard--standard__price {
-    font-family: 'Cinzel', serif;
-    font-size: 0.98rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #000000;
+    letter-spacing: -0.2px;
+    margin-top: 2px;
+  }
+
+  /* Hover Quick Sizes & View Drawer */
+  .pcard--standard__hover-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(8px);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 4;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .pcard--standard:hover .pcard--standard__hover-bar {
+    transform: translateY(0);
+  }
+  .pcard--standard__sizes {
+    display: flex;
+    gap: 6px;
+  }
+  .pcard--standard__size-chip {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    font-size: 0.65rem;
     font-weight: 700;
-    color: var(--gold);
-    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    color: #FFFFFF;
+    padding: 2px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 2px;
+  }
+  .pcard--standard__quick-btn {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #FFFFFF;
   }
 
   /* Rank badge — top right corner */
@@ -713,8 +757,9 @@ function Products() {
   /* ── Standard card (used for every product except index 0) ── */
   const renderStandardCard = (product, idx) => {
     const isNew = latestIds.has(product.id);
-    const rank  = rankMap.get(product.id);  // 1-50 for top-sold, undefined otherwise
+    const rank  = rankMap.get(product.id);
     const badge = product.tag === 'trending' ? '★ TRENDING' : isNew ? '✦ NEW' : null;
+    const subtitle = product.designerUsername ? `@${product.designerUsername}` : (product.brand || product.collection || 'ASAT EXCLUSIVE');
     return (
       <div
         className="pcard--standard"
@@ -728,18 +773,25 @@ function Products() {
             className="pcard--standard__img"
             style={{ backgroundImage: `url('${getImage(product)}')` }}
           />
-          {/* Left badge (NEW / TRENDING) */}
           {badge && <span className="pcard--standard__badge">{badge}</span>}
-          {/* Right rank number for top-50 sold */}
           {rank && (
             <span className="pcard--standard__rank">
               #{String(rank).padStart(2, '0')}
             </span>
           )}
+          {/* Quick sizes bar on hover */}
+          <div className="pcard--standard__hover-bar">
+            <div className="pcard--standard__sizes">
+              {['S', 'M', 'L', 'XL'].map((s) => (
+                <span key={s} className="pcard--standard__size-chip">{s}</span>
+              ))}
+            </div>
+            <span className="pcard--standard__quick-btn">VIEW</span>
+          </div>
         </div>
         <div className="pcard--standard__panel">
-          <span className="pcard--standard__brand">{product.brand || 'ASAT'}</span>
           <h4 className="pcard--standard__name">{product.name || product.title}</h4>
+          <span className="pcard--standard__brand">{subtitle}</span>
           <span className="pcard--standard__price">{formatPrice(applyMarkup(product.price || 0))}</span>
         </div>
       </div>
@@ -786,114 +838,83 @@ function Products() {
     <>
       <style>{extraStyles}</style>
       <div className={`products-page ${launched ? 'products-page--launched' : ''}`}>
-        <BackButton />
-
         {/* ── Sticky Filter Bar ── */}
-        <div className="pcol-filter-bar">
-          <div className="pcol-filter-bar__inner">
+        <div className="pcol-filter-bar" style={{ background: '#FFFFFF', borderBottom: '1px solid #EBEBEB', padding: '12px 0' }}>
+          <div className="pcol-filter-bar__inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
 
-            {/* Category Dropdown */}
-            <div className="pcol-filter-section">
-              <span className="pcol-filter-label">Category</span>
-              <select
-                className="pcol-sort-select"
-                value={activeCategory}
-                onChange={(e) => setActiveCategory(e.target.value)}
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat === 'All' ? 'All Categories' : cat}
-                  </option>
-                ))}
-              </select>
+            {/* Category Pills */}
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  style={{
+                    background: activeCategory === cat ? '#000000' : '#FFFFFF',
+                    color: activeCategory === cat ? '#FFFFFF' : '#000000',
+                    border: '1px solid ' + (activeCategory === cat ? '#000000' : '#E5E5E5'),
+                    borderRadius: '24px',
+                    padding: '8px 18px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {cat === 'All' ? 'All Drops' : cat}
+                </button>
+              ))}
             </div>
 
-            {/* Gender Pills */}
-            <div className="pcol-filter-section">
-              <span className="pcol-filter-label">Gender</span>
-              <div className="pcol-pills">
-                {['All', 'Male', 'Female', 'Unisex'].map((gnd) => (
-                  <button
-                    key={gnd}
-                    className={`pcol-pill ${activeGender === gnd ? 'active' : ''}`}
-                    onClick={() => setActiveGender(gnd)}
-                  >
-                    {gnd}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Price Range */}
-            <div className="pcol-filter-section">
-              <span className="pcol-filter-label">Price</span>
-              <div className="pcol-price-wrap">
-                <input
-                  type="number"
-                  className="pcol-price-input"
-                  placeholder={`Min ${curSymbol}`}
-                  value={priceMin}
-                  onChange={(e) => setPriceMin(e.target.value)}
-                  min="0"
-                />
-                <span className="pcol-price-sep">–</span>
-                <input
-                  type="number"
-                  className="pcol-price-input"
-                  placeholder={`Max ${curSymbol}`}
-                  value={priceMax}
-                  onChange={(e) => setPriceMax(e.target.value)}
-                  min="0"
-                />
-              </div>
-            </div>
-
-            {/* Sort */}
-            <div className="pcol-filter-section">
-              <span className="pcol-filter-label">Sort</span>
+            {/* Right Controls: Sort & Search */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
               <select
                 className="pcol-sort-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
+                style={{
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '24px',
+                  padding: '8px 16px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  background: '#FFFFFF',
+                  color: '#000000'
+                }}
               >
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-            </div>
 
-            {/* Search Input Filter */}
-            <div className="pcol-filter-section" style={{ borderRight: 'none', marginLeft: 'auto', paddingRight: 0 }}>
-              <span className="pcol-filter-label" style={{ marginRight: 6 }}>Search</span>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input
                   type="text"
-                  placeholder="Type to filter..."
+                  placeholder="Search collection..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '100px',
-                    color: 'white',
-                    padding: '6px 30px 6px 14px',
-                    fontSize: '0.72rem',
-                    fontFamily: "'Montserrat', sans-serif",
+                    background: '#FAFAF8',
+                    border: '1px solid #E5E5E5',
+                    borderRadius: '24px',
+                    color: '#000000',
+                    padding: '8px 32px 8px 16px',
+                    fontSize: '12px',
                     outline: 'none',
-                    width: '180px',
-                    transition: 'all 0.2s ease'
+                    width: '160px',
                   }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--gold)'}
-                  onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                 />
                 {searchTerm && (
                   <i 
                     className="fas fa-times" 
                     onClick={() => setSearchTerm('')} 
-                    style={{ position: 'absolute', right: 28, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.75rem' }}
-                  ></i>
+                    style={{ position: 'absolute', right: 28, color: '#999', cursor: 'pointer', fontSize: '0.75rem' }}
+                  />
                 )}
-                <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}></i>
+                <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: '#999', fontSize: '0.75rem' }} />
               </div>
             </div>
 
@@ -901,110 +922,101 @@ function Products() {
         </div>
 
         {/* Products Grid */}
-        <div className="pcol-grid-wrap">
+        <div className="pcol-grid-wrap" style={{ padding: '32px clamp(16px, 3.5vw, 48px)' }}>
 
-          {/* Results bar */}
-          <div className="pcol-results-bar">
-            <div className="pcol-count">
-              {loading
-                ? 'Loading collection…'
-                : `Showing ${filtered.length} ${filtered.length === 1 ? 'piece' : 'pieces'}`}
-              {initialDesigner && (
-                <span style={{ marginLeft: '10px', color: 'var(--gold)' }}>
-                  · by {initialDesigner}
-                </span>
-              )}
-            </div>
+          {/* Results Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.5px', textTransform: 'uppercase', margin: 0, color: '#000' }}>
+              {activeCategory === 'All' ? 'ALL DROPS' : activeCategory.toUpperCase()}
+              <span style={{ fontSize: '12px', color: '#888', fontWeight: '600', marginLeft: '12px' }}>
+                ({filtered.length} {filtered.length === 1 ? 'DROP' : 'DROPS'})
+              </span>
+            </h1>
 
-            {/* Active filter chips */}
             {hasFilters && (
-              <div className="pcol-active-chips">
-                {activeCategory !== 'All' && (
-                  <span className="pcol-chip" onClick={() => setActiveCategory('All')}>
-                    {activeCategory} ✕
-                  </span>
-                )}
-                {activeCollection !== 'All' && (
-                  <span className="pcol-chip" onClick={() => setActiveCollection('All')}>
-                    {activeCollection} ✕
-                  </span>
-                )}
-                {activeGender !== 'All' && (
-                  <span className="pcol-chip" onClick={() => setActiveGender('All')}>
-                    {activeGender} ✕
-                  </span>
-                )}
-                {(priceMin || priceMax) && (
-                  <span className="pcol-chip" onClick={() => { setPriceMin(''); setPriceMax(''); }}>
-                    {curSymbol}{priceMin || '0'} – {curSymbol}{priceMax || '∞'} ✕
-                  </span>
-                )}
-                {sortBy !== 'latest' && (
-                  <span className="pcol-chip" onClick={() => setSortBy('latest')}>
-                    {SORT_OPTIONS.find((o) => o.value === sortBy)?.label} ✕
-                  </span>
-                )}
-                <span
-                  className="pcol-chip"
-                  onClick={resetFilters}
-                  style={{ borderColor: 'rgba(180,60,60,0.35)', color: '#c0392b', background: 'rgba(180,60,60,0.06)' }}
-                >
-                  Clear All
-                </span>
-              </div>
+              <button
+                onClick={resetFilters}
+                style={{
+                  background: 'none',
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '16px',
+                  padding: '4px 12px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#666',
+                  cursor: 'pointer'
+                }}
+              >
+                Clear Filters
+              </button>
             )}
           </div>
 
-          {/* Grid content */}
+          {/* Grid Content */}
           {loading ? (
-            <div className="pcol-grid" ref={gridRef}>
-              {Array(9).fill(0).map((_, i) => <SkeletonCard key={i} />)}
+            <div className="blu-products-grid">
+              {Array(8).fill(0).map((_, i) => (
+                <div key={i} style={{ width: '310px', height: '420px', background: '#F0F0F0', borderRadius: '14px', animation: 'pulse 1.5s infinite' }} />
+              ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="pcol-empty">
-              <div className="pcol-empty__icon">✦</div>
-              <h3>NO PRODUCTS FOUND</h3>
-              <p>
-                {hasFilters
-                  ? 'Try adjusting your filters to discover our collection.'
-                  : 'No approved products available yet.'}
-              </p>
+            <div className="pcol-empty" style={{ textAlign: 'center', padding: '80px 20px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', textTransform: 'uppercase', color: '#000' }}>NO PRODUCTS FOUND</h3>
+              <p style={{ color: '#888', fontSize: '13px' }}>Try adjusting your filters to discover our atelier pieces.</p>
               {hasFilters && (
                 <button
                   style={{
                     marginTop: '16px',
-                    background: 'var(--dark)',
-                    color: '#fff',
+                    background: '#000000',
+                    color: '#FFFFFF',
                     border: 'none',
                     padding: '12px 28px',
-                    fontFamily: 'Montserrat, sans-serif',
-                    fontSize: '0.72rem',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    transition: 'background 0.3s',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    borderRadius: '24px',
+                    cursor: 'pointer'
                   }}
                   onClick={resetFilters}
-                  onMouseOver={(e) => (e.currentTarget.style.background = 'var(--gold)')}
-                  onMouseOut={(e) => (e.currentTarget.style.background = 'var(--dark)')}
                 >
                   Clear Filters
                 </button>
               )}
             </div>
           ) : (
-            <>
-              {/* First product — full-width editorial wide card */}
-              {filtered.length > 0 && renderWideCard(filtered[0], 0)}
-
-              {/* Rest — 4-column standard card grid */}
-              {filtered.length > 1 && (
-                <div className="pcol-grid" ref={gridRef}>
-                  {filtered.slice(1).map((product, index) => renderStandardCard(product, index + 1))}
-                </div>
-              )}
-            </>
+            <div className="blu-products-grid">
+              {filtered.map((product) => {
+                const rawImgs = product.images && product.images.length > 0 ? product.images : [getImage(product)];
+                const imgs = rawImgs.length === 1 && product.coverImage ? [rawImgs[0], product.coverImage] : rawImgs;
+                return (
+                  <article
+                    key={product.id}
+                    className="blu-card"
+                    onClick={() => goToProduct(product.id)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="blu-card__image-box">
+                      <div
+                        className="blu-card__image"
+                        style={{ backgroundImage: `url('${imgs[0]}')` }}
+                      />
+                    </div>
+                    <div className="blu-card__footer">
+                      <div className="blu-card__meta">
+                        <h4 className="blu-card__title" title={product.title || product.name}>{product.title || product.name}</h4>
+                        <span className="blu-card__price">{formatPrice(applyMarkup(product.price))}</span>
+                      </div>
+                      <button
+                        className="blu-card__plus-btn"
+                        onClick={(e) => { e.stopPropagation(); goToProduct(product.id); }}
+                        aria-label="View product"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           )}
         </div>
 

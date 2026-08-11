@@ -7,32 +7,37 @@ import { useCurrency } from '../../context/CurrencyContext';
 
 const styles = `
     /* ═══════ Wishlist Page ═══════ */
-    .wishlist-page { min-height: 80vh; background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto; padding-bottom: 60px; }
+    .wishlist-page { min-height: 80vh; background: #FFFFFF; padding-bottom: 60px; }
 
     .wishlist-hero {
-        background: var(--dark);
-        color: white;
-        padding: 50px 5% 45px;
+        background: #FFFFFF;
+        color: #000000;
+        padding: 48px 5% 24px;
         text-align: center;
+        border-bottom: 1px solid #EEEEEE;
     }
     .wishlist-hero h1 {
-        font-family: 'Cinzel', serif;
-        font-size: 2.2rem;
-        letter-spacing: 5px;
-        font-weight: 700;
-        margin: 0 0 8px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 1.85rem;
+        letter-spacing: -0.5px;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin: 0 0 6px;
+        color: #000000;
     }
     .wishlist-hero p {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.82rem;
-        letter-spacing: 1.5px;
-        color: #aaa;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #888888;
+        font-weight: 600;
     }
 
     .wishlist-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 30px;
+        gap: 24px;
         padding: 40px 4%;
         max-width: 1400px;
         margin: 0 auto;
@@ -41,8 +46,8 @@ const styles = `
     /* ── Wishlist Card ── */
     .wishlist-card {
         background: white;
-        border: 1px solid #eee;
-        border-radius: 8px;
+        border: 1px solid #EEEEEE;
+        border-radius: 2px;
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -51,12 +56,12 @@ const styles = `
     }
     .wishlist-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.06);
     }
 
     .wishlist-img-wrap {
         position: relative;
-        aspect-ratio: 4/5;
+        aspect-ratio: 3 / 4;
         overflow: hidden;
         background: #fafafa;
         cursor: pointer;
@@ -103,33 +108,34 @@ const styles = `
         gap: 6px;
     }
     .wishlist-collection {
-        font-family: 'Montserrat', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
         font-size: 0.65rem;
-        letter-spacing: 2px;
-        color: var(--gold);
+        letter-spacing: 1.5px;
+        color: #888888;
         text-transform: uppercase;
+        font-weight: 700;
     }
     .wishlist-name {
-        font-family: 'Cinzel', serif;
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: var(--dark);
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+        color: #000000;
         margin: 0;
         cursor: pointer;
         transition: color 0.2s;
     }
-    .wishlist-name:hover { color: var(--gold); }
+    .wishlist-name:hover { color: #555555; }
     .wishlist-price {
-        font-family: 'Cinzel', serif;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--dark);
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 1rem;
+        font-weight: 800;
+        color: #000000;
     }
     .wishlist-sizes-list {
-        font-family: 'Montserrat', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
         font-size: 0.72rem;
-        color: #666;
+        color: #666666;
         margin-top: 4px;
         letter-spacing: 0.5px;
         display: flex;
@@ -137,12 +143,12 @@ const styles = `
         gap: 6px;
     }
     .wishlist-sizes-label {
-        font-weight: 600;
-        color: var(--dark);
+        font-weight: 700;
+        color: #000000;
     }
     .wishlist-sizes-values {
-        color: var(--gold);
-        font-weight: 500;
+        color: #444444;
+        font-weight: 600;
     }
 
     .wishlist-actions {
@@ -154,17 +160,20 @@ const styles = `
     .wishlist-add-bag {
         flex: 1;
         padding: 12px;
-        background: var(--dark);
-        color: white;
+        background: #000000;
+        color: #FFFFFF;
         border: none;
-        font-family: 'Cinzel', serif;
+        border-radius: 24px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
         font-size: 0.75rem;
-        letter-spacing: 1.5px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
         cursor: pointer;
-        transition: 0.3s;
+        transition: opacity 0.2s ease;
         text-align: center;
     }
-    .wishlist-add-bag:hover { background: var(--gold); }
+    .wishlist-add-bag:hover { opacity: 0.85; }
 
     /* ── Empty Wishlist ── */
     .wishlist-empty {

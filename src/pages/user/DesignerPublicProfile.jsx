@@ -12,7 +12,7 @@ const styles = `
   /* ── Page Shell ── */
   .dpp-page {
     min-height: 100vh;
-    background: var(--light);
+    background: var(--bg, #FAFAF8);
     font-family: 'Montserrat', sans-serif;
   }
 
@@ -66,7 +66,7 @@ const styles = `
   }
 
   .dpp-hero__name {
-    font-family: 'Cinzel', serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', serif;
     font-size: clamp(1.6rem, 3vw, 2.5rem);
     color: #fff;
     margin: 0 0 8px;
@@ -109,7 +109,7 @@ const styles = `
   }
 
   .dpp-hero__stat-num {
-    font-family: 'Cinzel', serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', serif;
     font-size: 1.8rem;
     color: var(--gold);
     line-height: 1;
@@ -370,7 +370,7 @@ const styles = `
     padding: 5px 10px;
     border-radius: 4px;
     text-transform: uppercase;
-    font-family: 'Cinzel', serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', serif;
   }
 
   .dpp-card__rank {
@@ -387,7 +387,7 @@ const styles = `
     justify-content: center;
     font-size: 0.7rem;
     font-weight: 700;
-    font-family: 'Cinzel', serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', serif;
   }
 
   .dpp-card__body {
@@ -403,7 +403,7 @@ const styles = `
   }
 
   .dpp-card__name {
-    font-family: 'Cinzel', serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', serif;
     font-size: 0.95rem;
     color: var(--dark);
     margin: 0 0 4px;
@@ -430,7 +430,7 @@ const styles = `
   }
 
   .dpp-card__price {
-    font-family: 'Cinzel', serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', serif;
     font-size: 1.1rem;
     color: var(--dark);
     font-weight: 700;
@@ -488,7 +488,7 @@ const styles = `
   }
 
   .dpp-empty h3 {
-    font-family: 'Cinzel', serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', serif;
     font-size: 1.2rem;
     letter-spacing: 3px;
     color: var(--dark);
@@ -530,7 +530,7 @@ const styles = `
   }
 
   .dpp-not-found h2 {
-    font-family: 'Cinzel', serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', serif;
     letter-spacing: 4px;
     font-size: 1.5rem;
     color: var(--dark);

@@ -4,9 +4,9 @@ import { supabase } from '../supabase';
 import { apiFetch, setAuthToken } from '../api';
 
 const authImages = [
-    'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80',
 ];
 
 const styles = `
@@ -14,7 +14,7 @@ const styles = `
         display: flex;
         min-height: 100vh;
         width: 100%;
-        background-color: var(--light);
+        background-color: #FFFFFF;
     }
     .auth-image-side {
         flex: 1.2;
@@ -47,17 +47,20 @@ const styles = `
         color: white;
     }
     .auth-brand-name {
-        font-family: 'Cinzel', serif;
-        font-size: 3rem;
-        letter-spacing: 4px;
-        font-weight: 700;
+        font-family: -apple-system, BlinkMacSystemFont, 'Montserrat', sans-serif;
+        font-size: 3.5rem;
+        letter-spacing: -1px;
+        font-weight: 900;
+        text-transform: uppercase;
         margin-bottom: 15px;
-        text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        text-shadow: 0 4px 20px rgba(0,0,0,0.35);
+        line-height: 1.1;
     }
     .auth-brand-tagline {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 1rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.9rem;
         letter-spacing: 2px;
+        text-transform: uppercase;
         color: rgba(255,255,255,0.9);
         text-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
@@ -68,107 +71,114 @@ const styles = `
         justify-content: center;
         padding: 40px;
         position: relative;
+        background: #FFFFFF;
     }
-    .auth-form-container { width: 100%; max-width: 420px; }
+    .auth-form-container { width: 100%; max-width: 400px; }
     .auth-title {
-        font-family: 'Cinzel', serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
         font-size: 2.2rem;
-        color: var(--dark);
-        margin-bottom: 10px;
-        font-weight: 700;
-        letter-spacing: 2px;
+        color: #000000;
+        margin-bottom: 8px;
+        font-weight: 900;
+        letter-spacing: -0.5px;
+        text-transform: uppercase;
+        line-height: 1.1;
     }
     .auth-subtitle {
-        font-family: 'Montserrat', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.85rem;
-        color: #666;
-        margin-bottom: 40px;
-        letter-spacing: 1px;
+        color: #777777;
+        margin-bottom: 36px;
+        letter-spacing: 0.5px;
     }
-    .auth-input-group { margin-bottom: 25px; }
+    .auth-input-group { margin-bottom: 20px; }
     .auth-input-group label {
         display: block;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.75rem;
-        letter-spacing: 1.5px;
-        color: var(--dark);
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 1px;
+        color: #000000;
         margin-bottom: 8px;
         text-transform: uppercase;
-        font-weight: 600;
+        font-weight: 700;
     }
     .auth-input {
         width: 100%;
-        padding: 12px 16px;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 8px;
-        background: rgba(0, 0, 0, 0.02);
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.95rem;
-        color: var(--dark);
-        transition: all 0.3s ease;
+        padding: 14px 18px;
+        border: 1px solid #E5E5E5;
+        border-radius: 12px;
+        background: #FAFAF8;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: #000000;
+        transition: all 0.25s ease;
         outline: none;
         box-sizing: border-box;
     }
     .auth-input:focus {
-        border-color: var(--gold);
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+        border-color: #000000;
+        background: #FFFFFF;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
     }
     .auth-input::placeholder { color: #999; font-size: 0.85rem; }
     .auth-options {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 35px;
-        font-family: 'Montserrat', sans-serif;
+        margin-bottom: 30px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.8rem;
     }
     .auth-checkbox-label { display: flex; align-items: center; gap: 8px; color: #666; cursor: pointer; }
-    .auth-checkbox-label input { accent-color: var(--dark); cursor: pointer; width: 16px; height: 16px; }
-    .auth-forgot-link { color: var(--dark); text-decoration: none; font-weight: 500; transition: color 0.3s; }
-    .auth-forgot-link:hover { color: var(--gold); }
+    .auth-checkbox-label input { accent-color: #000000; cursor: pointer; width: 16px; height: 16px; }
+    .auth-forgot-link { color: #000000; text-decoration: none; font-weight: 600; transition: opacity 0.2s; }
+    .auth-forgot-link:hover { opacity: 0.7; }
     .auth-submit-btn {
         width: 100%;
         padding: 16px;
-        background: var(--dark);
-        color: white;
+        background: #000000;
+        color: #FFFFFF;
         border: none;
-        font-family: 'Cinzel', serif;
-        font-size: 0.9rem;
+        border-radius: 30px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.75rem;
         letter-spacing: 2px;
         cursor: pointer;
-        transition: background 0.3s, transform 0.2s;
+        transition: opacity 0.2s ease, transform 0.2s ease;
         text-transform: uppercase;
-        font-weight: 600;
+        font-weight: 800;
+        position: relative;
+        overflow: hidden;
     }
-    .auth-submit-btn:hover { background: var(--gold); }
-    .auth-submit-btn:active { transform: scale(0.98); }
-    .auth-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .auth-submit-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .auth-submit-btn:active { transform: scale(0.99); }
+    .auth-submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
     .auth-switch-text {
         text-align: center;
-        margin-top: 30px;
-        font-family: 'Montserrat', sans-serif;
+        margin-top: 28px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         font-size: 0.85rem;
         color: #666;
     }
-    .auth-switch-link { color: var(--dark); font-weight: 600; text-decoration: none; margin-left: 5px; transition: color 0.3s; }
-    .auth-switch-link:hover { color: var(--gold); }
+    .auth-switch-link { color: #000000; font-weight: 700; text-decoration: none; margin-left: 5px; }
+    .auth-switch-link:hover { text-decoration: underline; }
     .auth-back-home {
         position: absolute;
         top: 30px;
         left: 40px;
-        color: var(--dark);
+        color: #000000;
         text-decoration: none;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.8rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.75rem;
         letter-spacing: 1px;
-        font-weight: 600;
+        font-weight: 700;
+        text-transform: uppercase;
         display: flex;
         align-items: center;
         gap: 8px;
-        transition: color 0.3s;
+        transition: opacity 0.2s;
     }
-    .auth-back-home:hover { color: var(--gold); }
+    .auth-back-home:hover { opacity: 0.6; }
 
     /* ══ FORGOT PASSWORD OVERLAY PANEL ══ */
     .fp-overlay {
@@ -735,8 +745,10 @@ function UserLogin() {
                         style={{ backgroundImage: `url('${image}')` }} />
                 ))}
                 <div className="auth-image-overlay">
-                    <h1 className="auth-brand-name">As Simple as That</h1>
-                    <p className="auth-brand-tagline">**A Designer Paradise**</p>
+                    <h1 className="auth-brand-name">
+                        A<span style={{ display: 'inline-block', transform: 'scaleX(-1)', transformOrigin: 'center' }}>S</span>AT
+                    </h1>
+                    <p className="auth-brand-tagline">THE INDEPENDENT DESIGNER ATELIER</p>
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@ import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 const styles = `
     .support-page {
         min-height: 80vh;
-        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
+        background: var(--bg, #FAFAF8);
         padding: 40px 5%;
         font-family: 'Montserrat', sans-serif;
     }
@@ -35,7 +35,7 @@ const styles = `
         padding: 30px;
     }
     .support-title {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 2rem;
         letter-spacing: 2px;
         color: var(--dark);
@@ -79,7 +79,7 @@ const styles = `
         gap: 5px;
     }
     .ticket-subj {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 0.9rem;
         font-weight: 700;
         color: var(--dark);
@@ -146,7 +146,7 @@ const styles = `
         border: none;
         padding: 14px;
         width: 100%;
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 0.9rem;
         letter-spacing: 2px;
         cursor: pointer;
@@ -194,7 +194,7 @@ const styles = `
         align-items: center;
     }
     .drawer-title {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 1.1rem;
         font-weight: 700;
         color: var(--dark);
@@ -492,7 +492,7 @@ function UserSupport() {
 
                     <div className="support-layout">
                         <div className="glass-card">
-                            <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.2rem', marginBottom: '20px', letterSpacing: '1px' }}>
+                            <h3 style={{ fontFamily: "'Cormorant Garamond', 'Cinzel', serif", fontSize: '1.2rem', marginBottom: '20px', letterSpacing: '1px' }}>
                                 PREVIOUS TICKETS
                             </h3>
                             {loading ? (
@@ -521,7 +521,7 @@ function UserSupport() {
                         </div>
 
                         <div className="glass-card">
-                            <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: '1.2rem', marginBottom: '20px', letterSpacing: '1px' }}>
+                            <h3 style={{ fontFamily: "'Cormorant Garamond', 'Cinzel', serif", fontSize: '1.2rem', marginBottom: '20px', letterSpacing: '1px' }}>
                                 RAISE NEW TICKET
                             </h3>
                             <form onSubmit={handleSubmitTicket}>

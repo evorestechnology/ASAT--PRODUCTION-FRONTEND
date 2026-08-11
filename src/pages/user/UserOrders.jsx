@@ -9,7 +9,7 @@ import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 const styles = `
     .orders-page {
         min-height: 80vh;
-        background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
+        background: var(--bg, #FAFAF8);
         padding: 40px 5%;
         font-family: 'Montserrat', sans-serif;
     }
@@ -18,7 +18,7 @@ const styles = `
         margin: 0 auto;
     }
     .orders-title {
-        font-family: 'Cinzel', serif;
+        font-family: 'Cormorant Garamond', 'Cinzel', serif;
         font-size: 2.2rem;
         letter-spacing: 3px;
         color: var(--dark);

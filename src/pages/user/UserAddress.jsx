@@ -280,11 +280,11 @@ function UserAddress() {
         <>
             <style>{styles}</style>
 
-            <main style={{ flex: 1, padding: '40px 5%', minHeight: '80vh', background: "linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto" }}>
+            <main style={{ flex: 1, padding: '40px 5%', minHeight: '80vh', background: 'var(--bg, #FAFAF8)' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <BackButton />
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                        <h2 style={{ fontFamily: "'Cinzel', serif", margin: 0 }}>STORED ADDRESSES</h2>
+                        <h2 style={{ fontFamily: "'Cormorant Garamond', 'Cinzel', serif", margin: 0 }}>STORED ADDRESSES</h2>
                         <button className="cta-gold" onClick={openAddModal}>+ ADD NEW ADDRESS</button>
                     </div>
                     

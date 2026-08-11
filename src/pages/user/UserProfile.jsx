@@ -152,10 +152,10 @@ function UserProfile() {
         <>
             <style>{styles}</style>
 
-            <main style={{ flex: 1, padding: '10px 0', minHeight: '80vh', background: "linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto" }}>
+            <main style={{ flex: 1, padding: '10px 0', minHeight: '80vh', background: 'var(--bg, #FAFAF8)' }}>
                 <div className="container">
                     <BackButton />
-                    <h2 style={{ fontFamily: "'Cinzel', serif", textAlign: 'center', marginBottom: '30px' }}>ACCOUNT SETTINGS</h2>
+                    <h2 style={{ fontFamily: "'Cormorant Garamond', 'Cinzel', serif", textAlign: 'center', marginBottom: '30px' }}>ACCOUNT SETTINGS</h2>
                 
                 {toast && (
                     <div className={`toast toast--${toast.type}`}>
