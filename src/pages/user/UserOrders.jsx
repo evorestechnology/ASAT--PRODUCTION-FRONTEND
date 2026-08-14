@@ -303,6 +303,21 @@ function UserOrders() {
         }
     };
 
+    const formatDate = (createdAt) => {
+        if (!createdAt) return 'N/A';
+        try {
+            const d = new Date(createdAt);
+            if (isNaN(d.getTime())) return 'N/A';
+            return d.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch {
+            return 'N/A';
+        }
+    };
+
     useEffect(() => {
         fetchOrders();
     }, []);

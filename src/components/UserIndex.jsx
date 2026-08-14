@@ -97,7 +97,7 @@ function useHorizontalScroll() {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    PRODUCT CARD
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
+function ProductCard({ product, badge, badgeClass = '', rank, onNavigate, animIndex = 0 }) {
   const { formatPrice, applyMarkup } = useCurrency();
   const [wishlisted, setWishlisted] = useState(false);
   const fallbackImg = 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=600&q=80';
@@ -175,6 +175,8 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
   return (
     <article
       className="blu-card"
+      data-animate="card"
+      style={{ '--anim-delay': `${(animIndex % 6) * 80}ms` }}
       onClick={() => onNavigate(`/products/${product.id}`)}
     >
       <div className="blu-card__image-box">
@@ -252,8 +254,8 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate }) {
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function Section({ id, label, title, dark, children }) {
   return (
-    <section className={`blu-section${dark ? ' blu-section--dark' : ''}`} id={id}>
-      <div className="blu-section__head">
+    <section className={`blu-section${dark ? ' blu-section--dark' : ''}`} id={id} data-animate="section">
+      <div className="blu-section__head" data-animate="heading">
         <h2 className="blu-section__title">{title || label}</h2>
         <button className="blu-section__discover-btn" onClick={() => window.location.href = '/products'}>
           Discover more
@@ -380,20 +382,36 @@ export default function UserIndex() {
   const [loadingDesigners,  setLoadingDesigners]   = useState(true);
 
 
-  /* â”€â”€ Intersection Observer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Intersection Observer for smooth scroll animations ── */
   useEffect(() => {
     const obs = new IntersectionObserver(
       (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
       }),
-      { threshold: 0.08 }
+      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
     );
-    // Observe ALL data-animate elements, including those added after data loads
-    const timer = setTimeout(() => {
-      document.querySelectorAll('[data-animate]').forEach((el) => obs.observe(el));
-    }, 100);
-    return () => { obs.disconnect(); clearTimeout(timer); };
-  }, [categories, designers]); // re-run when async data arrives
+
+    const observeAll = () => {
+      document.querySelectorAll('[data-animate]').forEach((el) => {
+        if (!el.classList.contains('visible')) {
+          obs.observe(el);
+        }
+      });
+    };
+
+    observeAll();
+    const t1 = setTimeout(observeAll, 120);
+    const t2 = setTimeout(observeAll, 500);
+
+    return () => {
+      obs.disconnect();
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [categories, newArrivals, bestsellers, designers]);
   /* â”€â”€ Fetch All Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   useEffect(() => {
     const fetchData = async () => {
@@ -638,6 +656,7 @@ export default function UserIndex() {
           renderItem={(p, idx) => (
             <ProductCard
               key={p.id} product={p} badge="NEW"
+              animIndex={idx}
               onNavigate={navigate}
             />
           )}
@@ -663,7 +682,8 @@ export default function UserIndex() {
                       <div
                         key={cat.id}
                         className={`bento-card ${getDynamicBentoClass(idx, categories.length)}`}
-                        style={{ cursor: 'pointer' }}
+                        data-animate="bento"
+                        style={{ '--anim-delay': `${(idx % 6) * 90}ms`, cursor: 'pointer' }}
                         onClick={() => navigate(`/products?category=${encodeURIComponent(cat.name)}`)}
                       >
                         <div className="bento-card__img" style={{ backgroundImage: `url('${cat.image}')` }} />
@@ -708,6 +728,7 @@ export default function UserIndex() {
               key={p.id} product={p}
               badge={`★ BESTSELLER`} badgeClass="ui-product-card__badge--hot"
               rank={idx + 1}
+              animIndex={idx}
               onNavigate={navigate}
             />
           )}

@@ -2450,84 +2450,69 @@ footer {
     }
 }
 
+/* ══════════════════════════════════════════════════════════
+   HIGH-END STREETWEAR SCROLL ANIMATIONS (INTERSECTION OBSERVER)
+══════════════════════════════════════════════════════════ */
+[data-animate="section"] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+[data-animate="section"].visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 [data-animate="card"] {
     opacity: 0;
-    transform: translateY(30px) scale(0.94);
+    transform: translateY(32px) scale(0.97);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--anim-delay, 0ms);
+    will-change: opacity, transform;
 }
 
 [data-animate="card"].visible {
-    animation: animFadeUpScale 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    animation-delay: var(--anim-delay, 0ms);
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
-/* â”€â”€ Section heading slide-in-left + underline draw â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-@keyframes animSlideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+[data-animate="bento"] {
+    opacity: 0;
+    transform: translateY(36px) scale(0.98);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--anim-delay, 0ms);
+    will-change: opacity, transform;
 }
 
-@keyframes animUnderlineDraw {
-    from { transform: scaleX(0); }
-    to   { transform: scaleX(1); }
+[data-animate="bento"].visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 [data-animate="heading"] {
     opacity: 0;
-    transform: translateX(-40px);
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
 }
 
 [data-animate="heading"].visible {
-    animation: animSlideInLeft 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-[data-animate="heading"].visible .ui-section__rule {
-    transform-origin: left center;
-    animation: animUnderlineDraw 0.5s 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-/* â”€â”€ Feature card spring bounce â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-@keyframes animSpringBounce {
-    0%   { opacity: 0; transform: scale(0);   }
-    60%  { opacity: 1; transform: scale(1.1);  }
-    80%  { opacity: 1; transform: scale(0.96); }
-    100% { opacity: 1; transform: scale(1);    }
-}
-
-[data-animate="feature"] {
-    opacity: 0;
-    transform: scale(0);
-}
-
-[data-animate="feature"].visible {
-    animation: animSpringBounce 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    animation-delay: var(--anim-delay, 0ms);
-}
-
-/* â”€â”€ Editorial / newsletter fade-in from bottom â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-@keyframes animFadeInBottom {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    opacity: 1;
+    transform: translateY(0);
 }
 
 [data-animate="editorial"] {
     opacity: 0;
     transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
 }
 
 [data-animate="editorial"].visible {
-    animation: animFadeInBottom 0.7s 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•

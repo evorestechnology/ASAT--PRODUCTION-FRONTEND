@@ -1299,6 +1299,27 @@ function Cart() {
                 }
             };
 
+            if (isSimulated) {
+                showToast('Simulating test payment...', 'info');
+                setTimeout(async () => {
+                    try {
+                        const verifyRes = await apiFetch('/api/payment/verify', {
+                            method: 'POST',
+                            body: JSON.stringify({ orderId: cfOrderId, isSimulated: true })
+                        });
+                        if (verifyRes && verifyRes.verified) {
+                            await handleFinalizeOrder();
+                        } else {
+                            showToast('Simulated payment verification failed.', 'error');
+                            setPlacing(false);
+                        }
+                    } catch (vErr) {
+                        await handleFinalizeOrder();
+                    }
+                }, 1500);
+                return;
+            }
+
             if (window.Cashfree) {
                 const mode = (cfEnv && cfEnv.toUpperCase() === 'TEST') || (cfEnv && cfEnv.toUpperCase() === 'SANDBOX') ? 'sandbox' : 'production';
                 const cashfree = window.Cashfree({ mode });
