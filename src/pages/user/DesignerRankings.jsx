@@ -223,6 +223,7 @@ const styles = `
         width: 100%;
         border-collapse: collapse;
         text-align: left;
+        min-width: 600px;
     }
     .rnk-table th {
         font-family: 'Cormorant Garamond', 'Cinzel', serif;

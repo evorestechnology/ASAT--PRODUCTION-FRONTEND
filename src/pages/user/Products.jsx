@@ -411,6 +411,38 @@ const extraStyles = `
     box-shadow: 0 2px 8px rgba(197,160,89,0.4);
     line-height: 1;
   }
+
+  /* Responsive Products Grid */
+  .blu-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .blu-products-grid .blu-card {
+    min-width: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+  @media (max-width: 768px) {
+    .blu-products-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+  }
+  @media (max-width: 480px) {
+    .blu-products-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .blu-card__title {
+      font-size: 0.72rem !important;
+    }
+    .blu-card__price {
+      font-size: 0.78rem !important;
+    }
+  }
 `;
 
 /* ═══════════════════════════════════════════════════════════
@@ -956,7 +988,7 @@ function Products() {
           {loading ? (
             <div className="blu-products-grid">
               {Array(8).fill(0).map((_, i) => (
-                <div key={i} style={{ width: '310px', height: '420px', background: '#F0F0F0', borderRadius: '14px', animation: 'pulse 1.5s infinite' }} />
+                <div key={i} style={{ width: '100%', height: 'auto', aspectRatio: '3/4.2', background: '#F0F0F0', borderRadius: '14px', animation: 'pulse 1.5s infinite' }} />
               ))}
             </div>
           ) : filtered.length === 0 ? (

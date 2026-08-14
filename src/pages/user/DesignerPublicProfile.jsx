@@ -563,6 +563,21 @@ const styles = `
     .dpp-filters__section { border-right: none; border-bottom: 1px solid #f0f0f0; padding: 10px 0; margin-right: 0; width: 100%; }
     .dpp-filters__section:last-child { border-bottom: none; }
   }
+  @media (max-width: 480px) {
+    .dpp-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .dpp-card__body {
+      padding: 10px;
+    }
+    .dpp-card__name {
+      font-size: 0.8rem;
+    }
+    .dpp-card__price {
+      font-size: 0.78rem;
+    }
+  }
 `;
 
 const SORT_OPTIONS = [

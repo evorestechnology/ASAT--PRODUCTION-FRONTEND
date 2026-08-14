@@ -1006,6 +1006,84 @@ const styles = `
         object-fit: contain;
         border-radius: 4px;
     }
+
+    /* Responsive Related Products Grid */
+    .blu-products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .blu-products-grid .blu-card {
+        min-width: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .blu-products-grid .blu-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    }
+    .blu-card__media-wrap {
+        width: 100%;
+        aspect-ratio: 3/4;
+        overflow: hidden;
+    }
+    .blu-card__img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .blu-card:hover .blu-card__img {
+        transform: scale(1.04);
+    }
+    .blu-card__body {
+        padding: 16px;
+    }
+    .blu-card__title {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #111;
+        margin: 0 0 6px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .blu-card__price {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--gold, #C5A059);
+    }
+    @media (max-width: 768px) {
+        .blu-products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+    }
+    @media (max-width: 480px) {
+        .blu-products-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .blu-card__body {
+            padding: 10px;
+        }
+        .blu-card__title {
+            font-size: 0.72rem;
+        }
+        .blu-card__price {
+            font-size: 0.78rem;
+        }
+    }
 `;
 
 function ProductDetail() {

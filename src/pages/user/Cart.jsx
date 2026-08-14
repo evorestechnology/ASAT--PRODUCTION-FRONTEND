@@ -1387,45 +1387,55 @@ function Cart() {
 
                 // Initiate Cashfree Checkout
                 try {
-                    // Try modal drop-in first
-                    cashfree.checkout({
-                        paymentSessionId: payment_session_id,
-                        redirectTarget: '_modal'
-                    }).then(async (result) => {
-                        if (result.error) {
-                            console.warn('Cashfree modal closed or error:', result.error);
-                            // Fallback to direct redirect payment page if modal fails or is closed
-                            if (result.error.code === 'MODAL_CLOSED' || result.error.message?.includes('closed')) {
-                                setPlacing(false);
-                            } else {
-                                cashfree.checkout({
-                                    paymentSessionId: payment_session_id,
-                                    redirectTarget: '_self'
-                                });
-                            }
-                        } else {
-                            try {
-                                const verifyRes = await apiFetch('/api/payment/verify', {
-                                    method: 'POST',
-                                    body: JSON.stringify({ orderId: cfOrderId })
-                                });
-                                if (verifyRes && verifyRes.verified) {
-                                    await handleFinalizeOrder();
-                                } else {
-                                    showToast('Payment verification pending.', 'warning');
-                                    setPlacing(false);
-                                }
-                            } catch (vErr) {
-                                await handleFinalizeOrder();
-                            }
-                        }
-                    }).catch(() => {
-                        // On modal rejection (e.g. origin policy restriction on localhost), fallback to redirectTarget: '_self'
+                    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+                    if (isMobileDevice) {
+                        // Direct full-page redirect for mobile viewports to prevent iframe rendering bugs/400 errors
                         cashfree.checkout({
                             paymentSessionId: payment_session_id,
                             redirectTarget: '_self'
                         });
-                    });
+                    } else {
+                        // Desktop popup modal drop-in checkout
+                        cashfree.checkout({
+                            paymentSessionId: payment_session_id,
+                            redirectTarget: '_modal'
+                        }).then(async (result) => {
+                            if (result.error) {
+                                console.warn('Cashfree modal closed or error:', result.error);
+                                // Fallback to direct redirect payment page if modal fails or is closed
+                                if (result.error.code === 'MODAL_CLOSED' || result.error.message?.includes('closed')) {
+                                    setPlacing(false);
+                                } else {
+                                    cashfree.checkout({
+                                        paymentSessionId: payment_session_id,
+                                        redirectTarget: '_self'
+                                    });
+                                }
+                            } else {
+                                try {
+                                    const verifyRes = await apiFetch('/api/payment/verify', {
+                                        method: 'POST',
+                                        body: JSON.stringify({ orderId: cfOrderId })
+                                    });
+                                    if (verifyRes && verifyRes.verified) {
+                                        await handleFinalizeOrder();
+                                    } else {
+                                        showToast('Payment verification pending.', 'warning');
+                                        setPlacing(false);
+                                    }
+                                } catch (vErr) {
+                                    await handleFinalizeOrder();
+                                }
+                            }
+                        }).catch(() => {
+                            // On modal rejection (e.g. origin policy restriction on localhost), fallback to redirectTarget: '_self'
+                            cashfree.checkout({
+                                paymentSessionId: payment_session_id,
+                                redirectTarget: '_self'
+                            });
+                        });
+                    }
                 } catch (checkoutErr) {
                     console.error('Cashfree checkout invocation error:', checkoutErr);
                     cashfree.checkout({

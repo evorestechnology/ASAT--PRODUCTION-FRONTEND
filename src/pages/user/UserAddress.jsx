@@ -46,7 +46,7 @@ const INDIAN_STATES = [
 
 const styles = `
     body { display: flex; flex-direction: column; min-height: 100vh; }
-    .address-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 20px; }
+    .address-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
     .address-card { border: 1px solid #eee; padding: 24px; background: white; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
     .address-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
     .address-card h4 { font-family: 'Cinzel', serif; margin-top: 0; color: #111; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
@@ -69,7 +69,7 @@ const styles = `
     .toast--success { background: #eafaf1; color: #1e7e34; border: 1px solid #28a745; }
     .toast--error { background: #fef0ee; color: #c0392b; border: 1px solid #c0392b; }
     
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); padding: 16px; }
     .modal-content { background: white; border: 1px solid #eee; padding: 30px; width: 100%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 4px; box-sizing: border-box; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
     .modal-header h3 { font-family: 'Cinzel', serif; margin: 0; letter-spacing: 1px; }
@@ -81,6 +81,16 @@ const styles = `
     .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; box-sizing: border-box; }
     .form-group input:focus, .form-group select:focus { border-color: var(--gold); outline: none; }
     .full-width { grid-column: span 2; }
+
+    @media (max-width: 600px) {
+        .form-grid { grid-template-columns: 1fr; gap: 10px; }
+        .full-width { grid-column: span 1; }
+        .modal-content { padding: 20px; }
+    }
+    @media (max-width: 360px) {
+        .address-grid { grid-template-columns: 1fr; }
+    }
+
 `;
 
 function UserAddress() {

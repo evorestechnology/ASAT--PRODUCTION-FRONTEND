@@ -443,6 +443,18 @@ function Navbar() {
                         gap: 14px;
                     }
                 }
+                @media (max-width: 500px) {
+                    .blu-header__right {
+                        gap: 8px;
+                    }
+                    .blu-header__account-wrap,
+                    .blu-header__wishlist-btn {
+                        display: none;
+                    }
+                    .blu-header__brand-logo {
+                        font-size: 1.5rem;
+                    }
+                }
             `}</style>
 
             {/* ── EXACT BLUORNG HEADER ── */}
@@ -513,7 +525,7 @@ function Navbar() {
                         </button>
 
                         {/* 4. User Account Icon */}
-                        <div style={{ position: 'relative' }}>
+                        <div className="blu-header__account-wrap" style={{ position: 'relative' }}>
                             <button
                                 className="blu-icon-btn"
                                 ref={profileBtnRef}
@@ -551,7 +563,7 @@ function Navbar() {
                         </div>
 
                         {/* 5. Wishlist Ribbon Icon */}
-                        <button className="blu-icon-btn" onClick={() => navigate('/wishlist')} aria-label="Wishlist">
+                        <button className="blu-icon-btn blu-header__wishlist-btn" onClick={() => navigate('/wishlist')} aria-label="Wishlist">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                             </svg>
