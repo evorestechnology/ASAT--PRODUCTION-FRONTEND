@@ -75,6 +75,33 @@ function MfgOrders() {
     const neckLogoRef = useRef(null);
     const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
 
+    const getCompletedDate = (o) => {
+        if (!o) return null;
+        if (o.completedAt || o.completed_at) return o.completedAt || o.completed_at;
+        if (o.deliveredAt || o.delivered_at) return o.deliveredAt || o.delivered_at;
+        const history = o.statusHistory || o.status_history;
+        if (Array.isArray(history)) {
+            const completedEntry = history.slice().reverse().find(h => 
+                h && (h.status === 'completed' || h.status === 'delivered')
+            );
+            if (completedEntry && (completedEntry.time || completedEntry.timestamp || completedEntry.date)) {
+                return completedEntry.time || completedEntry.timestamp || completedEntry.date;
+            }
+        }
+        if (o.status === 'completed' || o.status === 'delivered') {
+            return o.updatedAt || o.updated_at || null;
+        }
+        return null;
+    };
+
+    const formatOrderDate = (o) => {
+        const raw = o?.createdAt || o?.created_at || (typeof o === 'string' ? o : null);
+        if (!raw) return '—';
+        const date = new Date(raw);
+        if (isNaN(date.getTime())) return '—';
+        return date.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
     const handleDownloadFile = async (url, filename) => {
         try {
             const response = await fetch(url);
