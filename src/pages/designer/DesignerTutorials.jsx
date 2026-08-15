@@ -54,63 +54,243 @@ function DesignerTutorials() {
         return matchesTag && matchesSearch;
     });
 
+    const styles = `
+        .dsn-tut-page {
+            padding: 40px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 80vh;
+        }
+        .dsn-tut-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            padding-bottom: 20px;
+        }
+        .dsn-tut-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #000000;
+            margin: 0;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dsn-tut-subtitle {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.82rem;
+            color: #666;
+            margin: 4px 0 0;
+        }
+        .dsn-tut-search-wrap {
+            position: relative;
+            width: 300px;
+            max-width: 100%;
+        }
+        .dsn-tut-search-input {
+            width: 100%;
+            padding: 12px 14px 12px 38px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.45);
+            font-size: 0.85rem;
+            font-family: 'Montserrat', sans-serif;
+            box-sizing: border-box;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+            outline: none;
+            color: #000000;
+            transition: all 0.25s ease;
+        }
+        .dsn-tut-search-input:focus {
+            border-color: #000000;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+        }
+        .dsn-tut-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%) !important;
+            color: #888;
+            font-size: 0.82rem;
+        }
+        .dsn-tut-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 768px) {
+            .dsn-tut-tags {
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
+                padding-bottom: 8px;
+                scrollbar-width: none;
+            }
+            .dsn-tut-tags::-webkit-scrollbar {
+                display: none;
+            }
+            .dsn-tut-tag-btn {
+                flex-shrink: 0;
+            }
+        }
+        .dsn-tut-tag-btn {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.5);
+            color: #555;
+            font-size: 0.8rem;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .dsn-tut-tag-btn:hover {
+            background: rgba(0,0,0,0.03);
+            border-color: rgba(0,0,0,0.15);
+        }
+        .dsn-tut-tag-btn.active {
+            background: #000000;
+            border-color: #000000;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .dsn-tut-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 30px;
+        }
+        .dsn-tut-card {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .dsn-tut-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(0, 0, 0, 0.12);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
+        }
+        .dsn-tut-video-wrap {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: #000000;
+        }
+        .dsn-tut-video-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .dsn-tut-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .dsn-tut-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .dsn-tut-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #000000;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .dsn-tut-date {
+            font-size: 0.7rem;
+            color: #888;
+            font-weight: 500;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .dsn-tut-card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #000000;
+            margin: 4px 0 8px;
+            line-height: 1.4;
+        }
+        .dsn-tut-desc {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.82rem;
+            color: #555;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .dsn-tut-empty {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(12px);
+            border: 1px dashed rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            color: #555;
+        }
+    `;
+
     return (
-        <main className="dsn-page" style={{ padding: '30px 5%', minHeight: '80vh', maxWidth: 1280, margin: '0 auto' }}>
+        <main className="dsn-tut-page">
+            <style>{styles}</style>
             <BackButton />
 
-            <div style={{ marginBottom: 26, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+            <div className="dsn-tut-head">
                 <div>
-                    <h1 style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '1.6rem', fontWeight: 800, color: '#1a1a1a', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        <i className="fas fa-play-circle" style={{ color: 'var(--gold, #C5A059)', marginRight: 10 }}></i>
+                    <h1 className="dsn-tut-title">
+                        <i className="fas fa-play-circle" style={{ color: '#000000' }}></i>
                         DESIGNER VIDEO TUTORIALS
                     </h1>
-                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem', color: '#666', marginTop: 4 }}>
+                    <p className="dsn-tut-subtitle">
                         Learn best practices, mockup guidelines, tech pack setups, and earning strategies
                     </p>
                 </div>
 
                 {/* Search Bar */}
-                <div style={{ position: 'relative', width: 300, maxWidth: '100%' }}>
+                <div className="dsn-tut-search-wrap">
                     <input
                         type="text"
                         placeholder="Search video tutorials, tags..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '10px 14px 10px 38px',
-                            borderRadius: 8,
-                            border: '1px solid #ddd',
-                            fontSize: '0.85rem',
-                            fontFamily: 'Montserrat',
-                            boxSizing: 'border-box',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-                            outline: 'none'
-                        }}
+                        className="dsn-tut-search-input"
                     />
-                    <i className="fas fa-search" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#888', fontSize: '0.82rem' }}></i>
+                    <i className="fas fa-search dsn-tut-search-icon"></i>
                 </div>
             </div>
 
             {/* Tag Filter Chips */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
+            <div className="dsn-tut-tags">
                 {allTags.map(tag => (
                     <button
                         key={tag}
                         onClick={() => setActiveTag(tag)}
-                        style={{
-                            padding: '8px 18px',
-                            borderRadius: 20,
-                            border: activeTag === tag ? '1px solid var(--gold, #C5A059)' : '1px solid #e2e8f0',
-                            background: activeTag === tag ? 'var(--gold, #C5A059)' : '#fff',
-                            color: activeTag === tag ? '#fff' : '#475569',
-                            fontSize: '0.8rem',
-                            fontWeight: 700,
-                            fontFamily: 'Montserrat',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            boxShadow: activeTag === tag ? '0 4px 12px rgba(197,160,89,0.25)' : '0 1px 3px rgba(0,0,0,0.05)'
-                        }}
+                        className={`dsn-tut-tag-btn ${activeTag === tag ? 'active' : ''}`}
                     >
                         {tag}
                     </button>
@@ -124,45 +304,45 @@ function DesignerTutorials() {
                     <p style={{ fontFamily: 'Montserrat', fontSize: '0.85rem', color: '#666' }}>Loading video tutorials...</p>
                 </div>
             ) : filteredTutorials.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 20px', background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                <div className="dsn-tut-empty">
                     <i className="fas fa-video-slash" style={{ fontSize: '2.5rem', color: '#cbd5e1', marginBottom: 12, display: 'block' }}></i>
                     <h3 style={{ fontFamily: 'Montserrat', fontSize: '1rem', color: '#334155', margin: 0 }}>No Tutorials Found</h3>
                     <p style={{ fontFamily: 'Montserrat', fontSize: '0.82rem', color: '#64748b', marginTop: 4 }}>Try adjusting your search query or tag filter.</p>
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
+                <div className="dsn-tut-grid">
                     {filteredTutorials.map(t => {
                         const embedUrl = getEmbedUrl(t.video_url);
                         return (
-                            <div key={t.id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 14px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s, box-shadow 0.2s' }}>
+                            <div key={t.id} className="dsn-tut-card">
                                 {/* Video Iframe */}
-                                <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#0f172a' }}>
+                                <div className="dsn-tut-video-wrap">
                                     <iframe
                                         src={embedUrl}
                                         title={t.title}
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
-                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                        className="dsn-tut-video-iframe"
                                     />
                                 </div>
 
-                                <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                <div className="dsn-tut-content">
                                     <div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                            <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '4px 10px', borderRadius: 12, background: 'rgba(197,160,89,0.12)', color: 'var(--gold, #C5A059)', border: '1px solid rgba(197,160,89,0.3)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        <div className="dsn-tut-meta">
+                                            <span className="dsn-tut-badge">
                                                 {t.tag || 'General'}
                                             </span>
-                                            <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>
+                                            <span className="dsn-tut-date">
                                                 {t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}
                                             </span>
                                         </div>
 
-                                        <h3 style={{ fontFamily: 'Montserrat', fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: '4px 0 8px', lineHeight: 1.4 }}>
+                                        <h3 className="dsn-tut-card-title">
                                             {t.title}
                                         </h3>
 
                                         {t.description && (
-                                            <p style={{ fontFamily: 'Montserrat', fontSize: '0.82rem', color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                                            <p className="dsn-tut-desc">
                                                 {t.description}
                                             </p>
                                         )}

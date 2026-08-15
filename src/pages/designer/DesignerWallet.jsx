@@ -5,12 +5,12 @@ import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
 const styles = `
-    .wallet-card { background: var(--dark); color: white; padding: 40px; margin: 40px 5%; border-bottom: 5px solid var(--gold); position: relative; }
+    .wallet-card { background: rgba(255, 255, 255, 0.72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 16px; color: #000000; padding: 40px; margin: 40px 5%; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03); position: relative; }
     .currency-selector { position: absolute; top: 20px; right: 20px; }
-    .currency-selector select { background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 5px; outline: none; }
+    .currency-selector select { background: transparent; color: #000000; border: 1px solid rgba(0, 0, 0, 0.15); padding: 5px; outline: none; border-radius: 4px; }
     .wallet-flex { display: flex; justify-content: space-around; align-items: center; text-align: center; margin-top: 20px; }
-    .amount-box h3 { font-family: 'Cinzel', serif; font-size: 0.9rem; letter-spacing: 1px; }
-    .amount { font-size: 2.5rem; font-family: 'Cinzel', serif; color: var(--gold); margin: 10px 0; }
+    .amount-box h3 { font-family: 'Cinzel', serif; font-size: 0.82rem; letter-spacing: 1.5px; color: #666; font-weight: 600; text-transform: uppercase; }
+    .amount { font-size: 2.2rem; font-family: 'Cinzel', serif; color: #000000; margin: 10px 0; font-weight: 700; }
 `;
 
 function DesignerWallet() {

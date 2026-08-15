@@ -2,6 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 function UserFooter() {
+    const [openCol, setOpenCol] = React.useState(null);
+    const toggleCol = (colIndex) => {
+        setOpenCol(openCol === colIndex ? null : colIndex);
+    };
+
     return (
         <footer style={{ width: '100%', background: 'transparent', padding: '0 0 20px' }}>
             <style>{`
@@ -31,6 +36,9 @@ function UserFooter() {
                     color: #000000;
                     margin-bottom: 18px;
                     display: block;
+                }
+                .blu-footer-card__col-chevron {
+                    display: none;
                 }
 
                 .blu-footer-card__list {
@@ -124,17 +132,64 @@ function UserFooter() {
                 }
 
                 @media (max-width: 560px) {
+                    .blu-footer-card {
+                        padding: 24px 16px 16px;
+                        border-radius: 16px;
+                        margin: 16px 12px;
+                    }
                     .blu-footer-card__grid {
                         grid-template-columns: 1fr;
-                        gap: 24px;
+                        gap: 12px;
+                    }
+                    .blu-footer-card__col-title {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        cursor: pointer;
+                        padding: 10px 4px;
+                        margin-bottom: 0;
+                        border-bottom: 1px solid #F0F0F0;
+                        font-size: 12.5px;
+                        user-select: none;
+                    }
+                    .blu-footer-card__col-chevron {
+                        display: block;
+                        font-size: 0.7rem;
+                        color: #888888;
+                        transition: transform 0.2s ease;
+                    }
+                    .blu-footer-card__col.open .blu-footer-card__col-chevron {
+                        transform: rotate(180deg);
+                    }
+                    .blu-footer-card__list {
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: max-height 0.25s ease-out;
+                        gap: 8px;
+                    }
+                    .blu-footer-card__col.open .blu-footer-card__list {
+                        max-height: 250px;
+                        padding: 12px 6px 4px;
                     }
                     .blu-footer-card__brand-showcase {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 16px;
+                        flex-direction: row;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 12px;
+                        margin-top: 12px;
+                        padding-top: 16px;
+                        border-top: 1px solid #F0F0F0;
+                    }
+                    .blu-footer-card__script-logo {
+                        font-size: 2rem;
+                    }
+                    .blu-footer-card__bag-wrap {
+                        display: none !important;
                     }
                     .blu-footer-card__bottom {
-                        justify-content: flex-start;
+                        margin-top: 16px;
+                        padding-top: 12px;
+                        justify-content: center;
                     }
                 }
             `}</style>
@@ -142,8 +197,11 @@ function UserFooter() {
             <div className="blu-footer-card">
                 <div className="blu-footer-card__grid">
                     {/* Column 1: Connect with us */}
-                    <div>
-                        <span className="blu-footer-card__col-title">Connect with us</span>
+                    <div className={`blu-footer-card__col${openCol === 0 ? ' open' : ''}`}>
+                        <span className="blu-footer-card__col-title" onClick={() => toggleCol(0)}>
+                            Connect with us
+                            <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
+                        </span>
                         <ul className="blu-footer-card__list">
                             <li><a href="tel:+919177180258" className="blu-footer-card__link">Call</a></li>
                             <li><a href="https://wa.me/919177180258" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">Text (WhatsApp)</a></li>
@@ -154,8 +212,11 @@ function UserFooter() {
                     </div>
 
                     {/* Column 2: Order Support */}
-                    <div>
-                        <span className="blu-footer-card__col-title">Order Support</span>
+                    <div className={`blu-footer-card__col${openCol === 1 ? ' open' : ''}`}>
+                        <span className="blu-footer-card__col-title" onClick={() => toggleCol(1)}>
+                            Order Support
+                            <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
+                        </span>
                         <ul className="blu-footer-card__list">
                             <li><Link to="/support" className="blu-footer-card__link">Make a return/Exchange</Link></li>
                             <li><Link to="/terms" className="blu-footer-card__link">Refund/Exchange policy</Link></li>
@@ -167,8 +228,11 @@ function UserFooter() {
                     </div>
 
                     {/* Column 3: We are ASAT */}
-                    <div>
-                        <span className="blu-footer-card__col-title">We are ASAT</span>
+                    <div className={`blu-footer-card__col${openCol === 2 ? ' open' : ''}`}>
+                        <span className="blu-footer-card__col-title" onClick={() => toggleCol(2)}>
+                            We are ASAT
+                            <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
+                        </span>
                         <ul className="blu-footer-card__list">
                             <li><Link to="/rankings" className="blu-footer-card__link">Our story</Link></li>
                             <li><Link to="/products" className="blu-footer-card__link">Walk-in Stores</Link></li>

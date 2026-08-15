@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import BackButton from '../../components/BackButton';
@@ -77,6 +77,9 @@ const styles = `
         padding-right: 4px;
         scrollbar-width: thin;
         scrollbar-color: rgba(0,0,0,0.15) transparent;
+    }
+    .pdp-col-stream .pdp-stream-card:first-child {
+        display: none;
     }
 
     .pdp-col-stream::-webkit-scrollbar {
@@ -198,15 +201,46 @@ const styles = `
     @media (max-width: 768px) {
         .pdp-split-3col {
             grid-template-columns: 1fr;
+            gap: 10px;
         }
         .pdp-col-cover {
-            position: static;
-            height: 65vh;
+            display: none !important;
         }
         .pdp-col-stream {
-            height: auto;
-            max-height: none;
-            overflow-y: visible;
+            display: flex !important;
+            flex-direction: row !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory !important;
+            gap: 12px !important;
+            padding: 8px 4vw 20px !important;
+            margin: 0 -4% 20px !important;
+            width: 100vw !important;
+            box-sizing: border-box !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow-y: visible !important;
+            scrollbar-width: none !important;
+        }
+        .pdp-col-stream::-webkit-scrollbar {
+            display: none !important;
+        }
+        .pdp-col-stream .pdp-stream-card:first-child {
+            display: block !important;
+        }
+        .pdp-stream-card {
+            flex-shrink: 0 !important;
+            width: 80vw !important;
+            scroll-snap-align: center !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            height: 55vh !important;
+            aspect-ratio: auto !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04) !important;
+        }
+        .pdp-stream-img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
         }
     }
 
@@ -1096,6 +1130,7 @@ function ProductDetail() {
     
     const { user, profile } = useAuth();
     const [financeRules, setFinanceRules] = useState(null);
+    const streamRef = useRef(null);
 
     // Fetch settings/finance on mount
     useEffect(() => {
@@ -1346,6 +1381,15 @@ function ProductDetail() {
             if (timer) clearTimeout(timer);
         };
     }, [isEnlarged, autoScrollActive, product, selectedImage, activeImages]);
+
+    useEffect(() => {
+        if (window.innerWidth <= 768 && streamRef.current) {
+            const card = streamRef.current.children[selectedImage];
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+    }, [selectedImage]);
 
     // â”€â”€ Keyboard Support for Enlarged Mode â”€â”€
     useEffect(() => {
@@ -1816,17 +1860,17 @@ function ProductDetail() {
                     </div>
 
                     {/* Column 2: In-place Scrollable Stream of Remaining Angles */}
-                    <div className="pdp-col-stream">
-                        {(activeImages.length > 1 ? activeImages.slice(1) : activeImages).map((imgUrl, idx) => (
+                    <div className="pdp-col-stream" ref={streamRef}>
+                        {activeImages.map((imgUrl, idx) => (
                             <div
                                 key={idx}
                                 className="pdp-stream-card"
-                                onClick={() => { setSelectedImage(activeImages.length > 1 ? idx + 1 : idx); setIsEnlarged(true); }}
+                                onClick={() => { setSelectedImage(idx); setIsEnlarged(true); }}
                             >
                                 <img
                                     className="pdp-stream-img"
                                     src={imgUrl}
-                                    alt={`${product.name} angle ${idx + 2}`}
+                                    alt={`${product.name} view ${idx + 1}`}
                                     loading="lazy"
                                 />
                             </div>

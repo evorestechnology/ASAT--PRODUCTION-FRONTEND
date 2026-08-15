@@ -54,9 +54,7 @@ html, body, #root {
     overflow-x: hidden;
 }
 
-/* Designer, Manufacturer, Master dashboards — keep doodle bg for their portals */
-.dsn-dash, .dsn-orders, .dsn-designs, .dsn-upload, .dsn-earnings, .dsn-tutorials,
-.dsn-ranking, .dsn-profile, .dsn-base-products, .dsn-support,
+/* Manufacturer, Master dashboards — keep doodle bg for their portals */
 .mfg-dashboard, .master-dashboard, .admin-dashboard {
     background: linear-gradient(rgba(249, 249, 249, 0.88), rgba(249, 249, 249, 0.88)), url('/images/user-bg-doodles.png') repeat fixed center / 550px auto;
 }
@@ -3518,5 +3516,20 @@ footer {
 .blu-designer-card:hover .blu-designer-card__btn {
     background: #000000;
     color: #FFFFFF;
+}
+
+/* ── Mobile Product Card Scaling Overrides ── */
+@media (max-width: 768px) {
+    .blu-card {
+        min-width: 230px !important;
+        max-width: 230px !important;
+    }
+    .blu-products-grid .blu-card,
+    .dpp-grid .blu-card,
+    .products-grid .blu-card {
+        min-width: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
 }
 

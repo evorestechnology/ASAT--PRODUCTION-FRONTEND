@@ -709,7 +709,7 @@ const styles = `
         }
         .cart-summary { position: static; }
     }
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .cart-hero h1 { font-size: 1.5rem; letter-spacing: 3px; }
         .cart-hero { padding: 35px 5% 30px; }
         .cart-items-header { display: none; }

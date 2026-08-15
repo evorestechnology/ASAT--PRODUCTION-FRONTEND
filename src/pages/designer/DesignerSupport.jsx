@@ -7,7 +7,6 @@ import { useToast, ToastContainer, TOAST_CSS } from '../../components/useToast';
 const styles = `
     .support-page {
         min-height: 80vh;
-        background: var(--light);
         padding: 40px 5%;
         font-family: 'Montserrat', sans-serif;
     }
@@ -27,19 +26,21 @@ const styles = `
         }
     }
     .glass-card {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.02);
         padding: 30px;
     }
     .support-title {
         font-family: 'Cinzel', serif;
         font-size: 2rem;
         letter-spacing: 2px;
-        color: var(--dark);
+        color: #000000;
         margin-bottom: 8px;
+        font-weight: 700;
     }
     .support-subtitle {
         font-size: 0.85rem;
@@ -58,20 +59,21 @@ const styles = `
         padding-right: 5px;
     }
     .ticket-item {
-        background: white;
-        border: 1px solid rgba(0,0,0,0.05);
+        background: rgba(255, 255, 255, 0.45);
+        border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 8px;
         padding: 18px;
         cursor: pointer;
-        transition: 0.3s;
+        transition: all 0.25s ease;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     .ticket-item:hover {
+        background: rgba(255, 255, 255, 0.72);
         transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(197, 160, 89, 0.1);
-        border-color: var(--gold);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        border-color: rgba(0, 0, 0, 0.15);
     }
     .ticket-item-left {
         display: flex;
@@ -82,7 +84,7 @@ const styles = `
         font-family: 'Cinzel', serif;
         font-size: 0.9rem;
         font-weight: 700;
-        color: var(--dark);
+        color: #000000;
         letter-spacing: 1px;
     }
     .ticket-desc {
@@ -108,12 +110,14 @@ const styles = `
     .ticket-badge.open {
         background: #e8f5e9;
         color: #2e7d32;
+        border: 1px solid rgba(46, 125, 50, 0.15);
     }
     .ticket-badge.closed {
         background: #f5f5f5;
         color: #9e9e9e;
+        border: 1px solid rgba(158, 158, 158, 0.15);
     }
-
+ 
     /* Form Fields */
     .field-group {
         margin-bottom: 20px;
@@ -122,41 +126,50 @@ const styles = `
         gap: 8px;
     }
     .field-group label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--dark);
-        letter-spacing: 0.5px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #000000;
+        letter-spacing: 1px;
+        text-transform: uppercase;
     }
     .field-input, .field-select, .field-textarea {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.45);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
         padding: 12px 15px;
         font-family: 'Montserrat', sans-serif;
         font-size: 0.85rem;
         outline: none;
-        transition: 0.3s;
+        transition: all 0.25s ease;
+        color: #000000;
+        box-sizing: border-box;
     }
     .field-input:focus, .field-select:focus, .field-textarea:focus {
-        border-color: var(--gold);
+        background: #ffffff;
+        border-color: #000000;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
     }
     .submit-btn {
-        background: var(--dark);
+        background: #000000;
         color: white;
         border: none;
         padding: 14px;
         width: 100%;
-        font-family: 'Cinzel', serif;
-        font-size: 0.9rem;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
         letter-spacing: 2px;
         cursor: pointer;
-        transition: 0.3s;
-        border-radius: 6px;
+        transition: all 0.25s ease;
+        border-radius: 8px;
+        text-transform: uppercase;
     }
     .submit-btn:hover {
-        background: var(--gold);
+        background: #222222;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-
+ 
     /* Support Drawer (Glassmorphic) */
     .drawer-overlay {
         position: fixed;
@@ -197,7 +210,7 @@ const styles = `
         font-family: 'Cinzel', serif;
         font-size: 1.1rem;
         font-weight: 700;
-        color: var(--dark);
+        color: #000000;
         letter-spacing: 1px;
     }
     .close-drawer-btn {
@@ -211,7 +224,7 @@ const styles = `
     .close-drawer-btn:hover {
         color: #d32f2f;
     }
-
+ 
     /* Chat Area */
     .chat-messages {
         flex: 1;
@@ -242,14 +255,14 @@ const styles = `
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
     }
     .chat-bubble-wrap.me .chat-bubble {
-        background: var(--dark);
+        background: #000000;
         color: white;
         border-bottom-right-radius: 2px;
     }
     .chat-bubble-wrap.other .chat-bubble {
-        background: white;
-        color: #333;
-        border: 1px solid rgba(0,0,0,0.05);
+        background: rgba(255, 255, 255, 0.9);
+        color: #000000;
+        border: 1px solid rgba(0,0,0,0.06);
         border-bottom-left-radius: 2px;
     }
     .chat-time {
@@ -257,7 +270,7 @@ const styles = `
         color: #aaa;
         margin-top: 4px;
     }
-
+ 
     .chat-input-area {
         padding: 20px;
         border-top: 1px solid rgba(0,0,0,0.06);
@@ -276,10 +289,10 @@ const styles = `
         outline: none;
     }
     .chat-input:focus {
-        border-color: var(--gold);
+        border-color: #000000;
     }
     .send-chat-btn {
-        background: var(--gold);
+        background: #000000;
         color: white;
         border: none;
         width: 38px;
@@ -292,12 +305,12 @@ const styles = `
         transition: 0.2s;
     }
     .send-chat-btn:hover {
-        background: var(--dark);
+        background: #222222;
     }
     
     .spinner {
-        border: 3px solid rgba(197, 160, 89, 0.1);
-        border-top: 3px solid var(--gold);
+        border: 3px solid rgba(0, 0, 0, 0.05);
+        border-top: 3px solid #000000;
         border-radius: 50%;
         width: 30px;
         height: 30px;

@@ -126,15 +126,18 @@ function Navbar() {
                     max-width: 100%;
                     padding: 0 clamp(16px, 3vw, 40px);
                     box-sizing: border-box;
-                    position: relative;
                 }
 
-                /* ── LEFT ITEMS: Clean Title-Case Links ── */
+                /* ── LEFT ITEMS: Logo and nav links ── */
                 .blu-header__left {
                     display: flex;
                     align-items: center;
+                    gap: 32px;
+                }
+                .blu-header__nav-links {
+                    display: flex;
+                    align-items: center;
                     gap: 24px;
-                    flex: 1;
                 }
                 .blu-header__nav-link {
                     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
@@ -150,27 +153,18 @@ function Navbar() {
                     opacity: 0.5;
                 }
 
-                /* ── CENTER: Heavy Bold Streetwear Brand Wordmark ── */
-                .blu-header__center {
-                    position: absolute;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
+                .blu-header__brand-logo {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    pointer-events: auto;
-                }
-                .blu-header__brand-logo {
-                    font-family: 'Montserrat', 'Inter', -apple-system, sans-serif;
-                    font-size: 1.85rem;
-                    font-weight: 900;
-                    letter-spacing: -0.5px;
-                    text-transform: uppercase;
-                    color: #000000;
                     text-decoration: none;
-                    line-height: 1;
                     transition: opacity 0.2s ease;
+                }
+                .blu-header__brand-logo img {
+                    height: 38px;
+                    display: block;
+                    object-fit: contain;
+                    transition: height 0.2s ease;
                 }
                 .blu-header__brand-logo:hover {
                     opacity: 0.85;
@@ -181,7 +175,6 @@ function Navbar() {
                     display: flex;
                     align-items: center;
                     gap: 20px;
-                    justify-self: end;
                 }
 
                 /* Currency Badge (Circular Blue Graphic Badge) */
@@ -211,41 +204,56 @@ function Navbar() {
                 }
                 .blu-currency-popover {
                     position: absolute;
-                    top: calc(100% + 10px);
+                    top: calc(100% + 12px);
                     right: 0;
-                    background: #FFFFFF;
-                    border: 1px solid #EEEEEE;
+                    background: rgba(255, 255, 255, 0.98);
+                    backdrop-filter: blur(16px);
+                    -webkit-backdrop-filter: blur(16px);
+                    border: 1px solid rgba(0, 0, 0, 0.08);
                     box-shadow: 0 16px 40px rgba(0,0,0,0.12);
                     z-index: 2500;
-                    min-width: 210px;
+                    min-width: 240px;
                     max-height: 280px;
                     overflow-y: auto;
-                    border-radius: 8px;
-                    padding: 6px 0;
+                    border-radius: 14px;
+                    padding: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                }
+                .blu-currency-popover::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .blu-currency-popover::-webkit-scrollbar-thumb {
+                    background: rgba(0,0,0,0.1);
+                    border-radius: 4px;
                 }
                 .blu-currency-popover-item {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     width: 100%;
-                    padding: 10px 16px;
+                    padding: 10px 14px;
                     border: none;
                     background: none;
                     cursor: pointer;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-                    font-size: 13px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
+                    font-size: 0.76rem;
                     font-weight: 500;
-                    color: #000000;
+                    color: #444444;
                     text-align: left;
-                    transition: background 0.15s ease;
+                    border-radius: 8px;
+                    transition: all 0.15s ease;
                 }
                 .blu-currency-popover-item:hover {
-                    background: #F5F5F5;
+                    background: rgba(0, 0, 0, 0.04);
+                    color: #000000;
+                    padding-left: 18px;
                 }
                 .blu-currency-popover-item.active {
                     background: #000000;
                     color: #FFFFFF;
-                    font-weight: 700;
+                    font-weight: 600;
                 }
 
                 /* Minimal Stroke Icons */
@@ -311,6 +319,13 @@ function Navbar() {
                     height: 1.5px;
                     background: #000000;
                     border-radius: 1px;
+                    transition: transform 0.25s ease, opacity 0.2s ease;
+                }
+                .blu-menu-pill-btn--open .blu-menu-pill-bar:nth-child(1) {
+                    transform: translateY(3.25px) rotate(45deg);
+                }
+                .blu-menu-pill-btn--open .blu-menu-pill-bar:nth-child(2) {
+                    transform: translateY(-3.25px) rotate(-45deg);
                 }
 
                 /* ── SEARCH MODAL ── */
@@ -378,33 +393,35 @@ function Navbar() {
                 /* ── MOBILE SLIDE-IN DRAWER ── */
                 .blu-drawer-backdrop {
                     position: fixed;
-                    inset: 0;
-                    background: rgba(0,0,0,0.5);
+                    top: 70px;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.4);
                     z-index: 4000;
+                    backdrop-filter: blur(4px);
+                    -webkit-backdrop-filter: blur(4px);
                 }
                 .blu-drawer {
                     position: fixed;
-                    top: 0;
+                    top: 70px;
                     left: 0;
                     bottom: 0;
-                    width: min(340px, 85vw);
+                    width: min(300px, 80vw);
                     background: #FFFFFF;
                     z-index: 4001;
                     display: flex;
                     flex-direction: column;
                     overflow-y: auto;
                     animation: bluSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                    border-right: 1px solid #ECECEC;
                 }
                 @keyframes bluSlide {
                     from { transform: translateX(-100%); }
                     to   { transform: translateX(0); }
                 }
                 .blu-drawer__top {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 20px 24px;
-                    border-bottom: 1px solid #EEEEEE;
+                    display: none;
                 }
                 .blu-drawer__logo-text {
                     font-family: 'Montserrat', sans-serif;
@@ -436,7 +453,7 @@ function Navbar() {
                 }
 
                 @media (max-width: 860px) {
-                    .blu-header__left {
+                    .blu-header__nav-links {
                         display: none;
                     }
                     .blu-header__right {
@@ -451,8 +468,8 @@ function Navbar() {
                     .blu-header__wishlist-btn {
                         display: none;
                     }
-                    .blu-header__brand-logo {
-                        font-size: 1.5rem;
+                    .blu-header__brand-logo img {
+                        height: 30px;
                     }
                 }
             `}</style>
@@ -460,21 +477,19 @@ function Navbar() {
             {/* ── EXACT BLUORNG HEADER ── */}
             <header className={`blu-header${scrolled ? ' blu-header--scrolled' : ''}`}>
                 <div className="blu-header__inner">
-                    {/* LEFT: New in, Collections */}
+                    {/* LEFT: Logo + Nav Links */}
                     <div className="blu-header__left">
-                        <Link to="/products?sort=newest" className="blu-header__nav-link">
-                            New in
-                        </Link>
-                        <Link to="/products" className="blu-header__nav-link">
-                            Collections
-                        </Link>
-                    </div>
-
-                    {/* CENTER: Heavy ASAT wordmark with REVERSED S */}
-                    <div className="blu-header__center">
                         <Link to="/" className="blu-header__brand-logo" aria-label="ASAT Home">
-                            A<span style={{ display: 'inline-block', transform: 'scaleX(-1)', transformOrigin: 'center' }}>S</span>AT
+                            <img src="/logo.png" alt="AS SIMPLE AS THAT" />
                         </Link>
+                        <div className="blu-header__nav-links">
+                            <Link to="/products?sort=newest" className="blu-header__nav-link">
+                                New in
+                            </Link>
+                            <Link to="/products" className="blu-header__nav-link">
+                                Collections
+                            </Link>
+                        </div>
                     </div>
 
                     {/* RIGHT: Complete BLUORNG Icon Sequence */}
@@ -581,7 +596,11 @@ function Navbar() {
                         </button>
 
                         {/* 7. 2-Bar Hamburger Pill Button */}
-                        <button className="blu-menu-pill-btn" onClick={() => setMobileOpen(true)} aria-label="Menu">
+                        <button 
+                            className={`blu-menu-pill-btn${mobileOpen ? ' blu-menu-pill-btn--open' : ''}`} 
+                            onClick={() => setMobileOpen(!mobileOpen)} 
+                            aria-label="Toggle Menu"
+                        >
                             <div className="blu-menu-pill-bar" />
                             <div className="blu-menu-pill-bar" />
                         </button>
@@ -653,7 +672,7 @@ function Navbar() {
                     <nav className="blu-drawer" aria-label="Site navigation">
                         <div className="blu-drawer__top">
                             <span className="blu-drawer__logo-text">
-                                A<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>S</span>AT
+                                <img src="/logo.png" alt="AS SIMPLE AS THAT" style={{ height: '30px', objectFit: 'contain' }} />
                             </span>
                             <button
                                 style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}
@@ -663,27 +682,27 @@ function Navbar() {
                             </button>
                         </div>
                         <div className="blu-drawer__nav">
-                            <Link to="/" className="blu-drawer__item">Home</Link>
-                            <Link to="/products?sort=newest" className="blu-drawer__item">New in</Link>
-                            <Link to="/products" className="blu-drawer__item">Collections</Link>
-                            <Link to="/rankings" className="blu-drawer__item">Designer Rankings</Link>
+                            <Link to="/" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Home</Link>
+                            <Link to="/products?sort=newest" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>New in</Link>
+                            <Link to="/products" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Collections</Link>
+                            <Link to="/rankings" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Designer Rankings</Link>
                             <div className="blu-drawer__sep" />
                             {loggedIn ? (
                                 <>
-                                    <Link to="/profile" className="blu-drawer__item">My Profile</Link>
-                                    <Link to="/orders" className="blu-drawer__item">Orders</Link>
-                                    <Link to="/wishlist" className="blu-drawer__item">Wishlist ({wishlistCount})</Link>
-                                    <Link to="/cart" className="blu-drawer__item">Bag ({cartCount})</Link>
+                                    <Link to="/profile" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>My Profile</Link>
+                                    <Link to="/orders" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Orders</Link>
+                                    <Link to="/wishlist" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Wishlist ({wishlistCount})</Link>
+                                    <Link to="/cart" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Bag ({cartCount})</Link>
                                 </>
                             ) : (
                                 <>
-                                    <Link to="/login" className="blu-drawer__item">Sign In</Link>
-                                    <Link to="/register" className="blu-drawer__item">Create Account</Link>
+                                    <Link to="/login" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Sign In</Link>
+                                    <Link to="/register" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Create Account</Link>
                                 </>
                             )}
                             <div className="blu-drawer__sep" />
-                            <Link to="/terms" className="blu-drawer__item" style={{ fontSize: '13px', color: '#666' }}>Terms & Conditions</Link>
-                            <a href="/designer/register" className="blu-drawer__item" style={{ fontSize: '13px', color: '#000000', fontWeight: '700' }}>Join as Designer</a>
+                            <Link to="/terms" className="blu-drawer__item" style={{ fontSize: '13px', color: '#666' }} onClick={() => setMobileOpen(false)}>Terms & Conditions</Link>
+                            <a href="/designer/register" className="blu-drawer__item" style={{ fontSize: '13px', color: '#000000', fontWeight: '700' }} onClick={() => setMobileOpen(false)}>Join as Designer</a>
                         </div>
                     </nav>
                 </>

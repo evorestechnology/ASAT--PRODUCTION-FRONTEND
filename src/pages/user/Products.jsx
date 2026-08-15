@@ -107,21 +107,75 @@ const extraStyles = `
     font-weight: 600;
   }
 
-  .pcol-sort-select {
-    border: 1px solid var(--border, #E8E5E0);
-    color: var(--fg, #0E0E0E);
-    padding: 7px 12px;
-    border-radius: 2px;
-    font-size: 0.72rem;
+  .pcol-sort-dropdown-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .pcol-sort-btn {
+    border: 1px solid var(--border, #E5E5E5);
+    color: var(--fg, #000000);
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 12px;
+    font-weight: 600;
     font-family: 'Montserrat', sans-serif;
     cursor: pointer;
-    background: white;
+    background: #FFFFFF;
     outline: none;
-    letter-spacing: 0.5px;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .pcol-sort-select:focus { border-color: var(--gold); }
-  .pcol-sort-select option { background: white; color: var(--fg); }
+  .pcol-sort-btn:hover {
+    border-color: #000000;
+  }
+  .pcol-sort-btn i {
+    font-size: 0.65rem;
+    transition: transform 0.2s ease;
+  }
+  .pcol-sort-popover {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 2500;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+    border-radius: 12px;
+    width: 190px;
+    overflow: hidden;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .pcol-sort-popover-item {
+    background: none;
+    border: none;
+    width: 100%;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+    color: #444444;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .pcol-sort-popover-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #000000;
+    padding-left: 18px;
+  }
+  .pcol-sort-popover-item.active {
+    background: #000000;
+    color: #FFFFFF;
+    font-weight: 600;
+  }
 
   /* Price Range Inputs */
   .pcol-price-wrap {
@@ -492,6 +546,18 @@ function Products() {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [launched, setLaunched] = useState(false);
   const gridRef = useRef(null);
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+        setSortOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Sync URL search params to local search term state
   useEffect(() => {
@@ -901,26 +967,32 @@ function Products() {
 
             {/* Right Controls: Sort & Search */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-              <select
-                className="pcol-sort-select"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                style={{
-                  border: '1px solid #E5E5E5',
-                  borderRadius: '24px',
-                  padding: '8px 16px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  background: '#FFFFFF',
-                  color: '#000000'
-                }}
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
+              <div className="pcol-sort-dropdown-wrap" ref={sortDropdownRef}>
+                <button
+                  className="pcol-sort-btn"
+                  onClick={() => setSortOpen(!sortOpen)}
+                  aria-label="Sort products"
+                >
+                  <span>{SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'Sort'}</span>
+                  <i className={`fas fa-chevron-down${sortOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
+                </button>
+                {sortOpen && (
+                  <div className="pcol-sort-popover">
+                    {SORT_OPTIONS.map((o) => (
+                      <button
+                        key={o.value}
+                        className={`pcol-sort-popover-item${sortBy === o.value ? ' active' : ''}`}
+                        onClick={() => {
+                          setSortBy(o.value);
+                          setSortOpen(false);
+                        }}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <input

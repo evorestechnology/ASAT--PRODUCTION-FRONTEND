@@ -29,13 +29,22 @@ function DesignerHeader() {
 
     return (
         <header className="dsn-header">
-            {/* Top bar: logo center, profile right */}
-            <div className="dsn-header__top">
-                <div className="dsn-header__brand" onClick={() => navigate('/designer')}>
-                    <span className="dsn-header__logo">As Simple as That</span>
-                    <span className="dsn-header__tagline">**A Designer Paradise**</span>
+            <div className="dsn-header__inner">
+                <div className="dsn-header__left" onClick={() => navigate('/designer')}>
+                    <img src="/logo.png" alt="AS SIMPLE AS THAT" className="dsn-header__logo-img" />
                 </div>
-                <div className="dsn-header__actions">
+
+                <nav className={`dsn-header__nav ${mobileOpen ? 'dsn-header__nav--open' : ''}`}>
+                    {navLinks.map(l => (
+                        <NavLink key={l.to} to={l.to} end={l.end}
+                            className={({ isActive }) => `dsn-header__link ${isActive ? 'dsn-header__link--active' : ''}`}
+                            onClick={() => setMobileOpen(false)}>
+                            <span>{l.label}</span>
+                        </NavLink>
+                    ))}
+                </nav>
+
+                <div className="dsn-header__right">
                     <div className="dsn-header__profile" ref={profileRef}>
                         <button className="dsn-header__avatar" onClick={() => setProfileOpen(p => !p)}>
                             <i className="far fa-user-circle"></i>
@@ -66,18 +75,6 @@ function DesignerHeader() {
                     </button>
                 </div>
             </div>
-
-            {/* Bottom bar: navigation */}
-            <nav className={`dsn-header__nav ${mobileOpen ? 'dsn-header__nav--open' : ''}`}>
-                {navLinks.map(l => (
-                    <NavLink key={l.to} to={l.to} end={l.end}
-                        className={({ isActive }) => `dsn-header__link ${isActive ? 'dsn-header__link--active' : ''}`}
-                        onClick={() => setMobileOpen(false)}>
-                        <i className={l.icon}></i>
-                        <span>{l.label}</span>
-                    </NavLink>
-                ))}
-            </nav>
         </header>
     );
 }

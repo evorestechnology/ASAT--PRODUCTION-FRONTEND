@@ -4,27 +4,7 @@ import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
 
-const styles = `
-    body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
-    main { flex: 1; padding: 40px 5%; }
-    .analytics-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
-    .metric-card { background: var(--dark); color: white; padding: 25px; text-align: center; border-bottom: 3px solid var(--gold); }
-    .metric-card h3 { font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 10px; color: #aaa; text-transform: uppercase; }
-    .metric-value { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--gold); }
-    .charts-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 40px; }
-    .chart-box { background: white; border: 1px solid #eee; padding: 30px; height: 400px; display: flex; flex-direction: column; }
-    .chart-title { font-family: 'Cinzel', serif; margin-bottom: 20px; font-size: 1.1rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; text-transform: uppercase; }
-    .chart-container { flex: 1; position: relative; min-height: 0; }
-    
-    @media (max-width: 900px) {
-        .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-        .charts-section { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 480px) {
-        .metrics-grid { grid-template-columns: 1fr; }
-    }
-`;
+
 
 function DesignerAnalytics() {
     const navigate = useNavigate();
@@ -243,16 +223,14 @@ function DesignerAnalytics() {
 
     return (
         <>
-            <style>{styles}</style>
-
-            <main>
+            <main className="dsn-analytics">
                 <BackButton />
                 <div className="analytics-header">
-                    <h2 style={{ fontFamily: "'Cinzel', serif", margin: 0 }}>PERFORMANCE ANALYTICS</h2>
+                    <h2>Performance Analytics</h2>
                     <div>
-                        <span style={{ fontWeight: 'bold', fontSize: '0.8rem', marginRight: '8px' }}>PERIOD:</span>
+                        <span style={{ fontWeight: 'bold', fontSize: '0.75rem', marginRight: '8px', fontFamily: 'Montserrat', letterSpacing: '1px' }}>PERIOD:</span>
                         <select 
-                            style={{ padding: '8px', border: '1px solid var(--gold)', outline: 'none', fontFamily: "'Montserrat'" }}
+                            style={{ padding: '10px 16px', border: '1px solid rgba(0, 0, 0, 0.1)', background: 'rgba(255, 255, 255, 0.45)', borderRadius: '8px', outline: 'none', fontFamily: "'Montserrat'", fontSize: '0.85rem', fontWeight: 600 }}
                             value={period}
                             onChange={e => setPeriod(e.target.value)}
                         >
