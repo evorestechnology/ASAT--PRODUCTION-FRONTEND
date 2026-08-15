@@ -930,9 +930,14 @@ function DesignerUpload() {
                                                             <div>
                                                                 <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Available Sizes</div>
                                                                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                                                    {prod.sizes.map(s => (
-                                                                        <span key={s} style={{ padding: '3px 12px', background: '#ffffff', border: '1px solid #ddd', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600, color: 'var(--dark)' }}>{s}</span>
-                                                                    ))}
+                                                                    {prod.sizes.map(s => {
+                                                                         const sizeName = typeof s === 'object' && s !== null ? s.size : s;
+                                                                         const isAvailable = typeof s === 'object' && s !== null ? (s.available !== false) : true;
+                                                                         if (!isAvailable) return null;
+                                                                         return (
+                                                                             <span key={sizeName} style={{ padding: '3px 12px', background: '#ffffff', border: '1px solid #ddd', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600, color: 'var(--dark)' }}>{sizeName}</span>
+                                                                         );
+                                                                     })}
                                                                 </div>
                                                             </div>
                                                         )}

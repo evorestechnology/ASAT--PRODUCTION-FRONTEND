@@ -183,7 +183,8 @@ export default function MfgDesignDetail() {
             : [];
     
     // Size list
-    const sizeList = design.sizes || (baseProduct ? baseProduct.sizes : []) || [];
+    const rawSizeList = design.sizes || (baseProduct ? baseProduct.sizes : []) || [];
+    const sizeList = rawSizeList.map(sz => typeof sz === 'object' && sz !== null ? sz.size : sz).filter(Boolean);
 
     const totalPrintingPrice = activePlacements.reduce((sum, p) => sum + resolvePlacementCost(p), 0);
     const packingCost = financeRules?.general?.packing_cost ?? 50;
