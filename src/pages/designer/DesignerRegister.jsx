@@ -4,9 +4,9 @@ import { supabase } from '../../supabase';
 import { apiFetch, setAuthToken, uploadFile } from '../../api';
 
 const authImages = [
-    'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1550246140-5119ae4790b8?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1000&q=80',
+    '/images/fashion1.png',
+    '/images/fashion2.png',
+    '/images/fashion3.png',
 ];
 
 const COUNTRY_CODES = ['+91 India','+1 USA','+44 UK','+971 UAE','+61 Australia','+81 Japan','+49 Germany','+33 France','+86 China','+55 Brazil','+27 South Africa','+82 South Korea'];

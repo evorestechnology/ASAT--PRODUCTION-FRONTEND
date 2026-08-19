@@ -61,18 +61,16 @@ function PopupModal() {
                     from { transform: scale(0.92); opacity: 0; }
                     to { transform: scale(1); opacity: 1; }
                 }
-                .popup-badge {
-                    display: inline-block;
-                    background: #000000;
-                    color: #FFFFFF;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-                    font-size: 0.65rem;
-                    font-weight: 800;
-                    letter-spacing: 1.5px;
-                    text-transform: uppercase;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    margin-bottom: 20px;
+                .popup-logo-wrap {
+                    margin-bottom: 24px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+                .popup-logo-img {
+                    max-height: 38px;
+                    width: auto;
+                    object-fit: contain;
                 }
                 .popup-close-btn {
                     position: absolute;
@@ -80,10 +78,11 @@ function PopupModal() {
                     right: 18px;
                     width: 32px;
                     height: 32px;
-                    border-radius: 50%;
-                    background: #F5F5F5;
-                    border: none;
+                    border-radius: 4px;
+                    background: #FFFFFF;
+                    border: 2px solid #000000;
                     font-size: 0.85rem;
+                    font-weight: bold;
                     color: #000000;
                     cursor: pointer;
                     display: flex;
@@ -155,14 +154,14 @@ function PopupModal() {
             `}</style>
             <div className="popup-modal">
                 <button className="popup-close-btn" onClick={closeModal} aria-label="Close popup">&#x2715;</button>
-                <div className="popup-badge">
-                    A<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>S</span>AT • ATELIER
+                <div className="popup-logo-wrap">
+                    <img src="/dp-logo.png" alt="ASAT Designer Paradise" className="popup-logo-img" />
                 </div>
                 <h2 className="popup-title" id="popup-title">
-                    Welcome to Designers Paradise 🌟
+                    Welcome to<br />Designer Paradise
                 </h2>
                 <div className="popup-greeting">
-                    Hey Drippy 👀,
+                    Hey Drippy,
                 </div>
                 <p className="popup-body">
                     For the best experience, switch to a larger screen and explore the full collection.

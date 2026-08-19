@@ -18,6 +18,30 @@ function Navbar() {
     const [wishlistCount, setWishlistCount] = useState(0);
     const [navSearchTerm, setNavSearchTerm] = useState('');
     const [scrolled, setScrolled]           = useState(false);
+    const [popularTags, setPopularTags]     = useState(['Oversized Tees', 'French Terry Hoodies', 'Acid Wash', 'Caps']);
+
+    /* ── Fetch popular searches dynamically ── */
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/categories');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                        const active = data
+                            .filter(c => c.status === 'active' || c.status === undefined)
+                            .map(c => c.name);
+                        if (active.length > 0) {
+                            setPopularTags(active.slice(0, 4));
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to fetch dynamic popular searches:', err);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const profilePopupRef     = useRef(null);
     const profileBtnRef       = useRef(null);
@@ -87,7 +111,8 @@ function Navbar() {
         }
     };
 
-    const currencySymbol = ((globalCurrencies && globalCurrencies[currency]) || SUPPORTED_CURRENCIES[currency] || SUPPORTED_CURRENCIES['INR']).symbol.trim();
+    const rawCurrencySymbol = ((globalCurrencies && globalCurrencies[currency]) || SUPPORTED_CURRENCIES[currency] || SUPPORTED_CURRENCIES['INR']).symbol.trim();
+    const currencySymbol = (rawCurrencySymbol.toLowerCase() === 'rs' || currency === 'INR') ? '₹' : rawCurrencySymbol;
 
     return (
         <>
@@ -377,7 +402,7 @@ function Navbar() {
                 .blu-search-dismiss {
                     position: absolute;
                     top: 20px;
-                    right: 24px;
+                    left: 24px;
                     background: #FFFFFF;
                     border: none;
                     width: 40px;
@@ -388,6 +413,8 @@ function Navbar() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    color: #000000;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 }
 
                 /* ── MOBILE SLIDE-IN DRAWER ── */
@@ -484,10 +511,16 @@ function Navbar() {
                         </Link>
                         <div className="blu-header__nav-links">
                             <Link to="/products?sort=newest" className="blu-header__nav-link">
-                                New in
+                                Latest
                             </Link>
                             <Link to="/products" className="blu-header__nav-link">
-                                Collections
+                                Best Sellers
+                            </Link>
+                            <Link to="/products" className="blu-header__nav-link">
+                                Explore Collections
+                            </Link>
+                            <Link to="/rankings" className="blu-header__nav-link">
+                                Designer Rankings
                             </Link>
                         </div>
                     </div>
@@ -508,6 +541,7 @@ function Navbar() {
                                 <div className="blu-currency-popover">
                                     {(activeCurrencies || Object.keys(SUPPORTED_CURRENCIES)).map((code) => {
                                         const c = (globalCurrencies && globalCurrencies[code]) || SUPPORTED_CURRENCIES[code] || SUPPORTED_CURRENCIES['INR'];
+                                        const symbolToShow = (c.symbol.trim().toLowerCase() === 'rs' || code === 'INR') ? '₹' : c.symbol.trim();
                                         return (
                                             <button
                                                 key={code}
@@ -515,7 +549,7 @@ function Navbar() {
                                                 onClick={() => { setCurrency(code); setCurrencyOpen(false); }}
                                             >
                                                 <span>{code} ({c.name})</span>
-                                                <span style={{ fontWeight: '700' }}>{c.symbol.trim()}</span>
+                                                <span style={{ fontWeight: '700' }}>{symbolToShow}</span>
                                             </button>
                                         );
                                     })}
@@ -577,24 +611,6 @@ function Navbar() {
                             )}
                         </div>
 
-                        {/* 5. Wishlist Ribbon Icon */}
-                        <button className="blu-icon-btn blu-header__wishlist-btn" onClick={() => navigate('/wishlist')} aria-label="Wishlist">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                            {wishlistCount > 0 && <span className="blu-icon-count">{wishlistCount}</span>}
-                        </button>
-
-                        {/* 6. Shopping Bag Icon */}
-                        <button className="blu-icon-btn" onClick={() => navigate('/cart')} aria-label="Shopping Bag">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                                <line x1="3" y1="6" x2="21" y2="6"></line>
-                                <path d="M16 10a4 4 0 0 1-8 0"></path>
-                            </svg>
-                            {cartCount > 0 && <span className="blu-icon-count">{cartCount}</span>}
-                        </button>
-
                         {/* 7. 2-Bar Hamburger Pill Button */}
                         <button 
                             className={`blu-menu-pill-btn${mobileOpen ? ' blu-menu-pill-btn--open' : ''}`} 
@@ -611,6 +627,14 @@ function Navbar() {
 
             {searchOpen && (
                 <div className="blu-search-modal-backdrop" role="dialog" aria-modal="true" onClick={() => setSearchOpen(false)}>
+                    <button
+                        type="button"
+                        className="blu-search-dismiss"
+                        onClick={() => setSearchOpen(false)}
+                        aria-label="Close search"
+                    >
+                        ✕
+                    </button>
                     <div className="blu-search-container" onClick={(e) => e.stopPropagation()}>
                         <form className="blu-search-inner" onSubmit={handleSearchSubmit}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#777777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '20px', flexShrink: 0 }}>
@@ -637,7 +661,7 @@ function Navbar() {
 
                         <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Popular:</span>
-                            {['Oversized Tees', 'French Terry Hoodies', 'Acid Wash', 'Caps', 'Heavyweight Drops'].map((tag) => (
+                            {popularTags.map((tag) => (
                                 <button
                                     key={tag}
                                     type="button"
@@ -683,25 +707,56 @@ function Navbar() {
                         </div>
                         <div className="blu-drawer__nav">
                             <Link to="/" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Home</Link>
-                            <Link to="/products?sort=newest" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>New in</Link>
-                            <Link to="/products" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Collections</Link>
+                            <Link to="/products?sort=newest" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Latest</Link>
+                            <Link to="/products" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Best Sellers</Link>
+                            <Link to="/products" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Explore Collections</Link>
                             <Link to="/rankings" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Designer Rankings</Link>
                             <div className="blu-drawer__sep" />
-                            {loggedIn ? (
+                            <Link to="/wishlist" className="blu-drawer__item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setMobileOpen(false)}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>
+                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Saved {wishlistCount > 0 && `(${wishlistCount})`}
+                            </Link>
+                            <Link to="/cart" className="blu-drawer__item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setMobileOpen(false)}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                Bag {cartCount > 0 && `(${cartCount})`}
+                            </Link>
+                            <div className="blu-drawer__sep" />
+                            {loggedIn && (
                                 <>
                                     <Link to="/profile" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>My Profile</Link>
                                     <Link to="/orders" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Orders</Link>
-                                    <Link to="/wishlist" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Wishlist ({wishlistCount})</Link>
-                                    <Link to="/cart" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Bag ({cartCount})</Link>
-                                </>
-                            ) : (
-                                <>
-                                    <Link to="/login" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Sign In</Link>
-                                    <Link to="/register" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Create Account</Link>
+                                    <Link to="/profile" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Reset Password</Link>
+                                    <div className="blu-drawer__sep" />
                                 </>
                             )}
-                            <div className="blu-drawer__sep" />
-                            <Link to="/terms" className="blu-drawer__item" style={{ fontSize: '13px', color: '#666' }} onClick={() => setMobileOpen(false)}>Terms & Conditions</Link>
+                            <Link 
+                                to="/terms" 
+                                className="blu-drawer__item" 
+                                style={{ 
+                                    fontSize: '12px', 
+                                    color: '#C5A059', 
+                                    fontWeight: '700', 
+                                    border: '1px solid #C5A059', 
+                                    borderRadius: '8px', 
+                                    padding: '10px 16px', 
+                                    textAlign: 'center', 
+                                    margin: '12px 0 8px 0', 
+                                    display: 'block',
+                                    background: '#111111',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px',
+                                    textDecoration: 'none'
+                                }} 
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                Terms & Conditions
+                            </Link>
                             <a href="/designer/register" className="blu-drawer__item" style={{ fontSize: '13px', color: '#000000', fontWeight: '700' }} onClick={() => setMobileOpen(false)}>Join as Designer</a>
                         </div>
                     </nav>

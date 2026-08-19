@@ -124,7 +124,16 @@ function ProfileDropdown({ onClose }) {
                     {role === 'designer' ? 'Creator Atelier' : role === 'admin' ? 'Master Admin' : role === 'mfg' ? 'Manufacturer' : 'Member'}
                 </span>
                 <div className="blu-profile-menu__user-name">
-                    {user?.user_metadata?.full_name || user?.email || 'My Account'}
+                    {(() => {
+                        try {
+                            const local = localStorage.getItem('asat_user');
+                            if (local) {
+                                const parsed = JSON.parse(local);
+                                if (parsed.fullName) return parsed.fullName;
+                            }
+                        } catch (e) {}
+                        return user?.user_metadata?.full_name || user?.email || 'My Account';
+                    })()}
                 </div>
             </div>
 
@@ -165,8 +174,6 @@ function ProfileDropdown({ onClose }) {
                     <i className="fas fa-headset" /> Support Center
                 </Link>
             )}
-
-            <div className="blu-profile-menu__divider" />
 
             <Link to="/terms" className="blu-profile-menu__item" onClick={onClose}>
                 <i className="fas fa-file-alt" /> Terms &amp; Policies

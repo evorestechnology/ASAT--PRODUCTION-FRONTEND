@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { apiFetch } from '../api';
 import TermsModal from './TermsModal';
+import CustomDatePicker from './CustomDatePicker';
 
 const authImages = [
-    'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80',
+    '/images/fashion1.png',
+    '/images/fashion2.png',
+    '/images/fashion3.png',
 ];
 
 const styles = `
@@ -248,6 +249,9 @@ function UserRegister() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
+    const [countryCode, setCountryCode] = useState('+91');
+    const [mobileNumber, setMobileNumber] = useState('');
+    const [dob, setDob] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [getUpdates, setGetUpdates] = useState(false);
@@ -278,13 +282,16 @@ function UserRegister() {
         }
         setLoading(true);
         try {
-            // First call our backend register to bypass email rate limits
+             // First call our backend register to bypass email rate limits
             const res = await apiFetch('/api/users/register', {
                 method: 'POST',
                 body: JSON.stringify({
                     fullName,
                     email,
-                    password
+                    password,
+                    countryCode,
+                    mobileNumber,
+                    dob
                 })
             });
 
@@ -295,11 +302,23 @@ function UserRegister() {
             });
             if (signInError) throw signInError;
 
-            localStorage.setItem('asat_user', JSON.stringify({ fullName, email }));
+            localStorage.setItem('asat_user', JSON.stringify({ fullName, email, countryCode, mobileNumber, dob }));
             navigate('/', { state: { welcomeMessage: `Welcome to ASAT, ${fullName}! Your account has been created successfully.` } });
         } catch (err) {
             console.error('Registration failed:', err);
-            setError(err.message || 'Registration failed. Please try again.');
+            let errMsg = 'Registration failed. Please try again.';
+            if (err) {
+                if (typeof err === 'string') errMsg = err;
+                else if (err.error && typeof err.error === 'string') errMsg = err.error;
+                else if (err.message && typeof err.message === 'string') errMsg = err.message;
+                else if (err.errors) errMsg = Object.values(err.errors).join(', ');
+                else {
+                    try {
+                        errMsg = JSON.stringify(err);
+                    } catch (_) {}
+                }
+            }
+            setError(errMsg);
         } finally {
             setLoading(false);
         }
@@ -336,7 +355,7 @@ function UserRegister() {
 
                 <div className="auth-form-container">
                     <h2 className="auth-title">Create Account</h2>
-                    <p className="auth-subtitle">Join the independent designer community.</p>
+                    <p className="auth-subtitle">Join and purchase your elite collection.</p>
                     
                     <form onSubmit={handleSubmit}>
                         <div className="auth-input-group">
@@ -360,6 +379,39 @@ function UserRegister() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
+                            />
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: '12px', marginBottom: '18px' }}>
+                            <div style={{ width: '30%' }}>
+                                <label style={{ display: 'block', fontSize: '0.72rem', letterSpacing: '1px', color: '#000000', marginBottom: '8px', textTransform: 'uppercase', fontWeight: '700' }}>Code</label>
+                                <input
+                                    type="text"
+                                    className="auth-input"
+                                    required
+                                    value={countryCode}
+                                    onChange={(e) => setCountryCode(e.target.value)}
+                                    placeholder="+91"
+                                />
+                            </div>
+                            <div style={{ width: '70%' }}>
+                                <label style={{ display: 'block', fontSize: '0.72rem', letterSpacing: '1px', color: '#000000', marginBottom: '8px', textTransform: 'uppercase', fontWeight: '700' }}>Mobile Number</label>
+                                <input
+                                    type="tel"
+                                    className="auth-input"
+                                    required
+                                    value={mobileNumber}
+                                    onChange={(e) => setMobileNumber(e.target.value)}
+                                    placeholder="Enter mobile number"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="auth-input-group">
+                            <label>Date of Birth</label>
+                            <CustomDatePicker
+                                value={dob}
+                                onChange={setDob}
                             />
                         </div>
                         

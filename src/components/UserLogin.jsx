@@ -4,9 +4,9 @@ import { supabase } from '../supabase';
 import { apiFetch, setAuthToken } from '../api';
 
 const authImages = [
-    'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80',
+    '/images/fashion1.png',
+    '/images/fashion2.png',
+    '/images/fashion3.png',
 ];
 
 const styles = `
@@ -679,11 +679,11 @@ function UserLogin() {
             <ForgotPasswordPanel isOpen={showForgotPanel} onClose={() => setShowForgotPanel(false)} />
 
             <div className="auth-form-side">
-                <Link to="/" className="auth-back-home"><span>←</span> BACK TO HOME</Link>
+                
 
                 <div className="auth-form-container">
                     <h2 className="auth-title">Welcome Back</h2>
-                    <p className="auth-subtitle">Sign in to access your elite collection.</p>
+                    <p className="auth-subtitle">login and purchase your elite collection.</p>
 
                     {location.state?.message && (
                         <div style={{ background: 'rgba(197,160,89,0.08)', borderLeft: '3px solid var(--gold)', color: 'var(--dark)', padding: '12px 16px', fontSize: '0.8rem', fontFamily: 'Montserrat,sans-serif', marginBottom: '25px', letterSpacing: '0.5px', lineHeight: '1.4', display: 'flex', alignItems: 'center', gap: '10px' }}>

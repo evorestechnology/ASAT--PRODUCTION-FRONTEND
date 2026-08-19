@@ -266,7 +266,11 @@ export function CurrencyProvider({ children }) {
     // 2. Format converted representation
     const rate = rates[currency] || FALLBACK_RATES[currency] || 1;
     const convertedAmount = amount * rate;
-    const info = globalCurrencies[currency] || { symbol: currency + ' ', decimals: 2, locale: 'en-US' };
+    const infoRaw = globalCurrencies[currency] || { symbol: currency + ' ', decimals: 2, locale: 'en-US' };
+    const info = {
+      ...infoRaw,
+      symbol: (infoRaw.symbol && (infoRaw.symbol.trim().toLowerCase() === 'rs' || currency === 'INR')) ? '₹' : infoRaw.symbol
+    };
 
     const formattedConverted = info.symbol + convertedAmount.toLocaleString(info.locale || 'en-US', {
       minimumFractionDigits: info.decimals !== undefined ? info.decimals : 2,

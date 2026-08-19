@@ -387,9 +387,8 @@ function DesignerRankings() {
             <style>{styles}</style>
             <div className="rnk-page">
                 <div className="rnk-hero">
-                    <BackButton />
                     <h1>CREATOR RANKINGS</h1>
-                    <p>The visionary designers shaping the future of elite custom streetwear &amp; luxury catalog aesthetics.</p>
+                    <p>lookout the designers shaping the future of global fashion</p>
                 </div>
 
                 <div className="rnk-container">
@@ -420,12 +419,11 @@ function DesignerRankings() {
                                                 <span className="rnk-podium-medal">{medal}</span>
                                                 <div className="rnk-avatar-wrap">
                                                     <img className="rnk-avatar" src={p.avatar} alt={p.fullName} />
-                                                    <span className="rnk-badge">{p.badge}</span>
                                                 </div>
                                                 <h3 className="rnk-podium-name">{p.fullName}</h3>
                                                 <span className="rnk-podium-handle">@{p.username}</span>
                                                 
-                                                <span className="rnk-podium-score-label">Rank Points</span>
+                                                <span className="rnk-podium-score-label">Points</span>
                                                 <span className="rnk-podium-score">{p.score.toLocaleString()} pts</span>
                                             </div>
                                         );
@@ -458,9 +456,7 @@ function DesignerRankings() {
                                             <th>Rank</th>
                                             <th>Designer</th>
                                             <th>Country</th>
-                                            <th>Rank Badge</th>
-                                            <th>Rank Points</th>
-                                            <th>Showcase</th>
+                                            <th>Points</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -477,17 +473,13 @@ function DesignerRankings() {
                                                     </div>
                                                 </td>
                                                 <td>{d.country}</td>
-                                                <td className="rnk-table-badge">{d.badge}</td>
                                                 <td className="rnk-table-score">{d.score.toLocaleString()} pts</td>
-                                                <td>
-                                                    <button className="rnk-view-btn">View Profile</button>
-                                                </td>
                                             </tr>
                                         ))}
 
                                         {filtered.length === 0 && (
                                             <tr>
-                                                <td colSpan="6" className="rnk-empty">
+                                                <td colSpan="4" className="rnk-empty">
                                                     <i className="fas fa-search"></i>
                                                     <p>No designers found matching your search.</p>
                                                 </td>

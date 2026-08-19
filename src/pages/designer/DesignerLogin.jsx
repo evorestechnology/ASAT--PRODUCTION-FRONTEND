@@ -5,9 +5,9 @@ import { apiFetch, setAuthToken } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
 const authImages = [
-    'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1000&q=80',
+    '/images/fashion1.png',
+    '/images/fashion2.png',
+    '/images/fashion3.png',
 ];
 
 const styles = `

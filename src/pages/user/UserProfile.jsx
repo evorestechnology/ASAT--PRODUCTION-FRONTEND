@@ -4,6 +4,7 @@ import { supabase } from '../../supabase';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import BackButton from '../../components/BackButton';
+import CustomDatePicker from '../../components/CustomDatePicker';
 
 const styles = `
     body { display: flex; flex-direction: column; min-height: 100vh; }
@@ -49,6 +50,33 @@ const styles = `
         .container { padding: 18px 14px; }
         .form-group input { padding: 10px; font-size: 16px; }
     }
+    .date-input-wrapper {
+        position: relative;
+        width: 100%;
+    }
+    .date-input-wrapper::after {
+        content: '\\f133';
+        font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', sans-serif;
+        font-weight: 900;
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888888;
+        pointer-events: none;
+        font-size: 1.1rem;
+    }
+    .date-input-wrapper input[type="date"] {
+        background: #FFFFFF;
+        border: 1px solid #ddd;
+        padding: 12px 16px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        color: #000000;
+        outline: none;
+        box-sizing: border-box;
+    }
 `;
 
 
@@ -57,7 +85,11 @@ function UserProfile() {
     const { user } = useAuth();
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
-    const [contact, setContact] = useState('');
+    const [countryCode, setCountryCode] = useState('');
+    const [mobileNumber, setMobileNumber] = useState('');
+    const [dob, setDob] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
 
@@ -69,12 +101,23 @@ function UserProfile() {
             try {
                 setEmail(user.email || '');
                 setFullName(user.user_metadata?.full_name || '');
+                setCountryCode(user.user_metadata?.country_code || '');
+                setMobileNumber(user.user_metadata?.phone || '');
+                setDob(user.user_metadata?.dob || '');
 
                 const data = await apiFetch('/api/users/me');
 
                 if (data) {
                     setFullName(data.full_name || user.user_metadata?.full_name || '');
-                    setContact(data.phone || '');
+                    if (data.phone) {
+                        const parts = data.phone.split(' ');
+                        if (parts.length > 1) {
+                            setCountryCode(parts[0]);
+                            setMobileNumber(parts.slice(1).join(' '));
+                        } else {
+                            setMobileNumber(data.phone);
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('Failed to load user profile:', err);
@@ -93,48 +136,65 @@ function UserProfile() {
 
         setToast(null);
         try {
-            // 1. Update Auth Profile metadata
-            if (fullName !== user.user_metadata?.full_name) {
-                await supabase.auth.updateUser({
-                    data: { full_name: fullName }
+            // Optional direct password change
+            if (newPassword) {
+                if (newPassword.length < 6) {
+                    throw new Error('New password must be at least 6 characters long.');
+                }
+                if (newPassword !== confirmNewPassword) {
+                    throw new Error('New passwords do not match.');
+                }
+                const { error: passError } = await supabase.auth.updateUser({
+                    password: newPassword
                 });
+                if (passError) throw passError;
             }
 
+            // 1. Update Auth Profile metadata
+            await supabase.auth.updateUser({
+                data: {
+                    full_name: fullName,
+                    country_code: countryCode,
+                    phone: mobileNumber,
+                    dob: dob
+                }
+            });
+
             // 2. Update PostgreSQL users table
+            const contactString = (countryCode && mobileNumber) ? `${countryCode} ${mobileNumber}` : (mobileNumber || '');
             await apiFetch('/api/users/me', {
                 method: 'PUT',
                 body: JSON.stringify({
                     full_name: fullName,
-                    phone: contact
+                    phone: contactString,
+                    countryCode,
+                    dob
                 })
             });
 
             // Update localStorage & dispatch event to update Navbar greeting dynamically
-            localStorage.setItem('asat_user', JSON.stringify({ fullName, email }));
+            localStorage.setItem('asat_user', JSON.stringify({ fullName, email, countryCode, mobileNumber, dob }));
             window.dispatchEvent(new Event('storage'));
             window.dispatchEvent(new Event('user_profile_updated'));
 
             setToast({ type: 'success', msg: 'Account updated successfully!' });
+            setNewPassword('');
+            setConfirmNewPassword('');
             setTimeout(() => setToast(null), 3000);
         } catch (err) {
             console.error('Error updating profile:', err);
-            setToast({ type: 'error', msg: 'Failed to update account: ' + err.message });
-        }
-    };
-
-    const handlePasswordReset = async () => {
-        setToast(null);
-        if (!email) return;
-        try {
-            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`,
-            });
-            if (resetError) throw resetError;
-            setToast({ type: 'success', msg: `Password reset email sent to ${email}!` });
-            setTimeout(() => setToast(null), 3000);
-        } catch (err) {
-            console.error('Error resetting password:', err);
-            setToast({ type: 'error', msg: 'Failed to send password reset: ' + err.message });
+            let errMsg = 'Failed to update account.';
+            if (err) {
+                if (typeof err === 'string') errMsg = err;
+                else if (err.error && typeof err.error === 'string') errMsg = err.error;
+                else if (err.message && typeof err.message === 'string') errMsg = err.message;
+                else {
+                    try {
+                        errMsg = JSON.stringify(err);
+                    } catch (_) {}
+                }
+            }
+            setToast({ type: 'error', msg: errMsg });
         }
     };
 
@@ -154,7 +214,6 @@ function UserProfile() {
 
             <main style={{ flex: 1, padding: '10px 0', minHeight: '80vh', background: 'var(--bg, #FAFAF8)' }}>
                 <div className="container">
-                    <BackButton />
                     <h2 style={{ fontFamily: "'Cormorant Garamond', 'Cinzel', serif", textAlign: 'center', marginBottom: '30px' }}>ACCOUNT SETTINGS</h2>
                 
                 {toast && (
@@ -174,11 +233,52 @@ function UserProfile() {
                     </div>
                     <div className="form-group full-width">
                         <label>Contact Number</label>
-                        <input type="text" placeholder="+1..." value={contact} onChange={(e) => setContact(e.target.value)} />
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <input 
+                                type="text" 
+                                placeholder="+91" 
+                                value={countryCode} 
+                                onChange={(e) => setCountryCode(e.target.value)} 
+                                style={{ width: '100px' }} 
+                                required
+                            />
+                            <input 
+                                type="tel" 
+                                placeholder="Enter mobile number" 
+                                value={mobileNumber} 
+                                onChange={(e) => setMobileNumber(e.target.value)} 
+                                style={{ flex: 1 }} 
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="form-group full-width">
+                        <label>Date of Birth</label>
+                        <CustomDatePicker
+                            value={dob}
+                            onChange={setDob}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>New Password (Optional)</label>
+                        <input 
+                            type="password" 
+                            placeholder="Enter new password" 
+                            value={newPassword} 
+                            onChange={(e) => setNewPassword(e.target.value)} 
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Confirm New Password</label>
+                        <input 
+                            type="password" 
+                            placeholder="Confirm new password" 
+                            value={confirmNewPassword} 
+                            onChange={(e) => setConfirmNewPassword(e.target.value)} 
+                        />
                     </div>
                     <div className="profile-actions">
                         <button type="submit" className="cta-gold">UPDATE ACCOUNT</button>
-                        <button type="button" className="cta-gold" style={{ background: '#3a3a3c', color: '#fff', borderColor: '#3a3a3c' }} onClick={handlePasswordReset}>RESET PASSWORD</button>
                     </div>
                 </form>
             </div>

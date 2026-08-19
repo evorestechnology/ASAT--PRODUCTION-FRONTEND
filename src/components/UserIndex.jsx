@@ -9,22 +9,22 @@ import PopupModal from './PopupModal';
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const heroSlides = [
   {
-    image: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=1600&q=80',
+    image: '/images/banner_images/1.png',
     title: 'Drop 001', subtitle: 'Elevated basics for the everyday',
     cta: 'Shop Essentials', tag: 'NEW SEASON',
   },
   {
-    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1600&q=80',
+    image: '/images/banner_images/2.png',
     title: 'The Hoodie Edit', subtitle: 'Heavyweight fleece, tailored fits',
     cta: 'Explore Hoodies', tag: 'TRENDING',
   },
   {
-    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1600&q=80',
+    image: '/images/banner_images/3.png',
     title: 'Street Royalty', subtitle: 'Bold prints, bolder statements',
     cta: 'View Collection', tag: 'EXCLUSIVE',
   },
   {
-    image: 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?auto=format&fit=crop&w=1600&q=80',
+    image: '/images/banner_images/4.png',
     title: 'Kids Collection', subtitle: 'Mini style, maximum attitude',
     cta: 'Shop Kids', tag: 'JUST DROPPED',
   },
@@ -619,7 +619,7 @@ export default function UserIndex() {
               {marqueeItems.map((item, j) => (
                 <span key={j}>
                   {item}
-                  <span style={{ margin: '0 24px', color: 'var(--gold)', opacity: 0.5, fontWeight: 300 }}>◆</span>
+                  <span style={{ margin: '0 24px', opacity: 0.5, fontWeight: 300 }}>◆</span>
                 </span>
               ))}
             </span>
@@ -718,7 +718,7 @@ export default function UserIndex() {
       </Section>
 
       {/* â”â”â” 6 Â· BESTSELLERS â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
-      <Section id="bestsellers" label="Most Loved" title="Bestsellers" dark>
+      <Section id="bestsellers" label="Most Loved" title="Best Sellers" dark>
         <ScrollRow
           items={bestsellers}
           loading={loadingBestsellers}
@@ -787,7 +787,7 @@ export default function UserIndex() {
           )}
         />
       </Section> */}
- <Section id="designers-spotlight" label="Creator Ateliers" title="Featured Designers">
+  <Section id="designers-spotlight" label="Creator Ateliers" title="Explore Designers">
         <ScrollRow
           items={designers}
           loading={loadingDesigners}

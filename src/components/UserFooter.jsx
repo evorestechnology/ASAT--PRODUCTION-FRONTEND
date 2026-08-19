@@ -203,51 +203,41 @@ function UserFooter() {
                             <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
                         </span>
                         <ul className="blu-footer-card__list">
-                            <li><a href="tel:+919177180258" className="blu-footer-card__link">Call</a></li>
-                            <li><a href="https://wa.me/919177180258" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">Text (WhatsApp)</a></li>
                             <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">Instagram</a></li>
                             <li><a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">YouTube</a></li>
-                            <li><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">LinkedIn</a></li>
+                            <li><a href="/designer/register" className="blu-footer-card__link">Join as a Designer</a></li>
                         </ul>
                     </div>
 
-                    {/* Column 2: Order Support */}
+                    {/* Column 2: Support */}
                     <div className={`blu-footer-card__col${openCol === 1 ? ' open' : ''}`}>
                         <span className="blu-footer-card__col-title" onClick={() => toggleCol(1)}>
-                            Order Support
+                            Support
                             <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
                         </span>
                         <ul className="blu-footer-card__list">
-                            <li><Link to="/support" className="blu-footer-card__link">Make a return/Exchange</Link></li>
                             <li><Link to="/terms" className="blu-footer-card__link">Refund/Exchange policy</Link></li>
-                            <li><Link to="/tracking" className="blu-footer-card__link">Track your order</Link></li>
                             <li><Link to="/terms" className="blu-footer-card__link">Shipping policy</Link></li>
                             <li><Link to="/support" className="blu-footer-card__link">FAQ's</Link></li>
-                            <li><Link to="/terms" className="blu-footer-card__link">Terms</Link></li>
+                            <li><Link to="/terms" className="blu-footer-card__link">Terms and Conditions</Link></li>
                         </ul>
                     </div>
 
-                    {/* Column 3: We are ASAT */}
+                    {/* Column 3: We at ASAT */}
                     <div className={`blu-footer-card__col${openCol === 2 ? ' open' : ''}`}>
                         <span className="blu-footer-card__col-title" onClick={() => toggleCol(2)}>
-                            We are ASAT
+                            We at ASAT
                             <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
                         </span>
                         <ul className="blu-footer-card__list">
                             <li><Link to="/rankings" className="blu-footer-card__link">Our story</Link></li>
-                            <li><Link to="/products" className="blu-footer-card__link">Walk-in Stores</Link></li>
                             <li><a href="/designer/register" className="blu-footer-card__link">Collaborations</a></li>
-                            <li><Link to="/support" className="blu-footer-card__link">Careers</Link></li>
-                            <li><Link to="/support" className="blu-footer-card__link">Media</Link></li>
-                            <li><Link to="/products" className="blu-footer-card__link">Blogs</Link></li>
                         </ul>
                     </div>
 
-                    {/* Column 4: Script Logo & 3D Shopping Bag */}
+                    {/* Column 4: Side-by-Side Logos + 3D Mockup Bag */}
                     <div className="blu-footer-card__brand-showcase">
-                        <Link to="/" className="blu-footer-card__script-logo" aria-label="ASAT Home">
-                            Asat
-                        </Link>
+                        <img src="/logo.png" alt="AS SIMPLE AS THAT" style={{ height: '36px', objectFit: 'contain' }} />
 
                         <div className="blu-footer-card__bag-wrap" title="ASAT Luxury Shopping Bag">
                             {/* Realistic 3D SVG Luxury Shopping Bag */}
@@ -278,8 +268,20 @@ function UserFooter() {
                                 <ellipse cx="103" cy="58" rx="14" ry="5" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5" />
                                 <ellipse cx="103" cy="59" rx="12" ry="4" fill="#FFFFFF" />
 
-                                {/* ASAT Brandmark printed on bag */}
-                                <g transform="translate(100, 115) rotate(7)">
+                                {/* ASAT DESIGNER PARADISE Brandmark printed on bag */}
+                                <g transform="translate(100, 110) rotate(7)">
+                                    <text
+                                        x="0"
+                                        y="-12"
+                                        textAnchor="middle"
+                                        fill="#111111"
+                                        fontFamily="-apple-system, Montserrat, sans-serif"
+                                        fontWeight="900"
+                                        fontSize="9"
+                                        letterSpacing="1.5"
+                                    >
+                                        ASAT
+                                    </text>
                                     <text
                                         x="0"
                                         y="0"
@@ -287,10 +289,22 @@ function UserFooter() {
                                         fill="#111111"
                                         fontFamily="-apple-system, Montserrat, sans-serif"
                                         fontWeight="900"
-                                        fontSize="11"
-                                        letterSpacing="2"
+                                        fontSize="7"
+                                        letterSpacing="1"
                                     >
-                                        ASAT
+                                        DESIGNER
+                                    </text>
+                                    <text
+                                        x="0"
+                                        y="10"
+                                        textAnchor="middle"
+                                        fill="#111111"
+                                        fontFamily="-apple-system, Montserrat, sans-serif"
+                                        fontWeight="900"
+                                        fontSize="7"
+                                        letterSpacing="1"
+                                    >
+                                        PARADISE
                                     </text>
                                 </g>
                             </svg>
@@ -300,8 +314,17 @@ function UserFooter() {
 
                 {/* Bottom Copyright */}
                 <div className="blu-footer-card__bottom">
-                    <p className="blu-footer-card__copy">
-                        © 2026 ASAT RETAIL PRIVATE LIMITED, ALL RIGHTS RESERVED
+                    <p className="blu-footer-card__copy" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        © 2026 Designer paradise by ASAT. ALL RIGHTS Reserved with EvoRES Technology 
+                        <a 
+                            href="https://evorestechnology.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            style={{ color: '#0052FF', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                            title="EvoRES Technology"
+                        >
+                            <i className="fa-solid fa-globe" style={{ fontSize: '12px' }}></i>
+                        </a>
                     </p>
                 </div>
             </div>
