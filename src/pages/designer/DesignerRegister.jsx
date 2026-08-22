@@ -818,7 +818,7 @@ function DesignerRegister() {
             });
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to send verification code.');
+                throw new Error(data.message || data.error || 'Failed to send verification code.');
             }
             
             if (data.debugOtp) {
@@ -986,7 +986,11 @@ function DesignerRegister() {
             
             const registerData = await registerRes.json();
             if (!registerRes.ok) {
-                throw new Error(registerData.error || 'Registration failed.');
+                let msg = registerData.message || registerData.error || 'Registration failed.';
+                if (registerData.errors) {
+                    msg = Object.values(registerData.errors).join(', ');
+                }
+                throw new Error(msg);
             }
             const uid = registerData.uid;
 
