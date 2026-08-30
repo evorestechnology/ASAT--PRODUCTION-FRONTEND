@@ -657,7 +657,9 @@ function DesignerPublicProfile() {
               email: data.email,
               username: data.username,
               avatar: data.avatar_url,
-              bio: data.bio || '',
+              bio: data.description || data.bio || '',
+              instagram: data.instagram || '',
+              linkedin: data.linkedin || '',
               speciality: data.speciality || '',
               location: data.address || '',
               status: data.status,
@@ -870,6 +872,36 @@ function DesignerPublicProfile() {
                     </span>
                   )} */}
                 </div>
+                {(designer.instagram || designer.linkedin) && (
+                  <div style={{ display: 'flex', gap: '20px', marginTop: '16px', alignItems: 'center' }}>
+                    {designer.instagram && (
+                      <a 
+                        href={`https://instagram.com/${designer.instagram.replace(/^@/, '')}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={{ color: 'var(--gold)', textDecoration: 'none', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px', transition: 'opacity 0.2s', fontWeight: 500 }}
+                        onMouseOver={(e) => e.currentTarget.style.opacity = 0.8}
+                        onMouseOut={(e) => e.currentTarget.style.opacity = 1}
+                      >
+                        <i className="fa-brands fa-instagram" style={{ fontSize: '1.05rem' }} />
+                        <span>@{designer.instagram.replace(/^@/, '')}</span>
+                      </a>
+                    )}
+                    {designer.linkedin && (
+                      <a 
+                        href={designer.linkedin.startsWith('http') ? designer.linkedin : `https://linkedin.com/in/${designer.linkedin}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={{ color: 'var(--gold)', textDecoration: 'none', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px', transition: 'opacity 0.2s', fontWeight: 500 }}
+                        onMouseOver={(e) => e.currentTarget.style.opacity = 0.8}
+                        onMouseOut={(e) => e.currentTarget.style.opacity = 1}
+                      >
+                        <i className="fa-brands fa-linkedin" style={{ fontSize: '1.05rem' }} />
+                        <span>LinkedIn</span>
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Stats */}

@@ -82,6 +82,20 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!user?.id) return;
+    const syncWishlist = () => {
+      const current = localStorage.getItem('asat_wishlist');
+      if (current) {
+        localStorage.setItem(`asat_wishlist_${user.id}`, current);
+      }
+    };
+    window.addEventListener('wishlist_updated', syncWishlist);
+    return () => {
+      window.removeEventListener('wishlist_updated', syncWishlist);
+    };
+  }, [user]);
+
   const clearAuthState = () => {
     setUser(null);
     setRole(null);
@@ -128,6 +142,16 @@ export function AuthProvider({ children }) {
           fullName: resolvedProfile?.full_name || supabaseUser.user_metadata?.full_name || 'User',
           email: supabaseUser.email
         }));
+        
+        // Restore user-specific wishlist
+        const userWishlist = localStorage.getItem(`asat_wishlist_${uid}`);
+        if (userWishlist) {
+          localStorage.setItem('asat_wishlist', userWishlist);
+        } else {
+          localStorage.setItem('asat_wishlist', '[]');
+          localStorage.setItem(`asat_wishlist_${uid}`, '[]');
+        }
+        window.dispatchEvent(new Event('wishlist_updated'));
       } else {
         localStorage.removeItem('asat_loggedIn');
         localStorage.removeItem('asat_user');

@@ -1685,18 +1685,6 @@ function ProductDetail() {
             showToast('This product is currently out of stock.', 'error');
             return;
         }
-        
-        // Guard check for Login
-        const isLoggedIn = localStorage.getItem('asat_loggedIn') === 'true';
-        if (!isLoggedIn) {
-            navigate('/login', { 
-                state: { 
-                    from: window.location.pathname, 
-                    message: 'Please sign in to build your bag!' 
-                } 
-            });
-            return;
-        }
 
         if (!selectedSize) { showToast('Please select an available size', 'warning'); return; }
 
@@ -1706,14 +1694,7 @@ function ProductDetail() {
             showToast(`Size ${selectedSize} is currently out of stock and cannot be added.`, 'error');
             return;
         }
-        
-        if (isAlreadyInCart()) {
-            navigate('/cart');
-            return;
-        }
 
-        const cart = JSON.parse(localStorage.getItem('asat_cart') || '[]');
-        
         const itemColor = product.isMfgProduct 
             ? (product.colors[selectedColor]?.color || '') 
             : product.colors[selectedColor];
@@ -1758,6 +1739,26 @@ function ProductDetail() {
                 mfgName: product.mfgName || ''
             })
         };
+
+        // Guard check for Login
+        const isLoggedIn = localStorage.getItem('asat_loggedIn') === 'true';
+        if (!isLoggedIn) {
+            localStorage.setItem('asat_pending_cart_item', JSON.stringify(cartItem));
+            navigate('/login', { 
+                state: { 
+                    from: window.location.pathname, 
+                    message: 'Please sign in to build your bag!' 
+                } 
+            });
+            return;
+        }
+
+        if (isAlreadyInCart()) {
+            navigate('/cart');
+            return;
+        }
+
+        const cart = JSON.parse(localStorage.getItem('asat_cart') || '[]');
 
         const existingIdx = cart.findIndex(i => {
             const matchBasic = i.id === cartItem.id && i.size === cartItem.size && i.colorIdx === cartItem.colorIdx;

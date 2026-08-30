@@ -663,6 +663,34 @@ function UserLogin() {
                 return;
             }
 
+            const pendingItem = localStorage.getItem('asat_pending_cart_item');
+            if (pendingItem) {
+                try {
+                    const item = JSON.parse(pendingItem);
+                    const cart = JSON.parse(localStorage.getItem('asat_cart') || '[]');
+                    const existingIdx = cart.findIndex(i => {
+                        const matchBasic = i.id === item.id && i.size === item.size && i.colorIdx === item.colorIdx;
+                        if (!matchBasic) return false;
+                        if (item.isMfgProduct) {
+                            return i.printStyle === item.printStyle;
+                        } else {
+                            return !i.isMfgProduct;
+                        }
+                    });
+
+                    if (existingIdx > -1) {
+                        cart[existingIdx].qty += item.qty;
+                    } else {
+                        cart.push(item);
+                    }
+                    localStorage.setItem('asat_cart', JSON.stringify(cart));
+                    window.dispatchEvent(new Event('cart_updated'));
+                    localStorage.removeItem('asat_pending_cart_item');
+                } catch (e) {
+                    console.error('Error merging pending cart item:', e);
+                }
+            }
+
             const from = location.state?.from;
             navigate((from && from !== '/') ? from : '/', { state: { welcomeMessage: 'Signed in successfully! Welcome back.' } });
         } catch (err) {
@@ -734,7 +762,7 @@ function UserLogin() {
 
                     <div className="auth-switch-text">
                         Don't have an account?
-                        <Link to="/register" className="auth-switch-link">Create Account</Link>
+                        <Link to="/register" state={{ from: location.state?.from }} className="auth-switch-link">Create Account</Link>
                     </div>
                 </div>
             </div>

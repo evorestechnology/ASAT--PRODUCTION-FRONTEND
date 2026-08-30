@@ -352,9 +352,9 @@ function UserOrders() {
         setQueryMediaFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleOpenQueryModal = (order) => {
+    const handleOpenQueryModal = (order, defaultCategory) => {
         setQueryOrder(order);
-        setQueryCategory('Product not yet received');
+        setQueryCategory(defaultCategory || 'Product not yet received');
         setQueryDesc('');
         setQueryMediaFiles([]);
     };
@@ -591,32 +591,17 @@ function UserOrders() {
                                                             </button>
                                                         )}
 
-                                                        {/* 36-Hour Customer Order Cancellation Button */}
+                                                        {/* Request Order Cancellation Button */}
                                                         {(() => {
-                                                            const isCancelledOrDone = o.status === 'cancelled' || o.status === 'completed' || o.status === 'delivered';
-                                                            const hoursElapsed = (Date.now() - new Date(o.created_at).getTime()) / (1000 * 60 * 60);
-                                                            const canCancel = !isCancelledOrDone && hoursElapsed <= 36;
-                                                            if (!canCancel) return null;
+                                                            const canRequestCancel = o.status !== 'cancelled' && o.status !== 'completed' && o.status !== 'delivered';
+                                                            if (!canRequestCancel) return null;
                                                             return (
                                                                 <button
                                                                     className="track-btn"
-                                                                    style={{ background: '#dc3545', border: 'none', color: '#fff', fontWeight: 600 }}
-                                                                    onClick={async () => {
-                                                                        if (!window.confirm('Are you sure you want to cancel this order? (Available within 36 hours of ordering)')) return;
-                                                                        try {
-                                                                            const res = await apiFetch(`/api/orders/${o.id}/customer-cancel`, {
-                                                                                method: 'POST',
-                                                                                body: JSON.stringify({ reason: 'Cancelled by user within 36 hours' })
-                                                                            });
-                                                                            showToast(res.message || 'Order cancelled successfully!', 'success');
-                                                                            fetchOrders();
-                                                                        } catch (err) {
-                                                                            console.error('Error cancelling order:', err);
-                                                                            showToast('Failed to cancel order: ' + err.message, 'error');
-                                                                        }
-                                                                    }}
+                                                                    style={{ background: '#d32f2f', border: 'none', color: '#fff', fontWeight: 600 }}
+                                                                    onClick={() => handleOpenQueryModal(o, 'Cancellation Request')}
                                                                 >
-                                                                    <i className="fas fa-times-circle" style={{ marginRight: '4px' }}></i> Cancel Order
+                                                                    <i className="fas fa-times-circle" style={{ marginRight: '4px' }}></i> Request Cancellation
                                                                 </button>
                                                             );
                                                         })()}
@@ -661,6 +646,7 @@ function UserOrders() {
                                     <option value="Wrong item received">Wrong item received</option>
                                     <option value="Damaged/Broken product received">Damaged/Broken product received</option>
                                     <option value="Missing item(s) in order">Missing item(s) in order</option>
+                                    <option value="Cancellation Request">Cancellation Request</option>
                                 </select>
                             </div>
 
