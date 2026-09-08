@@ -525,7 +525,7 @@ function UserOrders() {
                                                                     )}
                                                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                                                                         <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--dark)' }}>{item.name}</span>
-                                                                        <span style={{ fontSize: '0.75rem', color: '#666' }}>Size: {item.size} | Color: {item.colorName || item.color || 'Standard'}</span>
+                                                                        <span style={{ fontSize: '0.75rem', color: '#666' }}>Size: {item.size} | Color: {item.colorName || item.color || 'Standard'} | Price: {formatPrice(item.user_price || item.price || 0)}{item.qty && item.qty > 1 ? ` (Qty: ${item.qty})` : ''}</span>
                                                                     </div>
                                                                 </div>
                                                             ))

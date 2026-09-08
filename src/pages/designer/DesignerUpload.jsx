@@ -707,6 +707,15 @@ function DesignerUpload() {
                         allImageUrls.push(url);
                     }
                 }
+                // Provide standardized accessors and canonical view array
+                uploaded.front = uploaded.frontUrl || '';
+                uploaded.back = uploaded.backUrl || '';
+                uploaded.model = uploaded.modelUrl || '';
+                uploaded.model1 = uploaded.modelUrl || '';
+                uploaded.model2 = uploaded.modelUrl2 || '';
+                uploaded.model2Url = uploaded.modelUrl2 || '';
+                uploaded.images = [uploaded.frontUrl, uploaded.backUrl, uploaded.modelUrl, uploaded.modelUrl2].filter(Boolean);
+
                 finalColorMockups[colorName] = uploaded;
             }
 
@@ -791,6 +800,7 @@ function DesignerUpload() {
                     primaryColor,
                     placements: finalPlacements,
                     customerImages: finalColorMockups,
+                    colorMockups: finalColorMockups,
                     coverImage: coverImageUrl,
                     category: designCategory,
                     tags: designTags,

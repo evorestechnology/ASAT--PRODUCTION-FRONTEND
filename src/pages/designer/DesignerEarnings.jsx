@@ -355,11 +355,20 @@ function DesignerEarnings() {
                                         {filteredSales.map((s, idx) => (
                                             <tr key={s.id || idx}>
                                                 <td>
-                                                    <div style={{ fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                    <div style={{ fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: 3 }}>
                                                         <span style={{ fontWeight: 700, color: 'var(--dark, #121212)' }}>Order #{String(s.orderId).slice(0, 14)}</span>
                                                         <span style={{ fontSize: '0.72rem', color: '#666' }}>
-                                                            Order Date: {s.date ? new Date(s.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
+                                                            Ordered: {s.date ? new Date(s.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                                                         </span>
+                                                        {s.isDelivered ? (
+                                                            <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                <i className="fas fa-check-circle" style={{ fontSize: '0.7rem' }} /> Delivered & Credited: {s.deliveredAt ? new Date(s.deliveredAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Completed'}
+                                                            </span>
+                                                        ) : (
+                                                            <span style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                <i className="fas fa-clock" style={{ fontSize: '0.7rem' }} /> Pending Delivery (Credits on delivery)
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td>

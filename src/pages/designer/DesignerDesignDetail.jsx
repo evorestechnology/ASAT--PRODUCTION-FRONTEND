@@ -342,10 +342,10 @@ export default function DesignerDesignDetail() {
                         const cHex  = typeof color === 'object' ? (color.color || color.hex || cName) : cName;
 
                         const mockup = colorMockups[cName] || {};
-                        const front = mockup.frontUrl || mockup.front || '';
-                        const back = mockup.backUrl || mockup.back || '';
-                        const model = mockup.modelUrl || mockup.model || '';
-                        const model2 = mockup.modelUrl2 || mockup.model2 || '';
+                        const front = mockup.frontUrl || mockup.front || mockup.fv || mockup.frontImage || '';
+                        const back = mockup.backUrl || mockup.back || mockup.bv || mockup.backImage || '';
+                        const model = mockup.modelUrl || mockup.model || mockup.model1 || mockup.model1Url || mockup.model_1 || '';
+                        const model2 = mockup.modelUrl2 || mockup.model2Url || mockup.model2 || mockup.model_2 || '';
 
                         const placementsList = placements[cName] || [];
                         const groupedPlacements = {};

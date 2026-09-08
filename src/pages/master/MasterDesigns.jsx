@@ -115,7 +115,7 @@ function DesignDrawer({ design, onClose, onAction, actionLoading, rejectComment,
             const desc = JSON.parse(d.description);
             pricing = desc.pricing || null;
             designerNote = desc.designerNote || desc.designer_note || '';
-            colorMockups = desc.colorMockups || {};
+            colorMockups = desc.customerImages || desc.colorMockups || {};
             printingSelections = desc.printingSelections || {};
         }
     } catch (e) {}
@@ -251,31 +251,42 @@ function DesignDrawer({ design, onClose, onAction, actionLoading, rejectComment,
                                                 <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#ccc', marginBottom: 8, textTransform: 'capitalize' }}>
                                                     {colorName}
                                                 </div>
-                                                <div className="dsn-drawer__mockup-pair">
-                                                    {mockup.front && (
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
-                                                            <img src={mockup.front} alt={`${colorName} front`}
-                                                                className="dsn-drawer__mockup-img"
-                                                                onClick={() => setLightboxImg(mockup.front)} />
-                                                            <span style={{ fontSize: '0.65rem', color: '#555' }}>Front</span>
-                                                        </div>
-                                                    )}
-                                                    {mockup.back && (
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
-                                                            <img src={mockup.back} alt={`${colorName} back`}
-                                                                className="dsn-drawer__mockup-img"
-                                                                onClick={() => setLightboxImg(mockup.back)} />
-                                                            <span style={{ fontSize: '0.65rem', color: '#555' }}>Back</span>
-                                                        </div>
-                                                    )}
-                                                    {/* Extra mockup images */}
-                                                    {Array.isArray(mockup.images) && mockup.images.map((img, i) => (
-                                                        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
-                                                            <img src={img} alt={`mockup ${i+1}`}
-                                                                className="dsn-drawer__mockup-img"
-                                                                onClick={() => setLightboxImg(img)} />
-                                                        </div>
-                                                    ))}
+                                                <div className="dsn-drawer__mockup-pair" style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                                                    {(() => {
+                                                        const fv = mockup.frontUrl || mockup.front || mockup.fv || '';
+                                                        const bv = mockup.backUrl || mockup.back || mockup.bv || '';
+                                                        const m1 = mockup.modelUrl || mockup.model || mockup.model1 || mockup.model_1 || '';
+                                                        const m2 = mockup.modelUrl2 || mockup.model2Url || mockup.model2 || mockup.model_2 || '';
+                                                        const standardViews = [
+                                                            { label: 'Front (FV)', url: fv },
+                                                            { label: 'Back (BV)', url: bv },
+                                                            { label: 'Model 1', url: m1 },
+                                                            { label: 'Model 2', url: m2 },
+                                                        ];
+                                                        const shownUrls = new Set(standardViews.map(v => v.url).filter(Boolean));
+                                                        const extraImgs = (Array.isArray(mockup.images) ? mockup.images : []).filter(u => u && !shownUrls.has(u));
+
+                                                        return (
+                                                            <>
+                                                                {standardViews.map(({ label, url }) => url ? (
+                                                                    <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+                                                                        <img src={url} alt={`${colorName} ${label}`}
+                                                                            className="dsn-drawer__mockup-img"
+                                                                            onClick={() => setLightboxImg(url)} />
+                                                                        <span style={{ fontSize: '0.65rem', color: '#888' }}>{label}</span>
+                                                                    </div>
+                                                                ) : null)}
+                                                                {extraImgs.map((img, i) => (
+                                                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+                                                                        <img src={img} alt={`mockup ${i+1}`}
+                                                                            className="dsn-drawer__mockup-img"
+                                                                            onClick={() => setLightboxImg(img)} />
+                                                                        <span style={{ fontSize: '0.65rem', color: '#888' }}>View {i+3}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </div>
                                         </div>

@@ -13,6 +13,10 @@ export default function MfgDesignDetail() {
     
     const bookedColor = searchParams.get('color') || '';
     const bookedSize = searchParams.get('size') || '';
+    const orderBaseCostParam = searchParams.get('orderBaseCost');
+    const orderMfgPriceParam = searchParams.get('orderMfgPrice');
+    const snapshottedBaseCost = orderBaseCostParam && !isNaN(Number(orderBaseCostParam)) ? Number(orderBaseCostParam) : null;
+    const snapshottedMfgPrice = orderMfgPriceParam && !isNaN(Number(orderMfgPriceParam)) ? Number(orderMfgPriceParam) : null;
     
     const [design, setDesign] = useState(null);
     const [baseProduct, setBaseProduct] = useState(null);
@@ -175,12 +179,20 @@ export default function MfgDesignDetail() {
     
     const activePlacements = parsedDesc.placements?.[colorKey] || [];
     const activeRefs = parsedDesc.manufacturerRefs?.[colorKey] || [];
-    const rawCustomerMockups = parsedDesc.customerImages?.[colorKey] || [];
-    const customerMockups = Array.isArray(rawCustomerMockups)
-        ? rawCustomerMockups.filter(Boolean)
-        : (typeof rawCustomerMockups === 'object' && rawCustomerMockups !== null)
-            ? Object.values(rawCustomerMockups).filter(Boolean)
-            : [];
+    const rawCustomerMockups = parsedDesc.customerImages?.[colorKey] || parsedDesc.colorMockups?.[colorKey] || [];
+    const customerMockups = (() => {
+        if (Array.isArray(rawCustomerMockups)) return rawCustomerMockups.filter(Boolean);
+        if (typeof rawCustomerMockups === 'object' && rawCustomerMockups !== null) {
+            const fv = rawCustomerMockups.frontUrl || rawCustomerMockups.front || rawCustomerMockups.fv || '';
+            const bv = rawCustomerMockups.backUrl || rawCustomerMockups.back || rawCustomerMockups.bv || '';
+            const m1 = rawCustomerMockups.modelUrl || rawCustomerMockups.model || rawCustomerMockups.model1 || rawCustomerMockups.model_1 || '';
+            const m2 = rawCustomerMockups.modelUrl2 || rawCustomerMockups.model2Url || rawCustomerMockups.model2 || rawCustomerMockups.model_2 || '';
+            const std = [fv, bv, m1, m2].filter(Boolean);
+            const extra = (Array.isArray(rawCustomerMockups.images) ? rawCustomerMockups.images : Object.values(rawCustomerMockups)).filter(u => typeof u === 'string' && u.startsWith('http') && !std.includes(u));
+            return [...std, ...extra];
+        }
+        return [];
+    })();
     
     // Size list
     const rawSizeList = design.sizes || (baseProduct ? baseProduct.sizes : []) || [];
@@ -329,7 +341,10 @@ export default function MfgDesignDetail() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f5f5f5', paddingBottom: 8 }}>
                                     <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: 600 }}>Fabric / Material Cost:</span>
-                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>₹{baseProduct.cost?.toLocaleString('en-IN')}</span>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>
+                                        ₹{(snapshottedBaseCost !== null ? snapshottedBaseCost : baseProduct.cost)?.toLocaleString('en-IN')}
+                                        {snapshottedBaseCost !== null && <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 500, marginLeft: 6 }}>(Order Snapshot)</span>}
+                                    </span>
                                 </div>
                                 
                                 {activePlacements.length > 0 && (

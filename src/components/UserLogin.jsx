@@ -498,16 +498,16 @@ function ForgotPasswordPanel({ isOpen, onClose }) {
                 {fpStep === 1 && (<>
                     <div className="fp-gold-bar" />
                     <div className="fp-title">Reset Password</div>
-                    <div className="fp-subtitle">Enter the email address linked to your account and we'll send you a 6-digit verification code.</div>
+                    <div className="fp-subtitle">Enter the Gmail address linked to your account and we'll send you a 6-digit verification code.</div>
                     {fpAlert && (
                         <div className={`fp-alert fp-alert--${fpAlert.type}`}>
                             <i className={`fas ${fpAlert.type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info'}`} style={{ flexShrink: 0, marginTop: 1 }} />
                             {fpAlert.text}
                         </div>
                     )}
-                    <label className="fp-label">Email Address</label>
+                    <label className="fp-label">Gmail</label>
                     <div className="fp-input-wrap">
-                        <input id="fp-email" type="email" className="fp-input" placeholder="your@email.com"
+                        <input id="fp-email" type="email" className="fp-input" placeholder="Enter your Gmail"
                             value={fpEmail} onChange={e => setFpEmail(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleSendOtp()}
                             autoComplete="email" autoFocus />
@@ -549,7 +549,7 @@ function ForgotPasswordPanel({ isOpen, onClose }) {
                     <button className="fp-btn" style={{ marginTop: 22 }} onClick={handleVerifyOtp} disabled={fpLoading || otpValue.length !== 6}>
                         {fpLoading ? <><i className="fas fa-spinner fa-spin" style={{ marginRight: 8 }} />Verifying…</> : <><i className="fas fa-shield-halved" style={{ marginRight: 8 }} />Verify Code</>}
                     </button>
-                    <button className="fp-back-link" onClick={() => { setFpStep(1); setFpAlert(null); }}>← Change email address</button>
+                    <button className="fp-back-link" onClick={() => { setFpStep(1); setFpAlert(null); }}>← Change Gmail address</button>
                 </>)}
 
                 {/* STEP 3 */}
@@ -722,9 +722,9 @@ function UserLogin() {
 
                     <form onSubmit={handleSubmit}>
                         <div className="auth-input-group">
-                            <label>Email Address</label>
+                            <label>Gmail</label>
                             <input type="email" className="auth-input" required value={email}
-                                onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
+                                onChange={(e) => setEmail(e.target.value)} placeholder="Enter your Gmail" />
                         </div>
                         <div className="auth-input-group">
                             <label>Password</label>

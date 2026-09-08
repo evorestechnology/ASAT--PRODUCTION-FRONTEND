@@ -6,7 +6,6 @@ function DesignerFooter() {
     const toggleCol = (colIndex) => {
         setOpenCol(openCol === colIndex ? null : colIndex);
     };
-
     return (
         <footer style={{ width: '100%', background: 'transparent', padding: '0 0 20px' }}>
             <style>{`

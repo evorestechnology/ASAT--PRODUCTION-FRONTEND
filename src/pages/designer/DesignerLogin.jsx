@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import { apiFetch, setAuthToken } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import ForgotPasswordModal from '../../components/ForgotPasswordModal';
 
 const authImages = [
     '/images/fashion1.png',
@@ -320,8 +321,9 @@ function DesignerLogin() {
     const location = useLocation();
     const successMsg = location.state?.successMessage;
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [identifier, setIdentifier] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showForgotPanel, setShowForgotPanel] = useState(false);
 
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -405,21 +407,8 @@ function DesignerLogin() {
         setError('');
         setLoading(true);
         try {
-            let loginEmail = identifier;
-            if (!identifier.includes('@')) {
-                // Look up email by username
-                const data = await apiFetch(`/api/designers/${identifier.trim().toLowerCase()}`).catch(() => null);
-                if (data && data.email) {
-                    loginEmail = data.email;
-                } else {
-                    setError('No account found with this username.');
-                    setLoading(false);
-                    return;
-                }
-            }
-
             const { data: { user: supabaseUser, session }, error: signInError } = await supabase.auth.signInWithPassword({
-                email: loginEmail,
+                email: email.trim(),
                 password,
             });
             if (signInError) throw signInError;
@@ -468,6 +457,8 @@ function DesignerLogin() {
         <div className="auth-split-layout">
             <style>{styles}</style>
 
+            <ForgotPasswordModal isOpen={showForgotPanel} onClose={() => setShowForgotPanel(false)} />
+
             {/* Left Side: Form */}
             <div className="auth-form-side">
                 <Link to="/" className="auth-back-home">
@@ -497,14 +488,14 @@ function DesignerLogin() {
 
                     <form onSubmit={handleSubmit}>
                         <div className="auth-input-group">
-                            <label>Username or Email</label>
+                            <label>Gmail</label>
                             <input
-                                type="text"
+                                type="email"
                                 className="auth-input"
                                 required
-                                value={identifier}
-                                onChange={(e) => setIdentifier(e.target.value)}
-                                placeholder="Enter your username or email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your Gmail"
                             />
                         </div>
 
@@ -548,7 +539,14 @@ function DesignerLogin() {
                             <label className="auth-checkbox-label">
                                 <input type="checkbox" /> Remember me
                             </label>
-                            <a href="#" className="auth-forgot-link">Forgot Password?</a>
+                            <button
+                                type="button"
+                                className="auth-forgot-link"
+                                onClick={() => setShowForgotPanel(true)}
+                                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' }}
+                            >
+                                Forgot Password?
+                            </button>
                         </div>
 
                         {error && (

@@ -1189,21 +1189,32 @@ function Cart() {
                     }
                 }
 
+                const itemPrice = Number(i.price) || 0;
+                const bCost = i.isMfgProduct ? (Number(i.baseCost) || itemPrice) : (Number(i.pricing?.baseCost) || 0);
+                const pCost = i.isMfgProduct ? (Number(i.printCost) || 0) : (Number(i.pricing?.printingCost) || 0);
+                const dRoyalty = i.isMfgProduct ? 0 : (Number(i.pricing?.designerCost) || Math.round(itemPrice * 0.1));
+                const mCost = i.isMfgProduct ? itemPrice : (bCost + pCost);
+                const masterPrice = Math.max(0, itemPrice - (mCost + dRoyalty));
+
                 return {
                     id: i.id || null,
                     name: i.name,
                     title: i.name,
                     size: i.size,
                     color: i.color || '',
-                    price: Number(i.price) || 0,
+                    price: itemPrice,
+                    user_price: itemPrice,
+                    mfg_price: mCost,
+                    designer_price: dRoyalty,
+                    master_price: masterPrice,
                     qty: Number(i.qty) || 1,
                     image: i.image || '',
                     isMfgProduct: !!i.isMfgProduct,
                     mfgId: isValidUUID(mfgId) ? mfgId : null,
                     mfgName: mfgName || '',
-                    baseCost: i.isMfgProduct ? (i.baseCost || Number(i.price) || 0) : (i.pricing?.baseCost || 0),
+                    baseCost: bCost,
                     printStyle: i.isMfgProduct ? (i.printStyle || 'Plain') : 'Printed',
-                    printCost: i.isMfgProduct ? (Number(i.printCost) || 0) : (i.pricing?.printingCost || 0),
+                    printCost: pCost,
                     colorName: i.colorName || 'Default',
                     designerId: !i.isMfgProduct && isValidUUID(i.designerId) ? i.designerId : null,
                     designerUsername: !i.isMfgProduct ? (i.designerUsername || 'anonymous') : 'anonymous'

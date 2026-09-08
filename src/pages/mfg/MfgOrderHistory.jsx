@@ -98,7 +98,7 @@ function MfgOrderHistory() {
         }
 
         if (designId) {
-            navigate(`/mfg/designs/${designId}?color=${encodeURIComponent(item.colorName || item.color || '')}&size=${encodeURIComponent(item.size || '')}`);
+            navigate(`/mfg/designs/${designId}?color=${encodeURIComponent(item.colorName || item.color || '')}&size=${encodeURIComponent(item.size || '')}&orderBaseCost=${encodeURIComponent(item.baseCost || '')}&orderMfgPrice=${encodeURIComponent(item.mfg_price || '')}`);
         } else {
             showToast("Design details are unavailable for this item.", "error");
         }

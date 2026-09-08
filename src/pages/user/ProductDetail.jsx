@@ -1226,48 +1226,71 @@ function ProductDetail() {
 
         const rawColor = product.colors && product.colors[selectedColor];
         const colorName = typeof rawColor === 'object' && rawColor !== null 
-            ? (rawColor.colorName || rawColor.name || '') 
+            ? (rawColor.colorName || rawColor.name || rawColor.color || '') 
             : String(rawColor || '');
+        const cleanName = (s) => String(s || '').trim().toLowerCase().replace(/[-_]/g, ' ');
+        const targetColor = cleanName(colorName);
 
-        // 1. Explicit customerImages map from designer uploads
-        if (product.customerImages && colorName) {
-            const key = Object.keys(product.customerImages).find(
-                k => k.toLowerCase() === colorName.toLowerCase()
-            );
-            if (key && Array.isArray(product.customerImages[key]) && product.customerImages[key].length > 0) {
-                return product.customerImages[key];
+        // 1. Explicit customerImages / colorMockups map from designer uploads
+        const mockupsMap = product.customerImages || product.colorMockups;
+        if (mockupsMap && targetColor) {
+            const key = Object.keys(mockupsMap).find(k => cleanName(k) === targetColor);
+            if (key) {
+                const entry = mockupsMap[key];
+                if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+                    // Extract in strict order: Front View (FV), Back View (BV), Model 1, Model 2
+                    const fv = entry.frontUrl || entry.front || entry.fv || entry.frontImage || '';
+                    const bv = entry.backUrl || entry.back || entry.bv || entry.backImage || '';
+                    const m1 = entry.modelUrl || entry.model || entry.model1 || entry.model1Url || entry.model_1 || entry.modelFile || '';
+                    const m2 = entry.modelUrl2 || entry.model2Url || entry.model2 || entry.model_2 || entry.modelFile2 || '';
+                    const extra = Array.isArray(entry.images) ? entry.images : [];
+                    const ordered = [fv, bv, m1, m2, ...extra].filter(Boolean);
+                    const unique = Array.from(new Set(ordered));
+                    if (unique.length > 0) return unique;
+                } else if (Array.isArray(entry) && entry.length > 0) {
+                    const filtered = entry.filter(Boolean);
+                    if (filtered.length > 0) return filtered;
+                }
             }
         }
 
-        // 2. Manufacturer / Color object containing front/back images
+        // 2. Manufacturer / Color object containing front/back/model images
         if (typeof rawColor === 'object' && rawColor !== null) {
-            const imgs = [];
-            if (Array.isArray(rawColor.images) && rawColor.images.length > 0) {
-                imgs.push(...rawColor.images);
-            } else {
-                if (rawColor.frontImage) imgs.push(rawColor.frontImage);
-                if (rawColor.backImage)  imgs.push(rawColor.backImage);
-                if (rawColor.sideImage)  imgs.push(rawColor.sideImage);
-            }
-            if (imgs.length > 0) return imgs;
+            const fv = rawColor.frontImage || rawColor.front || rawColor.fv || '';
+            const bv = rawColor.backImage || rawColor.back || rawColor.bv || '';
+            const m1 = rawColor.modelImage || rawColor.model || rawColor.model1 || '';
+            const m2 = rawColor.modelImage2 || rawColor.model2 || '';
+            const extra = Array.isArray(rawColor.images) ? rawColor.images : [];
+            const ordered = [fv, bv, m1, m2, ...extra].filter(Boolean);
+            const unique = Array.from(new Set(ordered));
+            if (unique.length > 0) return unique;
         }
 
-        // 3. Filter product.images by color name in URL
+        // 3. Filter product.images by color name in URL and sort by FV, BV, Model 1, Model 2
         if (colorName && Array.isArray(product.images) && product.images.length > 0) {
-            const cleanColor = colorName.trim().toUpperCase();
+            const cleanColor = colorName.trim().toUpperCase().replace(/[\s-]+/g, '_');
             const colorSpecific = product.images.filter(url => {
                 const upperUrl = String(url).toUpperCase();
                 return upperUrl.includes(`_${cleanColor}_`) ||
+                       upperUrl.includes(`_${cleanColor}.`) ||
                        upperUrl.includes(`_CUSTOMER_${cleanColor}_`) ||
                        upperUrl.includes(`/${cleanColor}/`) ||
                        upperUrl.includes(`-${cleanColor.toLowerCase()}-`) ||
                        upperUrl.includes(`_${cleanColor.toLowerCase()}_`);
             });
             if (colorSpecific.length > 0) {
-                return colorSpecific;
+                const getRank = (url) => {
+                    const u = String(url).toLowerCase();
+                    if (u.includes('front') || u.includes('_fv')) return 1;
+                    if (u.includes('back') || u.includes('_bv')) return 2;
+                    if (u.includes('modelfile2') || u.includes('modelurl2') || u.includes('model2')) return 4;
+                    if (u.includes('modelfile') || u.includes('modelurl') || u.includes('model1') || u.includes('model')) return 3;
+                    return 5;
+                };
+                return colorSpecific.sort((a, b) => getRank(a) - getRank(b));
             }
 
-            // 4. Partition product.images evenly per color variant
+            // 4. Partition product.images evenly per color variant (fallback)
             if (Array.isArray(product.colors) && product.colors.length > 1) {
                 const perColor = Math.floor(product.images.length / product.colors.length);
                 if (perColor >= 1) {
@@ -1278,7 +1301,7 @@ function ProductDetail() {
             }
         }
 
-        // 5. If only 1 image exists or single color, return only primary image
+        // 5. If only 1 image exists or single color, return primary image
         return product.images && product.images.length > 0 ? [product.images[0]] : [product.coverImage || product.colors?.[0]?.frontImage || ''];
     }, [product, selectedColor]);
 
@@ -1511,7 +1534,8 @@ function ProductDetail() {
                         designerId: designData.designer_id || 'unknown_designer',
                         designerUsername: designData.designer_username || 'anonymous',
                         description: parsedDesc ? (parsedDesc.text || '') : (designData.description || 'No description available for this premium designer item.'),
-                        customerImages: parsedDesc ? parsedDesc.customerImages : null,
+                        customerImages: parsedDesc ? (parsedDesc.customerImages || parsedDesc.colorMockups || null) : null,
+                        colorMockups: parsedDesc ? (parsedDesc.colorMockups || parsedDesc.customerImages || null) : null,
                         baseProductId: parsedDesc ? parsedDesc.baseProductId : null,
                         available: designData.is_available !== false && designData.available !== false,
                         unavailableReason: designData.unavailable_reason || '',
