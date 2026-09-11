@@ -35,8 +35,9 @@ const extraStyles = `
     border-bottom: 1px solid var(--border, #E8E5E0);
     position: sticky;
     top: var(--nav-h, 68px);
-    z-index: 200;
+    z-index: 500;
     box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    overflow: visible !important;
   }
 
   .pcol-filter-bar__inner {
@@ -45,12 +46,11 @@ const extraStyles = `
     padding: 0 5%;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     flex-wrap: wrap;
-    gap: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
+    gap: 12px;
+    overflow: visible !important;
   }
-  .pcol-filter-bar__inner::-webkit-scrollbar { display: none; }
 
   .pcol-filter-section {
     display: flex;
@@ -123,9 +123,11 @@ const extraStyles = `
     background: #FFFFFF;
     outline: none;
     transition: all 0.2s ease;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
   }
   .pcol-sort-btn:hover {
     border-color: #000000;
@@ -134,23 +136,36 @@ const extraStyles = `
     font-size: 0.65rem;
     transition: transform 0.2s ease;
   }
+  .pcol-sort-btn i.open {
+    transform: rotate(180deg);
+  }
   .pcol-sort-popover {
     position: absolute;
-    right: 0;
-    top: calc(100% + 8px);
-    z-index: 2500;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+    top: calc(100% + 6px);
+    z-index: 999999;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.18);
     border-radius: 12px;
-    width: 190px;
+    min-width: 175px;
     overflow: hidden;
     padding: 6px;
     display: flex;
     flex-direction: column;
     gap: 2px;
+  }
+  .pcol-sort-popover--left {
+    left: 0;
+    right: auto;
+  }
+  .pcol-sort-popover--center {
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+  }
+  .pcol-sort-popover--right {
+    right: 0;
+    left: auto;
   }
   .pcol-sort-popover-item {
     background: none;
@@ -167,7 +182,7 @@ const extraStyles = `
     transition: all 0.15s ease;
   }
   .pcol-sort-popover-item:hover {
-    background: rgba(0, 0, 0, 0.04);
+    background: rgba(0, 0, 0, 0.05);
     color: #000000;
     padding-left: 18px;
   }
@@ -559,17 +574,20 @@ function Products() {
   const sortDropdownRef = useRef(null);
   const priceDropdownRef = useRef(null);
 
-  const toggleGender = () => {
+  const toggleGender = (e) => {
+    e?.stopPropagation?.();
     setGenderOpen(prev => !prev);
     setSortOpen(false);
     setPriceOpen(false);
   };
-  const toggleSort = () => {
+  const toggleSort = (e) => {
+    e?.stopPropagation?.();
     setSortOpen(prev => !prev);
     setGenderOpen(false);
     setPriceOpen(false);
   };
-  const togglePrice = () => {
+  const togglePrice = (e) => {
+    e?.stopPropagation?.();
     setPriceOpen(prev => !prev);
     setGenderOpen(false);
     setSortOpen(false);
@@ -588,7 +606,11 @@ function Products() {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Sync URL search and sort params to state
@@ -817,16 +839,16 @@ function Products() {
       items = items.filter((p) => p.collection === activeCollection);
     }
 
-    // Gender — if Male or Female is selected, Unisex products are also included
+    // Gender — exact match for target gender
     if (activeGender !== 'All') {
       const targetGender = activeGender.toLowerCase();
       items = items.filter((p) => {
         const prodGender = (p.gender || 'Unisex').toLowerCase();
         if (targetGender === 'male') {
-          return prodGender === 'male' || prodGender === 'men' || prodGender === 'unisex';
+          return prodGender === 'male' || prodGender === 'men';
         }
         if (targetGender === 'female') {
-          return prodGender === 'female' || prodGender === 'women' || prodGender === 'unisex';
+          return prodGender === 'female' || prodGender === 'women';
         }
         if (targetGender === 'unisex') {
           return prodGender === 'unisex';
@@ -849,13 +871,11 @@ function Products() {
       items.sort((a, b) => applyMarkup(a.price ?? 0) - applyMarkup(b.price ?? 0));
     } else if (priceSort === 'price-desc') {
       items.sort((a, b) => applyMarkup(b.price ?? 0) - applyMarkup(a.price ?? 0));
+    } else if (sortBy === 'best-sellers' || sortBy === 'top-sales') {
+      items.sort((a, b) => (b.ordersCount ?? b.orders_count ?? 0) - (a.ordersCount ?? a.orders_count ?? 0));
     } else {
-      if (sortBy === 'best-sellers' || sortBy === 'top-sales') {
-        items.sort((a, b) => (b.ordersCount ?? b.orders_count ?? 0) - (a.ordersCount ?? a.orders_count ?? 0));
-      } else {
-        // default: latest
-        items.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-      }
+      // default: latest (newest first)
+      items.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
 
     return items;
@@ -1057,11 +1077,12 @@ function Products() {
             </div>
 
             {/* Right Controls: Filter 2 (Gender), Filter 3 (Latest / Best Sellers), Filter 4 (Price) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, flexWrap: 'wrap', position: 'relative', zIndex: 600 }}>
 
               {/* 2nd Filter: Gender */}
               <div className="pcol-sort-dropdown-wrap" ref={genderDropdownRef}>
                 <button
+                  type="button"
                   className="pcol-sort-btn"
                   onClick={toggleGender}
                   aria-label="Filter by gender"
@@ -1075,7 +1096,7 @@ function Products() {
                   <i className={`fas fa-chevron-down${genderOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
                 </button>
                 {genderOpen && (
-                  <div className="pcol-sort-popover">
+                  <div className="pcol-sort-popover pcol-sort-popover--left">
                     {[
                       { label: 'All Genders', value: 'All' },
                       { label: 'Male', value: 'Male' },
@@ -1084,8 +1105,10 @@ function Products() {
                     ].map((g) => (
                       <button
                         key={g.value}
+                        type="button"
                         className={`pcol-sort-popover-item${activeGender === g.value ? ' active' : ''}`}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setActiveGender(g.value);
                           setGenderOpen(false);
                         }}
@@ -1100,6 +1123,7 @@ function Products() {
               {/* 3rd Filter: Latest / Best Sellers */}
               <div className="pcol-sort-dropdown-wrap" ref={sortDropdownRef}>
                 <button
+                  type="button"
                   className="pcol-sort-btn"
                   onClick={toggleSort}
                   aria-label="Sort products"
@@ -1113,16 +1137,19 @@ function Products() {
                   <i className={`fas fa-chevron-down${sortOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
                 </button>
                 {sortOpen && (
-                  <div className="pcol-sort-popover">
+                  <div className="pcol-sort-popover pcol-sort-popover--center">
                     {[
                       { label: 'Latest', value: 'latest' },
                       { label: 'Best Sellers', value: 'best-sellers' },
                     ].map((s) => (
                       <button
                         key={s.value}
+                        type="button"
                         className={`pcol-sort-popover-item${(sortBy === s.value || (s.value === 'best-sellers' && sortBy === 'top-sales')) ? ' active' : ''}`}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSortBy(s.value);
+                          setPriceSort('');
                           setSortOpen(false);
                         }}
                       >
@@ -1136,6 +1163,7 @@ function Products() {
               {/* 4th Filter: Price (Low to High / High to Low) */}
               <div className="pcol-sort-dropdown-wrap" ref={priceDropdownRef}>
                 <button
+                  type="button"
                   className="pcol-sort-btn"
                   onClick={togglePrice}
                   aria-label="Sort by price"
@@ -1155,7 +1183,7 @@ function Products() {
                   <i className={`fas fa-chevron-down${priceOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
                 </button>
                 {priceOpen && (
-                  <div className="pcol-sort-popover">
+                  <div className="pcol-sort-popover pcol-sort-popover--right">
                     {[
                       { label: 'All Prices', value: '' },
                       { label: 'Price: Low to High', value: 'price-asc' },
@@ -1163,8 +1191,10 @@ function Products() {
                     ].map((p) => (
                       <button
                         key={p.value}
+                        type="button"
                         className={`pcol-sort-popover-item${priceSort === p.value ? ' active' : ''}`}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setPriceSort(p.value);
                           setPriceOpen(false);
                         }}

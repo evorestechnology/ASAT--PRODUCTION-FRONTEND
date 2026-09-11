@@ -550,7 +550,7 @@ function Navbar() {
                             <Link to="/products?sort=newest" className="blu-header__nav-link">
                                 Latest
                             </Link>
-                            <Link to="/products" className="blu-header__nav-link">
+                            <Link to="/designers" className="blu-header__nav-link">
                                 Best Sellers
                             </Link>
                             <Link to="/products" className="blu-header__nav-link">
@@ -773,7 +773,7 @@ function Navbar() {
                         <div className="blu-drawer__nav">
                             <Link to="/" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Home</Link>
                             <Link to="/products?sort=newest" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Latest</Link>
-                            <Link to="/products" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Best Sellers</Link>
+                            <Link to="/designers" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Best Sellers</Link>
                             <Link to="/products" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Explore Collections</Link>
                             <Link to="/rankings" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Designer Rankings</Link>
                             <div className="blu-drawer__sep" />

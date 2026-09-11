@@ -387,8 +387,8 @@ function DesignerRankings() {
             <style>{styles}</style>
             <div className="rnk-page">
                 <div className="rnk-hero">
-                    <h1>CREATOR RANKINGS</h1>
-                    <p>lookout the designers shaping the future of global fashion</p>
+                    <h1>BEST SELLERS &amp; CREATOR RANKINGS</h1>
+                    <p>Discover the top-selling designers shaping the future of global luxury streetwear</p>
                 </div>
 
                 <div className="rnk-container">

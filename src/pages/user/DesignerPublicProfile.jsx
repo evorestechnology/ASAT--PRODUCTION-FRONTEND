@@ -98,6 +98,47 @@ const styles = `
     text-transform: uppercase;
   }
 
+  .dpp-social-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 24px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(197,160,89,0.35);
+    background: rgba(197,160,89,0.1);
+    color: var(--gold, #C5A059);
+    letter-spacing: 0.5px;
+  }
+  .dpp-social-pill:hover {
+    transform: translateY(-2px);
+  }
+  .dpp-social-pill--ig {
+    background: rgba(225, 48, 108, 0.12);
+    border-color: rgba(225, 48, 108, 0.35);
+    color: #ff5b8e;
+  }
+  .dpp-social-pill--ig:hover {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(220,39,67,0.4);
+  }
+  .dpp-social-pill--in {
+    background: rgba(0, 119, 181, 0.12);
+    border-color: rgba(0, 119, 181, 0.35);
+    color: #00a0dc;
+  }
+  .dpp-social-pill--in:hover {
+    background: #0077b5;
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(0,119,181,0.4);
+  }
+
   .dpp-hero__stats {
     display: flex;
     gap: 32px;
@@ -665,11 +706,12 @@ function DesignerPublicProfile() {
               email: data.email,
               username: data.username,
               avatar: data.avatar_url,
-              bio: data.description || data.bio || '',
-              instagram: data.instagram || '',
+              bio: data.description || data.bio || 'Luxury streetwear creator & fashion artist at Designer Paradise.',
+              instagram: data.instagram || data.username || '',
               linkedin: data.linkedin || '',
-              speciality: data.speciality || '',
-              location: data.address || '',
+              speciality: data.speciality || 'Streetwear & Haute Couture',
+              country: data.country || 'India',
+              location: data.address || data.country || 'India',
               status: data.status,
               designsCount: data.designs_count,
               totalEarnings: Number(data.total_earnings) || 0,
@@ -866,55 +908,54 @@ function DesignerPublicProfile() {
               <div className="dpp-hero__info">
                 <div className="dpp-hero__label">Designer Profile</div>
                 <h1 className="dpp-hero__name">{designer.fullName || designer.username}</h1>
-                {designer.bio && (
-                  <p className="dpp-hero__bio">{designer.bio}</p>
-                )}
+                
+                <p className="dpp-hero__bio">
+                  {designer.bio || 'Luxury streetwear creator & fashion artist at Designer Paradise.'}
+                </p>
+
                 <div className="dpp-hero__tags">
-                  {designer.speciality && (
-                    <span className="dpp-hero__tag">{designer.speciality}</span>
-                  )}
-                  {/* {designer.location && (
+                  <span className="dpp-hero__tag">
+                    <i className="fa-solid fa-sparkles" style={{ marginRight: '6px' }} />
+                    {designer.speciality || 'Streetwear & Haute Couture'}
+                  </span>
+                  {(designer.country || designer.location) && (
                     <span className="dpp-hero__tag">
-                      <i className="fa-solid fa-location-dot" style={{ marginRight: '4px' }} />
-                      {designer.location}
+                      <i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }} />
+                      {designer.country || designer.location}
                     </span>
-                  )} */}
-                  {/* {designer.status === 'active' && (
-                    <span className="dpp-hero__tag" style={{ borderColor: 'rgba(40,200,100,0.4)', color: '#28c864' }}>
-                      ● Active
-                    </span>
-                  )} */}
+                  )}
+                  <span className="dpp-hero__tag" style={{ borderColor: 'rgba(40,200,100,0.4)', color: '#2ecc71', background: 'rgba(46,204,113,0.1)' }}>
+                    ● Verified Atelier Creator
+                  </span>
                 </div>
-                {(designer.instagram || designer.linkedin) && (
-                  <div style={{ display: 'flex', gap: '20px', marginTop: '16px', alignItems: 'center' }}>
-                    {designer.instagram && (
-                      <a 
-                        href={`https://instagram.com/${designer.instagram.replace(/^@/, '')}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        style={{ color: 'var(--gold)', textDecoration: 'none', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px', transition: 'opacity 0.2s', fontWeight: 500 }}
-                        onMouseOver={(e) => e.currentTarget.style.opacity = 0.8}
-                        onMouseOut={(e) => e.currentTarget.style.opacity = 1}
-                      >
-                        <i className="fa-brands fa-instagram" style={{ fontSize: '1.05rem' }} />
-                        <span>@{designer.instagram.replace(/^@/, '')}</span>
-                      </a>
-                    )}
-                    {designer.linkedin && (
-                      <a 
-                        href={designer.linkedin.startsWith('http') ? designer.linkedin : `https://linkedin.com/in/${designer.linkedin}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        style={{ color: 'var(--gold)', textDecoration: 'none', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px', transition: 'opacity 0.2s', fontWeight: 500 }}
-                        onMouseOver={(e) => e.currentTarget.style.opacity = 0.8}
-                        onMouseOut={(e) => e.currentTarget.style.opacity = 1}
-                      >
-                        <i className="fa-brands fa-linkedin" style={{ fontSize: '1.05rem' }} />
-                        <span>LinkedIn</span>
-                      </a>
-                    )}
-                  </div>
-                )}
+
+                {/* Social Connect Links */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginTop: '18px', alignItems: 'center' }}>
+                  {(designer.instagram || designer.username) && (
+                    <a 
+                      href={`https://instagram.com/${(designer.instagram || designer.username).replace(/^@/, '')}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="dpp-social-pill dpp-social-pill--ig"
+                      title="Follow on Instagram"
+                    >
+                      <i className="fa-brands fa-instagram" style={{ fontSize: '1.15rem' }} />
+                      <span>@{(designer.instagram || designer.username).replace(/^@/, '')}</span>
+                    </a>
+                  )}
+                  {designer.linkedin && (
+                    <a 
+                      href={designer.linkedin.startsWith('http') ? designer.linkedin : `https://linkedin.com/in/${designer.linkedin}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="dpp-social-pill dpp-social-pill--in"
+                      title="Connect on LinkedIn"
+                    >
+                      <i className="fa-brands fa-linkedin" style={{ fontSize: '1.15rem' }} />
+                      <span>LinkedIn Profile</span>
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* Stats */}
