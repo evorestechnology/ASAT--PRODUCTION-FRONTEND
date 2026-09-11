@@ -252,12 +252,13 @@ function ProductCard({ product, badge, badgeClass = '', rank, onNavigate, animIn
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    SECTION WRAPPER with heading
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-function Section({ id, label, title, dark, children }) {
+function Section({ id, label, title, dark, children, discoverLink = '/products' }) {
+  const navigate = useNavigate();
   return (
     <section className={`blu-section${dark ? ' blu-section--dark' : ''}`} id={id} data-animate="section">
       <div className="blu-section__head" data-animate="heading">
         <h2 className="blu-section__title">{title || label}</h2>
-        <button className="blu-section__discover-btn" onClick={() => window.location.href = '/products'}>
+        <button className="blu-section__discover-btn" onClick={() => navigate(discoverLink)}>
           Discover more
         </button>
       </div>
@@ -787,7 +788,7 @@ export default function UserIndex() {
           )}
         />
       </Section> */}
-  <Section id="designers-spotlight" label="Creator Ateliers" title="Explore Designers">
+  <Section id="designers-spotlight" label="Creator Ateliers" title="Explore Designers" discoverLink="/designers">
         <ScrollRow
           items={designers}
           loading={loadingDesigners}
@@ -811,7 +812,7 @@ export default function UserIndex() {
               <span className="blu-designer-card__name">{d.fullName}</span>
               <span className="blu-designer-card__handle">@{d.username || 'creator'}</span>
               <span className="blu-designer-card__stats">{d.designsCount || 0} DROPS</span>
-              <span className="blu-designer-card__btn">VIEW ATELIER</span>
+              <span className="blu-designer-card__btn">VIEW DESIGNS</span>
             </div>
           )}
         />

@@ -683,8 +683,8 @@ function DesignerRegister() {
             console.error('Failed to load saved form state:', e);
         }
         return {
-            fullName: '', countryCode: '+91 India', contact: '', gmail: '', useAsRecovery: true,
-            username: '', password: '', confirmPassword: '',
+            firstName: '', secondName: '', fullName: '', countryCode: '+91 India', contact: '', gmail: '', useAsRecovery: true,
+            password: '', confirmPassword: '',
             gender: '', dob: '', address: '', country: '', upiId: '', paypalId: '',
             description: '', instagram: '', linkedin: ''
         };
@@ -885,11 +885,11 @@ function DesignerRegister() {
 
     const validate = () => {
         const e = {};
-        if (!form.fullName.trim()) e.fullName = 'Full name is required';
+        if (!form.firstName?.trim()) e.firstName = 'First name is required';
+        if (!form.secondName?.trim()) e.secondName = 'Second name is required';
         if (!form.contact.trim()) e.contact = 'Contact number is required';
         if (!form.gmail.trim()) e.gmail = 'Gmail is required';
         else if (!form.gmail.endsWith('@gmail.com')) e.gmail = 'Must be a valid @gmail.com address';
-        if (!form.username.trim()) e.username = 'Username is required';
         if (form.password.length < 6) e.password = 'Password must be at least 6 characters';
         if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
         if (!form.gender) e.gender = 'Select gender';
@@ -959,6 +959,15 @@ function DesignerRegister() {
         setRegisterError('');
         
         try {
+            const cleanFirst = (form.firstName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            const cleanSecond = (form.secondName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            const computedFullName = (form.fullName && form.fullName.trim()) 
+                ? form.fullName.trim() 
+                : `${form.firstName || ''} ${form.secondName || ''}`.trim() || 'Designer';
+            const autoUsername = (form.username && form.username.trim())
+                ? form.username.trim().toLowerCase()
+                : `${(cleanFirst || cleanSecond || computedFullName.replace(/[^a-z0-9]/gi, '').toLowerCase() || 'designer').slice(0, 12)}_${Date.now().toString().slice(-4)}`;
+
             // 1. Call the atomic registration endpoint on the backend
             const registerRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/register-designer`, {
                 method: 'POST',
@@ -967,8 +976,10 @@ function DesignerRegister() {
                     email: form.gmail,
                     password: form.password,
                     otp: fullOtp,
-                    fullName: form.fullName,
-                    username: form.username,
+                    fullName: computedFullName,
+                    firstName: form.firstName || '',
+                    secondName: form.secondName || '',
+                    username: autoUsername,
                     contact: form.contact,
                     countryCode: form.countryCode,
                     gender: form.gender,
@@ -1030,7 +1041,7 @@ function DesignerRegister() {
             sessionStorage.removeItem('asat_designer_registration');
             navigate('/designer/login', { 
                 state: { 
-                    successMessage: `Welcome to the Paradise, ${form.fullName}! Your email was verified and your designer registration was completed successfully. Please sign in below.` 
+                    successMessage: `Welcome to the Paradise, ${computedFullName || 'Designer'}! Your email was verified and your designer registration was completed successfully. Please sign in below.` 
                 } 
             });
             
@@ -1057,8 +1068,8 @@ function DesignerRegister() {
                     />
                 ))}
                 <div className="auth-image-overlay">
-                    <h1 className="auth-brand-name">As Simple as That</h1>
-                    <p className="auth-brand-tagline">**A Designer Paradise**</p>
+                    <h1 className="auth-brand-name">Designer Paradise</h1>
+                    <p className="auth-brand-tagline">A Creative Haven for Designers</p>
                 </div>
             </div>
 
@@ -1140,14 +1151,14 @@ function DesignerRegister() {
 
                         <div className="auth-row">
                             <div className="auth-input-group">
-                                <label>Full Name</label>
-                                <input type="text" className="auth-input" placeholder="Your full name" value={form.fullName} onChange={e => set('fullName', e.target.value)} />
-                                {errors.fullName && <div className="auth-err">{errors.fullName}</div>}
+                                <label>First Name</label>
+                                <input type="text" className="auth-input" placeholder="First name" value={form.firstName || ''} onChange={e => set('firstName', e.target.value)} />
+                                {errors.firstName && <div className="auth-err">{errors.firstName}</div>}
                             </div>
                             <div className="auth-input-group">
-                                <label>Username</label>
-                                <input type="text" className="auth-input" placeholder="Choose a username" value={form.username} onChange={e => set('username', e.target.value)} />
-                                {errors.username && <div className="auth-err">{errors.username}</div>}
+                                <label>Second Name</label>
+                                <input type="text" className="auth-input" placeholder="Second name" value={form.secondName || ''} onChange={e => set('secondName', e.target.value)} />
+                                {errors.secondName && <div className="auth-err">{errors.secondName}</div>}
                             </div>
                         </div>
 

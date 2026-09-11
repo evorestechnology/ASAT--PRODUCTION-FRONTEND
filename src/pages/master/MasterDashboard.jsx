@@ -58,11 +58,12 @@ function MasterDashboard() {
                 const totalOrders = orders.length;
                 const last24h = orders.filter(o => getOrderTime(o) > oneDayAgo).length;
 
-                // Revenue allocations
-                const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-                const designerEarnings = orders.reduce((sum, o) => sum + (o.designerEarnings || 0), 0);
-                const mfgEarnings = orders.reduce((sum, o) => sum + (o.mfgEarnings || 0), 0);
-                const platformEarnings = totalRevenue - designerEarnings - mfgEarnings;
+                // Revenue allocations (strictly exclude cancelled orders)
+                const activeOrders = orders.filter(o => o.status !== 'cancelled');
+                const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+                const designerEarnings = activeOrders.reduce((sum, o) => sum + (o.designerEarnings || 0), 0);
+                const mfgEarnings = activeOrders.reduce((sum, o) => sum + (o.mfgEarnings || 0), 0);
+                const platformEarnings = Math.max(0, totalRevenue - designerEarnings - mfgEarnings);
 
                 const completed = orders.filter(o => o.status === 'completed');
                 const ordersCompleted = completed.length;

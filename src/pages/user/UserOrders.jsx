@@ -437,6 +437,14 @@ function UserOrders() {
         return false;
     });
 
+    const getOrderStatusInfo = (status) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'cancelled') return { label: 'CANCELLED', className: 'cancelled' };
+        if (s === 'completed' || s === 'delivered') return { label: 'COMPLETED', className: 'completed' };
+        if (s === 'shipping') return { label: 'SHIPPING', className: 'shipped' };
+        return { label: 'IN PROGRESS', className: 'manufacturing' };
+    };
+
     return (
         <>
             <style>{styles}</style>
@@ -536,9 +544,14 @@ function UserOrders() {
                                                     {formatPrice(o.total_amount || 0)}
                                                 </td>
                                                 <td>
-                                                    <span className={`status-badge ${o.status || 'pending'}`}>
-                                                        {o.status === 'cancelled' ? 'CANCELLED' : (o.status || 'pending')}
-                                                    </span>
+                                                    {(() => {
+                                                        const sInfo = getOrderStatusInfo(o.status);
+                                                        return (
+                                                            <span className={`status-badge ${sInfo.className}`}>
+                                                                {sInfo.label}
+                                                            </span>
+                                                        );
+                                                    })()}
                                                 </td>
                                                 <td>
                                                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

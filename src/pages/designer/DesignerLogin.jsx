@@ -466,8 +466,8 @@ function DesignerLogin() {
                 </Link>
 
                 <div className="auth-form-container">
-                    <h2 className="auth-title">As Simple as That</h2>
-                    <p className="auth-subtitle">**A Designer Paradise** — sign in to your studio.</p>
+                    <h2 className="auth-title">Designer Paradise</h2>
+                    <p className="auth-subtitle">Sign in to your creative designer studio.</p>
 
                     {successMsg && (
                         <div style={{
@@ -576,8 +576,8 @@ function DesignerLogin() {
                     />
                 ))}
                 <div className="auth-image-overlay">
-                    <h1 className="auth-brand-name">As Simple as That</h1>
-                    <p className="auth-brand-tagline">**A Designer Paradise**</p>
+                    <h1 className="auth-brand-name">Designer Paradise</h1>
+                    <p className="auth-brand-tagline">Create. Monetize. Inspire.</p>
                 </div>
             </div>
 

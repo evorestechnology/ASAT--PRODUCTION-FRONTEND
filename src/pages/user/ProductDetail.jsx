@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import BackButton from '../../components/BackButton';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -377,10 +377,11 @@ const styles = `
 
     .pdp-tabs-nav {
         display: flex;
-        gap: 20px;
+        gap: 18px;
         border-bottom: 1px solid #F0F0F0;
         padding-bottom: 12px;
         margin-bottom: 16px;
+        flex-wrap: wrap;
     }
 
     .pdp-tab-btn {
@@ -416,8 +417,6 @@ const styles = `
         .pdp-sticky-wrap {
             position: static;
         }
-    }content: center;
-        border: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .pdp-main-image-container:hover .pdp-main-image {
@@ -1180,7 +1179,7 @@ function ProductDetail() {
     }, [showSizeChart]);
     const [selectedPrintStyle, setSelectedPrintStyle] = useState(null);
     const [quantity, setQuantity] = useState(1);
-    const [activeTab, setActiveTab] = useState('description');
+    const [activeTab, setActiveTab] = useState('designer-note');
     const [added, setAdded] = useState(false);
     const [wishlisted, setWishlisted] = useState(false);
     const [showShareMenu, setShowShareMenu] = useState(false);
@@ -1486,6 +1485,10 @@ function ProductDetail() {
     useEffect(() => {
         let isMounted = true;
         setLoading(true);
+        setSelectedImage(0);
+        setSelectedColor(0);
+        setSelectedSize(null);
+        setFetchError(null);
 
         const loadProduct = async () => {
             try {
@@ -1524,16 +1527,20 @@ function ProductDetail() {
                         return;
                     }
 
+                    const initialDesigner = designData.designers?.full_name || designData.designer_username || designData.designers?.username || 'Creator';
+                    const initialDesignerId = designData.designer_id || designData.designer_username || '';
+                    const initialDesignerUsername = designData.designer_username || designData.designers?.username || '';
+
                     const dbProduct = {
                         id: designData.id,
                         name: designData.title || 'Unnamed Product',
                         price: Number(designData.price) || 0,
                         category: designData.category?.toLowerCase() || 'general',
-                        collection: 'ASAT Exclusive',
-                        designer: designData.designer_username ? `@${designData.designer_username}` : 'ASAT Designer',
-                        designerId: designData.designer_id || 'unknown_designer',
-                        designerUsername: designData.designer_username || 'anonymous',
-                        description: parsedDesc ? (parsedDesc.text || '') : (designData.description || 'No description available for this premium designer item.'),
+                        collection: designData.collection || 'Designer Paradise Exclusive',
+                        designer: initialDesigner,
+                        designerId: initialDesignerId,
+                        designerUsername: initialDesignerUsername,
+                        description: parsedDesc ? (parsedDesc.text || '') : (designData.description || ''),
                         customerImages: parsedDesc ? (parsedDesc.customerImages || parsedDesc.colorMockups || null) : null,
                         colorMockups: parsedDesc ? (parsedDesc.colorMockups || parsedDesc.customerImages || null) : null,
                         baseProductId: parsedDesc ? parsedDesc.baseProductId : null,
@@ -1543,17 +1550,34 @@ function ProductDetail() {
                             'Premium heavyweight fabric construction',
                             'Precision tailoring designed for modern drape',
                             'Pre-shrunk and color-locked longevity',
-                            'Designed exclusively for the ASAT Collection'
+                            'Designed exclusively for the Designer Paradise Collection'
                         ],
-                        designerNote: designData.designer_note || 'Reflecting a fine balance of modern street aesthetics and rich cultural silhouettes.',
-                        washCare: designData.wash_care || ['Machine wash cold inside out', 'Do not bleach', 'Hang dry in shade', 'Iron on low heat'],
+                        designerNote: parsedDesc?.text 
+                            || parsedDesc?.designerNote 
+                            || parsedDesc?.designer_note 
+                            || designData.designer_note 
+                            || (typeof designData.description === 'string' && !designData.description.startsWith('{') ? designData.description : '')
+                            || 'Reflecting a fine balance of modern street aesthetics and rich cultural silhouettes.',
+                        washCare: (designData.wash_care && (Array.isArray(designData.wash_care) ? designData.wash_care : [designData.wash_care])) || [
+                            'Hand wash cold or gentle machine wash inside-out',
+                            'Do not bleach or tumble dry',
+                            'Iron on low heat avoiding direct graphic print',
+                            'Flat dry in shade to preserve garment shape'
+                        ],
+                        shippingNote: (designData.shipping_note && (Array.isArray(designData.shipping_note) ? designData.shipping_note : [designData.shipping_note])) || [
+                            'Free express domestic shipping across India on orders above ₹999',
+                            'Dispatched within 24–48 business hours from manufacturing facility',
+                            'Standard delivery in 3–5 business days with live courier tracking',
+                            '7-day hassle-free return and exchange policy for unworn items'
+                        ],
                         sizes: designData.sizes || ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
                         sizeChartImage: designData.size_chart_image || '',
                         colors: designData.colors || ['#121212', '#F5F5DC', '#8B4513'],
                         images: designData.images && designData.images.length > 0 ? designData.images : [
                             'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80'
                         ],
-                        pricing: parsedDesc ? parsedDesc.pricing : null
+                        pricing: parsedDesc ? parsedDesc.pricing : null,
+                        tags: designData.tags || (parsedDesc?.tags || [])
                     };
 
                     // Fetch designer details
@@ -1568,7 +1592,13 @@ function ProductDetail() {
                                     }
                                     return;
                                 }
-                                dbProduct.designer = desData.full_name || `@${designData.designer_username}`;
+                                if (desData.full_name) {
+                                    dbProduct.designer = desData.full_name;
+                                } else if (desData.username) {
+                                    dbProduct.designer = desData.username;
+                                }
+                                if (desData.id) dbProduct.designerId = desData.id;
+                                if (desData.username) dbProduct.designerUsername = desData.username;
                             }
                         } catch (err) {
                             console.error('Error fetching designer details:', err);
@@ -1633,25 +1663,33 @@ function ProductDetail() {
                                 if (catData.details && catData.details.length > 0) {
                                     dbProduct.details = catData.details.filter(d => d !== '__DELETED__');
                                 }
-                                if (catData.wash_care && catData.wash_care.length > 0) {
-                                    dbProduct.washCare = catData.wash_care;
+                                if (catData.wash_care) {
+                                    const wc = Array.isArray(catData.wash_care) ? catData.wash_care.filter(Boolean) : [catData.wash_care];
+                                    if (wc.length > 0) dbProduct.washCare = wc;
+                                }
+                                if (catData.shipping_note) {
+                                    const sn = Array.isArray(catData.shipping_note) ? catData.shipping_note.filter(Boolean) : [catData.shipping_note];
+                                    if (sn.length > 0) dbProduct.shippingNote = sn;
                                 }
                                 dbProduct.mfgId = catData.mfg_id;
                                 dbProduct.mfgName = catData.mfg_name || catData.mfgName || '';
                             } else {
-                                if (isMounted) {
-                                    setProduct(null);
-                                    setLoading(false);
-                                }
-                                return;
+                                // Base product not found in catalog, fallback to design defaults
+                                dbProduct.sizes = (dbProduct.sizes || ['XS', 'S', 'M', 'L', 'XL', 'XXL']).map(sz => {
+                                    const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
+                                    const isAvail = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
+                                    return { size: sizeName, available: isAvail };
+                                });
+                                dbProduct.allSizesOut = false;
                             }
                         } catch (err) {
-                            console.error('Error fetching base product details:', err);
-                            if (isMounted) {
-                                setProduct(null);
-                                setLoading(false);
-                            }
-                            return;
+                            console.warn('Error fetching base product details, using design defaults:', err);
+                            dbProduct.sizes = (dbProduct.sizes || ['XS', 'S', 'M', 'L', 'XL', 'XXL']).map(sz => {
+                                const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
+                                const isAvail = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
+                                return { size: sizeName, available: isAvail };
+                            });
+                            dbProduct.allSizesOut = false;
                         }
                     } else {
                         // Standardize sizes format if no base product
@@ -1665,6 +1703,7 @@ function ProductDetail() {
 
                     if (isMounted) {
                         setProduct(dbProduct);
+                        setActiveTab('designer-note');
                         setSelectedImage(0);
                         setSelectedColor(0);
                         const firstAvailSize = dbProduct.sizes?.find(s => s.available !== false)?.size || null;
@@ -1919,6 +1958,46 @@ function ProductDetail() {
                                 </button>
                             </div>
 
+                            {/* Designer Attribution: always shown and navigates to designer public profile */}
+                            <div style={{ marginBottom: '14px', marginTop: '2px' }}>
+                                <Link
+                                    to={`/designers/${product.designerId || product.designerUsername || ''}`}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        fontSize: '11px',
+                                        fontWeight: '700',
+                                        letterSpacing: '1.2px',
+                                        textTransform: 'uppercase',
+                                        color: 'var(--gold, #C5A059)',
+                                        textDecoration: 'none',
+                                        background: 'rgba(197, 160, 89, 0.08)',
+                                        padding: '5px 12px',
+                                        borderRadius: '4px',
+                                        border: '1px solid rgba(197, 160, 89, 0.3)',
+                                        transition: 'all 0.2s ease',
+                                        cursor: 'pointer'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.currentTarget.style.background = 'rgba(197, 160, 89, 0.16)';
+                                        e.currentTarget.style.borderColor = 'rgba(197, 160, 89, 0.6)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.background = 'rgba(197, 160, 89, 0.08)';
+                                        e.currentTarget.style.borderColor = 'rgba(197, 160, 89, 0.3)';
+                                    }}
+                                    title="View Designer Profile"
+                                >
+                                    <span>BY {String(product.designer || product.designerUsername || 'CREATOR').replace(/^@/, '')}</span>
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </Link>
+                            </div>
+
                             <div className="pdp-price-row">
                                 {formatPrice(applyMarkup((product.price) + (product.isMfgProduct && selectedPrintStyle ? selectedPrintStyle.cost : 0)))}
                             </div>
@@ -2008,32 +2087,111 @@ function ProductDetail() {
                         {/* Accordion / Tabs Description Card */}
                         <div className="pdp-accordion-card">
                             <div className="pdp-tabs-nav">
-                                <button className={`pdp-tab-btn ${activeTab === 'details' ? 'active' : ''}`} onClick={() => setActiveTab('details')}>
-                                    Details & Description
+                                <button 
+                                    type="button"
+                                    className={`pdp-tab-btn ${activeTab === 'designer-note' ? 'active' : ''}`} 
+                                    onClick={() => setActiveTab('designer-note')}
+                                >
+                                    Designer Note
                                 </button>
-                                <button className={`pdp-tab-btn ${activeTab === 'washcare' ? 'active' : ''}`} onClick={() => setActiveTab('washcare')}>
-                                    Washcare
+                                <button 
+                                    type="button"
+                                    className={`pdp-tab-btn ${activeTab === 'description' ? 'active' : ''}`} 
+                                    onClick={() => setActiveTab('description')}
+                                >
+                                    Description
                                 </button>
-                                <button className={`pdp-tab-btn ${activeTab === 'shipping' ? 'active' : ''}`} onClick={() => setActiveTab('shipping')}>
-                                    Shipping
+                                <button 
+                                    type="button"
+                                    className={`pdp-tab-btn ${activeTab === 'washcare' ? 'active' : ''}`} 
+                                    onClick={() => setActiveTab('washcare')}
+                                >
+                                    Wash Care
+                                </button>
+                                <button 
+                                    type="button"
+                                    className={`pdp-tab-btn ${activeTab === 'shipping' ? 'active' : ''}`} 
+                                    onClick={() => setActiveTab('shipping')}
+                                >
+                                    Shipping Note
                                 </button>
                             </div>
 
                             <div className="pdp-tab-body">
-                                {activeTab === 'details' && (
+                                {activeTab === 'designer-note' && (
                                     <div>
-                                        <p style={{ margin: '0 0 10px', fontWeight: '600', color: '#000' }}>{product.collection || '100% Premium Cotton'}</p>
-                                        <p style={{ margin: 0, color: '#555' }}>{product.description || 'Crafted from heavyweight French Terry cotton offering structured fit and breathable luxury comfort.'}</p>
+                                        <p style={{ margin: '0 0 12px', fontStyle: 'italic', fontSize: '13px', lineHeight: '1.7', color: '#222222', borderLeft: '2px solid #C5A059', paddingLeft: '14px' }}>
+                                            "{product.designerNote || 'Reflecting a fine balance of modern street aesthetics and rich cultural silhouettes.'}"
+                                        </p>
+                                        <p style={{ margin: 0, fontSize: '11.5px', color: '#777777' }}>
+                                            Drop designed by{' '}
+                                            <Link 
+                                                to={`/designers/${product.designerId || product.designerUsername || ''}`}
+                                                style={{ color: '#000000', fontWeight: '700', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+                                            >
+                                                {String(product.designer || product.designerUsername || 'Creator').replace(/^@/, '')}
+                                            </Link>
+                                        </p>
+                                    </div>
+                                )}
+                                {activeTab === 'description' && (
+                                    <div>
+                                        {product.collection && (
+                                            <p style={{ margin: '0 0 8px', fontWeight: '700', color: '#000000', fontSize: '13px' }}>
+                                                {product.collection}
+                                            </p>
+                                        )}
+                                        {product.description && product.description !== product.designerNote && (
+                                            <p style={{ margin: '0 0 10px', color: '#555555', lineHeight: '1.6' }}>
+                                                {product.description}
+                                            </p>
+                                        )}
+                                        {product.details && Array.isArray(product.details) && product.details.filter(d => typeof d === 'string' && !d.startsWith('__')).length > 0 ? (
+                                            <ul style={{ margin: 0, paddingLeft: '18px', color: '#555555', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                {product.details.filter(d => typeof d === 'string' && !d.startsWith('__')).map((item, idx) => (
+                                                    <li key={idx}>{item}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p style={{ margin: 0, color: '#555555', lineHeight: '1.6' }}>
+                                                Crafted from heavyweight premium cotton offering structured fit and breathable luxury comfort.
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                                 {activeTab === 'washcare' && (
                                     <div>
-                                        <p style={{ margin: 0, color: '#555' }}>• Hand wash cold or gentle machine wash inside-out<br />• Do not bleach<br />• Iron on low heat avoiding direct graphic embroidery<br />• Flat dry in shade</p>
+                                        {product.washCare && Array.isArray(product.washCare) && product.washCare.length > 0 ? (
+                                            <ul style={{ margin: 0, paddingLeft: '18px', color: '#555555', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                {product.washCare.map((item, idx) => (
+                                                    <li key={idx}>{item}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p style={{ margin: 0, color: '#555555', lineHeight: '1.6' }}>
+                                                • Hand wash cold or gentle machine wash inside-out<br />
+                                                • Do not bleach or tumble dry<br />
+                                                • Iron on low heat avoiding direct graphic embroidery<br />
+                                                • Flat dry in shade
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                                 {activeTab === 'shipping' && (
                                     <div>
-                                        <p style={{ margin: 0, color: '#555' }}>• Free express domestic shipping across India<br />• Dispatched in 24-48 business hours<br />• 7-day hassle-free return and exchange policy</p>
+                                        {product.shippingNote && Array.isArray(product.shippingNote) && product.shippingNote.length > 0 ? (
+                                            <ul style={{ margin: 0, paddingLeft: '18px', color: '#555555', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                {product.shippingNote.map((item, idx) => (
+                                                    <li key={idx}>{item}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p style={{ margin: 0, color: '#555555', lineHeight: '1.6' }}>
+                                                • Free express domestic shipping across India on orders above ₹999<br />
+                                                • Dispatched in 24–48 business hours<br />
+                                                • 7-day hassle-free return and exchange policy
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                             </div>

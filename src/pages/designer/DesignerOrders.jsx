@@ -27,11 +27,15 @@ function DesignerOrders() {
                 // Gather properties of matching items
                 let matchingItems = [];
                 if (Array.isArray(o.items)) {
-                    matchingItems = o.items.filter(item => item.designerId === user.id);
+                    matchingItems = o.items.filter(item => item.designerId === user.id || item.designer_id === user.id || (!item.isMfgProduct && o.designer_id === user.id));
                 }
 
                 const totalQty = matchingItems.reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
-                const royalty = Number(o.designer_earnings) || matchingItems.reduce((sum, item) => sum + Math.round((Number(item.price) || 0) * (Number(item.qty) || 1) * 0.1), 0);
+                const itemsRoyalty = matchingItems.reduce((sum, item) => {
+                    const r = Number(item.designer_price) || Number(item.designerRoyalty) || Number(item.designerCost) || 0;
+                    return sum + (r * (Number(item.qty) || 1));
+                }, 0);
+                const royalty = itemsRoyalty > 0 ? itemsRoyalty : (Number(o.designer_earnings) || matchingItems.reduce((sum, item) => sum + Math.round((Number(item.price) || 0) * (Number(item.qty) || 1) * 0.1), 0));
 
                 const productLabel = matchingItems.map(item => item.name).join(', ') || 'Garment';
                 const colors = matchingItems.map(item => item.color).filter(Boolean).join(', ') || 'Standard';
@@ -45,7 +49,8 @@ function DesignerOrders() {
                     product: productLabel,
                     qty: totalQty || 1,
                     country: o.country || 'India',
-                    royalty: royalty || 0,
+                    royalty: o.status === 'cancelled' ? 0 : (royalty || 0),
+                    status: o.status || 'pending',
                     color: colors,
                     size: sizes,
                     placement: 'Front / Back',
@@ -141,6 +146,7 @@ function DesignerOrders() {
                                 <th>Product</th>
                                 <th>Qty</th>
                                 <th>Country</th>
+                                <th>Status</th>
                                 <th>Royalty (₹)</th>
                             </tr>
                         </thead>
@@ -153,11 +159,32 @@ function DesignerOrders() {
                                         <td>{o.product}</td>
                                         <td>{o.qty}</td>
                                         <td>{o.country}</td>
-                                        <td className="dsn-table__royalty">₹{o.royalty.toLocaleString('en-IN')}</td>
+                                        <td>
+                                            <span style={{
+                                                display: 'inline-block',
+                                                padding: '3px 8px',
+                                                borderRadius: '12px',
+                                                fontSize: '0.72rem',
+                                                fontWeight: 600,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px',
+                                                backgroundColor: o.status === 'cancelled' ? '#f0f0f0' : o.status === 'delivered' || o.status === 'completed' ? '#e8f8f0' : '#fff8e7',
+                                                color: o.status === 'cancelled' ? '#888' : o.status === 'delivered' || o.status === 'completed' ? '#2ecc71' : '#e67e22'
+                                            }}>
+                                                {o.status}
+                                            </span>
+                                        </td>
+                                        <td className="dsn-table__royalty">
+                                            {o.status === 'cancelled' ? (
+                                                <span style={{ color: '#aaa', textDecoration: 'line-through' }}>₹0</span>
+                                            ) : (
+                                                `₹${o.royalty.toLocaleString('en-IN')}`
+                                            )}
+                                        </td>
                                     </tr>
                                     {expanded === o.id && (
                                         <tr className="dsn-table__detail-row">
-                                            <td colSpan="6">
+                                            <td colSpan="7">
                                                 <div className="dsn-orders__detail">
                                                     <div className="dsn-orders__detail-item"><strong>Color:</strong> {o.color}</div>
                                                     <div className="dsn-orders__detail-item"><strong>Size:</strong> {o.size}</div>
@@ -170,7 +197,7 @@ function DesignerOrders() {
                             ))}
                             {paged.length === 0 && (
                                 <tr>
-                                    <td colSpan="6" className="dsn-table__empty">
+                                    <td colSpan="7" className="dsn-table__empty">
                                         <i className="fas fa-inbox" style={{ fontSize: '1.5rem', marginBottom: 8, display: 'block', color: '#ddd' }}></i>
                                         No matching orders yet
                                     </td>

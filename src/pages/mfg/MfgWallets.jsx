@@ -8,8 +8,9 @@ import '../../styles/admin.css';
 function MfgWallets() {
     const { user } = useAuth();
     const { toasts, showToast } = useToast();
-    const [wallet, setWallet] = useState({ balance: 0, totalWithdrawn: 0 });
+    const [wallet, setWallet] = useState({ balance: 0, pendingBalance: 0, totalEarnings: 0, totalWithdrawn: 0 });
     const [withdrawals, setWithdrawals] = useState([]);
+    const [ledger, setLedger] = useState([]);
     const [companyName, setCompanyName] = useState('Manufacturer');
     const [loading, setLoading] = useState(true);
     
@@ -34,6 +35,8 @@ function MfgWallets() {
             if (data) {
                 setWallet({
                     balance: Number(data.balance) || 0,
+                    pendingBalance: Number(data.pending_balance) || 0,
+                    totalEarnings: Number(data.total_earnings) || 0,
                     totalWithdrawn: Number(data.total_withdrawn) || 0
                 });
             }
@@ -52,9 +55,18 @@ function MfgWallets() {
                 date: row.created_at ? new Date(row.created_at).getTime() : Date.now()
             }));
             setWithdrawals(list);
-            setLoading(false);
         } catch (err) {
             console.error("Error fetching withdrawals:", err);
+        }
+    };
+
+    const fetchLedger = async () => {
+        try {
+            const data = await apiFetch('/api/wallets/ledger');
+            setLedger(Array.isArray(data) ? data : []);
+            setLoading(false);
+        } catch (err) {
+            console.error("Error fetching mfg ledger:", err);
             setLoading(false);
         }
     };
@@ -65,6 +77,7 @@ function MfgWallets() {
         fetchMfgProfile();
         fetchWallet();
         fetchWithdrawals();
+        fetchLedger();
     }, [user]);
 
     const handleWithdrawRequest = async (e) => {
@@ -75,7 +88,7 @@ function MfgWallets() {
             return;
         }
         if (amt > wallet.balance) {
-            showToast('Insufficient balance.', 'error');
+            showToast('Insufficient withdrawable balance.', 'error');
             return;
         }
 
@@ -104,24 +117,29 @@ function MfgWallets() {
         return new Date(timeMs).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
-    const totalEarnings = wallet.balance + wallet.totalWithdrawn;
-
     return (
         <main className="adm-page">
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />
             <BackButton />
             <h1 className="adm-page__title">WALLET</h1>
-            <p className="adm-page__subtitle">Earnings, balance, and withdrawal management</p>
+            <p className="adm-page__subtitle">Withdrawable balance, in-production pending escrow, and withdrawal requests</p>
 
-            <div className="adm-wallet-cards" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: 20, marginBottom: 20 }}>
-                <div className="adm-wallet-card" style={{ background: '#121212', color: '#fff', borderBottom: '5px solid #C5A059' }}>
-                    <div className="adm-wallet-card__label" style={{ color: '#aaa' }}>Total Earnings</div>
-                    <div className="adm-wallet-card__value" style={{ color: '#C5A059' }}>₹{totalEarnings.toLocaleString('en-IN')}</div>
+            <div className="adm-wallet-cards" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 25 }}>
+                <div className="adm-wallet-card" style={{ background: '#121212', color: '#fff', borderBottom: '5px solid #2ecc71' }}>
+                    <div className="adm-wallet-card__label" style={{ color: '#aaa' }}>Withdrawable Balance</div>
+                    <div className="adm-wallet-card__value" style={{ color: '#2ecc71' }}>₹{wallet.balance.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#888', marginTop: 4 }}>Available for immediate withdrawal</div>
+                </div>
+                <div className="adm-wallet-card" style={{ background: '#121212', color: '#fff', borderBottom: '5px solid #f39c12' }}>
+                    <div className="adm-wallet-card__label" style={{ color: '#aaa' }}>Pending / In Production</div>
+                    <div className="adm-wallet-card__value" style={{ color: '#f39c12' }}>₹{wallet.pendingBalance.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#888', marginTop: 4 }}>Credited upon order delivery</div>
                 </div>
                 <div className="adm-wallet-card" style={{ background: '#121212', color: '#fff', borderBottom: '5px solid #C5A059' }}>
-                    <div className="adm-wallet-card__label" style={{ color: '#aaa' }}>Total Balance</div>
-                    <div className="adm-wallet-card__value" style={{ color: '#C5A059' }}>₹{wallet.balance.toLocaleString('en-IN')}</div>
+                    <div className="adm-wallet-card__label" style={{ color: '#aaa' }}>Lifetime Settled Earnings</div>
+                    <div className="adm-wallet-card__value" style={{ color: '#C5A059' }}>₹{wallet.totalEarnings.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#888', marginTop: 4 }}>Total completed orders earnings</div>
                 </div>
             </div>
 
@@ -129,6 +147,60 @@ function MfgWallets() {
                 <button className="adm-settings__btn" style={{ background: '#C5A059', color: '#121212', fontWeight: 600 }} onClick={() => setShowModal(true)}>
                     <i className="fas fa-paper-plane" style={{ marginRight: 6 }}></i> Request Withdrawal
                 </button>
+            </div>
+
+            {/* Order Earnings Ledger */}
+            <h2 style={{ fontFamily: "'Cinzel', serif", fontSize: '1rem', letterSpacing: '1px', marginBottom: '16px' }}>ORDER EARNINGS & PRODUCTION LEDGER</h2>
+            <div className="adm-table-wrap" style={{ marginBottom: 35 }}>
+                <table className="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Your Payout</th>
+                            <th>Production Status</th>
+                            <th>Wallet Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan="7" className="adm-table__empty"><i className="fas fa-spinner fa-spin"></i> Loading order ledger...</td></tr>
+                        ) : ledger.length === 0 ? (
+                            <tr><td colSpan="7" className="adm-table__empty"><i className="fas fa-box-open"></i> No assigned orders found.</td></tr>
+                        ) : (
+                            ledger.map(row => (
+                                <tr key={row.id} style={row.isCancelled ? { opacity: 0.5 } : {}}>
+                                    <td style={{ fontWeight: 600 }}>{row.orderId || row.id}</td>
+                                    <td>{formatDate(row.date)}</td>
+                                    <td>{row.customer}</td>
+                                    <td>{row.itemsCount} pcs</td>
+                                    <td style={{ fontWeight: 700, color: row.isCancelled ? '#888' : '#e67e22' }}>
+                                        {row.isCancelled ? '₹0 (Cancelled)' : `₹${row.amount.toLocaleString('en-IN')}`}
+                                    </td>
+                                    <td>
+                                        <span className={`adm-badge ${
+                                            row.status === 'completed' || row.status === 'delivered' ? 'adm-badge--active' :
+                                            row.status === 'cancelled' ? 'adm-badge--pending' : 'adm-badge--pending'
+                                        }`} style={row.status === 'cancelled' ? { color: '#ef4444', borderColor: '#ef4444' } : {}}>
+                                            {row.status?.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span style={{
+                                            fontSize: '0.75rem',
+                                            fontWeight: 600,
+                                            color: row.isCancelled ? '#888' : row.isDelivered ? '#2ecc71' : '#f39c12'
+                                        }}>
+                                            {row.settlementStatus}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
             </div>
 
             <h2 style={{ fontFamily: "'Cinzel', serif", fontSize: '1rem', letterSpacing: '1px', marginBottom: '16px' }}>WITHDRAWAL HISTORY</h2>

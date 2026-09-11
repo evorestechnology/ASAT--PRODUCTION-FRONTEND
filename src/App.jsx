@@ -103,6 +103,7 @@ function App() {
           <Route path="/"         element={<UserIndex />} />
           <Route path="/products" element={<Products />} />
           <Route path="/products/:productId" element={<ProductDetail />} />
+          <Route path="/designers" element={<DesignerRankings />} />
           <Route path="/designers/:designerId" element={<DesignerPublicProfile />} />
           <Route path="/rankings" element={<DesignerRankings />} />
           <Route path="/terms"    element={<UserTerms />} />

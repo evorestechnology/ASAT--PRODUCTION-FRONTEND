@@ -207,13 +207,18 @@ export default function MasterFinance() {
     else if (region === 'india') { shipping = Number(shippingRules.india) || 200; shippingLabel = 'India'; }
     else if (region === 'usa') {
       const ovr = (shippingRules.country_overrides || []).find(o => o.country === 'United States');
-      shipping = ovr ? Number(ovr.shipping) : Number(shippingRules.row) || 5000;
-      shippingLabel = 'USA';
-    } else if (region === 'row') { shipping = Number(shippingRules.row) || 5000; shippingLabel = 'Rest of World'; }
-    else if (region === 'country') {
+      const perPieceShip = ovr ? Number(ovr.shipping) : Number(shippingRules.row) || 5000;
+      shipping = perPieceShip * qty;
+      shippingLabel = `USA (${qty} pc × ₹${perPieceShip})`;
+    } else if (region === 'row') {
+      const perPieceShip = Number(shippingRules.row) || 5000;
+      shipping = perPieceShip * qty;
+      shippingLabel = `Rest of World (${qty} pc × ₹${perPieceShip})`;
+    } else if (region === 'country') {
       const ovr = (shippingRules.country_overrides || []).find(o => o.country === calc.selectedCountry);
-      shipping = ovr ? Number(ovr.shipping) : Number(shippingRules.row) || 5000;
-      shippingLabel = calc.selectedCountry || 'Country';
+      const perPieceShip = ovr ? Number(ovr.shipping) : Number(shippingRules.row) || 5000;
+      shipping = perPieceShip * qty;
+      shippingLabel = `${calc.selectedCountry || 'Country'} (${qty} pc × ₹${perPieceShip})`;
     }
 
     const grandTotal       = (pricePerPiece + taxPerPiece) * qty + shipping;
@@ -387,7 +392,7 @@ export default function MasterFinance() {
                   value={shippingRules.india}
                   onChange={e => setShippingRules(p => ({ ...p, india: e.target.value }))} />
               </Field>
-              <Field label="🌍 Rest of World Default" hint="₹ flat">
+              <Field label="🌍 Rest of World Default" hint="₹ / piece">
                 <input type="number" className="fin-input" min="0"
                   value={shippingRules.row}
                   onChange={e => setShippingRules(p => ({ ...p, row: e.target.value }))} />
@@ -413,7 +418,7 @@ export default function MasterFinance() {
                       ))}
                     </select>
                   </Field>
-                  <Field label="Shipping Cost" hint="₹ flat">
+                  <Field label="Shipping Cost" hint="₹ / piece">
                     <input type="number" className="fin-input" min="0"
                       value={o.shipping}
                       onChange={e => updateShippingOverride(o.id, 'shipping', e.target.value)} />

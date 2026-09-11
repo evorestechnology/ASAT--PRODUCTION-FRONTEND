@@ -1094,12 +1094,16 @@ function Cart() {
                 shippingLabel = 'India Delivery';
             } else if (addrCountry === 'United States') {
                 const ovr = (shipRules?.country_overrides || []).find(o => o.country === 'United States');
-                shippingAmt  = ovr ? Number(ovr.shipping) : Number(shipRules?.row ?? 5000);
-                shippingLabel = 'USA Shipping';
+                const perPieceShip = ovr ? Number(ovr.shipping) : Number(shipRules?.row ?? 5000);
+                const qty = totalQty || 1;
+                shippingAmt  = perPieceShip * qty;
+                shippingLabel = `USA Shipping (${qty} pc${qty > 1 ? 's' : ''} × ₹${perPieceShip})`;
             } else {
                 const ovr = (shipRules?.country_overrides || []).find(o => o.country === addrCountry);
-                shippingAmt  = ovr ? Number(ovr.shipping) : Number(shipRules?.row ?? 5000);
-                shippingLabel = 'International Shipping';
+                const perPieceShip = ovr ? Number(ovr.shipping) : Number(shipRules?.row ?? 5000);
+                const qty = totalQty || 1;
+                shippingAmt  = perPieceShip * qty;
+                shippingLabel = `International Shipping (${qty} pc${qty > 1 ? 's' : ''} × ₹${perPieceShip})`;
             }
         } else {
             shippingLabel = 'Shipping';

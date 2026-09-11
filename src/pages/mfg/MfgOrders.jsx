@@ -452,7 +452,16 @@ function MfgOrders() {
     };
 
     const filteredOrders = orders.filter(o => {
-        if (statusFilter !== 'all' && (o.status || 'pending').toLowerCase() !== statusFilter) return false;
+        if (statusFilter !== 'all') {
+            const s = (o.status || 'pending').toLowerCase();
+            if (statusFilter === 'in_progress') {
+                if (!['pending', 'confirmed', 'manufacturing', 'in_progress'].includes(s)) return false;
+            } else if (statusFilter === 'shipping') {
+                if (s !== 'shipping') return false;
+            } else if (statusFilter === 'completed') {
+                if (!['completed', 'delivered'].includes(s)) return false;
+            }
+        }
 
         if (searchTerm.trim() !== '') {
             const q = searchTerm.toLowerCase();
@@ -475,18 +484,22 @@ function MfgOrders() {
             <style>{TOAST_CSS}</style>
             <ToastContainer toasts={toasts} />
 
-            <BackButton />
-            <h1 className="adm-page__title">LIVE ORDERS</h1>
+            <h1 className="adm-page__title">Manufacturing Queue</h1>
             <p className="adm-page__subtitle">Active orders currently in production queue</p>
 
             {/* Search and Filter Row */}
             <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '0.85rem', color: '#888', marginRight: '4px' }}>Filter Status:</span>
-                    {['all', 'pending', 'accepted', 'in_production', 'production_completed', 'shipping', 'issue_reported'].map(st => (
+                    {[
+                        { id: 'all', label: 'All' },
+                        { id: 'in_progress', label: 'In Progress' },
+                        { id: 'shipping', label: 'Shipping' },
+                        { id: 'completed', label: 'Completed' }
+                    ].map(st => (
                         <button
-                            key={st}
-                            onClick={() => setStatusFilter(st)}
+                            key={st.id}
+                            onClick={() => setStatusFilter(st.id)}
                             style={{
                                 padding: '6px 12px',
                                 fontSize: '0.75rem',
@@ -494,13 +507,13 @@ function MfgOrders() {
                                 border: '1px solid',
                                 cursor: 'pointer',
                                 textTransform: 'capitalize',
-                                borderColor: statusFilter === st ? 'var(--gold)' : 'rgba(255,255,255,0.15)',
-                                background: statusFilter === st ? 'rgba(197, 160, 89, 0.15)' : '#1c1c1c',
-                                color: statusFilter === st ? 'var(--gold)' : '#aaa',
-                                fontWeight: statusFilter === st ? '600' : 'normal'
+                                borderColor: statusFilter === st.id ? 'var(--gold)' : 'rgba(255,255,255,0.15)',
+                                background: statusFilter === st.id ? 'rgba(197, 160, 89, 0.15)' : '#1c1c1c',
+                                color: statusFilter === st.id ? 'var(--gold)' : '#aaa',
+                                fontWeight: statusFilter === st.id ? '600' : 'normal'
                             }}
                         >
-                            {st.replace(/_/g, ' ')}
+                            {st.label}
                         </button>
                     ))}
                 </div>
@@ -674,7 +687,7 @@ function MfgOrders() {
                                     </td>
                                     <td>
                                         <select
-                                            value={o.status || 'pending'}
+                                            value={['completed', 'delivered'].includes(o.status) ? 'completed' : o.status === 'shipping' ? 'shipping' : 'in_progress'}
                                             onChange={(e) => handleStatusChange(o.id, e.target.value)}
                                             style={{
                                                 padding: '6px 12px',
@@ -688,8 +701,7 @@ function MfgOrders() {
                                                 cursor: 'pointer'
                                             }}
                                         >
-                                            <option value="pending">Pending</option>
-                                            <option value="manufacturing">Manufacturing</option>
+                                            <option value="in_progress">In Progress</option>
                                             <option value="shipping">Shipping</option>
                                             <option value="completed">Completed</option>
                                         </select>

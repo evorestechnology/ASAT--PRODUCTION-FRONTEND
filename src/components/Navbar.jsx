@@ -373,7 +373,14 @@ function Navbar() {
                     padding: 0 20px;
                     box-sizing: border-box;
                 }
+                .blu-search-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    width: 100%;
+                }
                 .blu-search-inner {
+                    flex: 1;
                     display: flex;
                     align-items: center;
                     background: #FFFFFF;
@@ -398,23 +405,53 @@ function Navbar() {
                     cursor: pointer;
                     font-size: 14px;
                     font-weight: 700;
+                    transition: background 0.2s ease;
+                }
+                .blu-search-action-btn:hover {
+                    background: #222222;
+                }
+                .blu-search-close-btn {
+                    background: #FFFFFF;
+                    color: #121212;
+                    border: none;
+                    height: 57px;
+                    width: 57px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+                    transition: all 0.2s ease;
+                    flex-shrink: 0;
+                }
+                .blu-search-close-btn:hover {
+                    background: #000000;
+                    color: #FFFFFF;
+                    transform: scale(1.04);
                 }
                 .blu-search-dismiss {
                     position: absolute;
-                    top: 20px;
-                    left: 24px;
-                    background: #FFFFFF;
+                    top: 22px;
+                    right: 28px;
+                    background: rgba(255, 255, 255, 0.95);
                     border: none;
-                    width: 40px;
-                    height: 40px;
+                    width: 42px;
+                    height: 42px;
                     border-radius: 50%;
-                    font-size: 16px;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     color: #000000;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+                    transition: all 0.2s ease;
+                    z-index: 3010;
+                }
+                .blu-search-dismiss:hover {
+                    background: #000000;
+                    color: #FFFFFF;
+                    transform: scale(1.08);
                 }
 
                 /* ── MOBILE SLIDE-IN DRAWER ── */
@@ -566,11 +603,18 @@ function Navbar() {
                         </Link> */}
 
                         {/* 3. Search Icon */}
-                        <button className="blu-icon-btn" onClick={() => setSearchOpen(true)} aria-label="Search">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
+                        <button className="blu-icon-btn" onClick={() => setSearchOpen(p => !p)} aria-label={searchOpen ? "Close Search" : "Search"}>
+                            {searchOpen ? (
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            ) : (
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            )}
                         </button>
 
                         {/* 4. User Account Icon */}
@@ -632,32 +676,53 @@ function Navbar() {
                         className="blu-search-dismiss"
                         onClick={() => setSearchOpen(false)}
                         aria-label="Close search"
+                        title="Close search"
                     >
-                        ✕
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                     </button>
                     <div className="blu-search-container" onClick={(e) => e.stopPropagation()}>
-                        <form className="blu-search-inner" onSubmit={handleSearchSubmit}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#777777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '20px', flexShrink: 0 }}>
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                className="blu-search-field"
-                                placeholder="Search products, tees, hoodies, caps, drops..."
-                                value={navSearchTerm}
-                                onChange={(e) => setNavSearchTerm(e.target.value)}
-                            />
-                            {navSearchTerm && (
-                                <button type="button" onClick={() => setNavSearchTerm('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999', padding: '0 12px' }}>
-                                    ✕
+                        <div className="blu-search-row">
+                            <form className="blu-search-inner" onSubmit={handleSearchSubmit}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#777777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '20px', flexShrink: 0 }}>
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    className="blu-search-field"
+                                    placeholder="Search products, tees, hoodies, caps, drops..."
+                                    value={navSearchTerm}
+                                    onChange={(e) => setNavSearchTerm(e.target.value)}
+                                />
+                                {navSearchTerm && (
+                                    <button type="button" onClick={() => setNavSearchTerm('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999', padding: '0 12px', display: 'flex', alignItems: 'center' }} title="Clear text">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                )}
+                                <button type="submit" className="blu-search-action-btn">
+                                    Search
                                 </button>
-                            )}
-                            <button type="submit" className="blu-search-action-btn">
-                                Search
+                            </form>
+                            <button
+                                type="button"
+                                className="blu-search-close-btn"
+                                onClick={() => setSearchOpen(false)}
+                                aria-label="Close search"
+                                title="Close search"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
                             </button>
-                        </form>
+                        </div>
 
                         <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Popular:</span>
@@ -757,6 +822,7 @@ function Navbar() {
                             >
                                 Terms & Conditions
                             </Link>
+                            <a href="/designer/login" className="blu-drawer__item" style={{ fontSize: '13px', color: '#000000', fontWeight: '700' }} onClick={() => setMobileOpen(false)}>Designer Login</a>
                             <a href="/designer/register" className="blu-drawer__item" style={{ fontSize: '13px', color: '#000000', fontWeight: '700' }} onClick={() => setMobileOpen(false)}>Join as Designer</a>
                         </div>
                     </nav>

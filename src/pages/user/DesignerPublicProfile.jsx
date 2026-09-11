@@ -631,9 +631,17 @@ function DesignerPublicProfile() {
   /* ── Fetch designer profile ── */
   useEffect(() => {
     setLoadingDesigner(true);
+    setNotFound(false);
     const fetchDesigner = async () => {
       try {
-        const data = await apiFetch(`/api/designers/${designerId}`);
+        const cleanId = String(designerId || '').trim().replace(/^@/, '');
+        if (!cleanId || cleanId === 'undefined' || cleanId === 'null') {
+          setNotFound(true);
+          setLoadingDesigner(false);
+          return;
+        }
+
+        const data = await apiFetch(`/api/designers/${encodeURIComponent(cleanId)}`);
 
         if (data) {
           if (data.status === 'blocked') {
@@ -669,6 +677,7 @@ function DesignerPublicProfile() {
               rank: rankVal || 1,
               ranking: rankVal || 1
             });
+            setNotFound(false);
           }
         } else {
           setNotFound(true);
@@ -685,11 +694,15 @@ function DesignerPublicProfile() {
 
   /* ── Fetch designer's approved products ── */
   useEffect(() => {
+    const targetDesignerId = designer?.id || designerId;
+    if (!targetDesignerId) return;
+
     setLoadingProducts(true);
     const fetchApprovedDesigns = async () => {
       try {
+        const cleanTargetId = String(targetDesignerId || '').trim().replace(/^@/, '');
         const [designsData, categoriesData] = await Promise.all([
-          apiFetch(`/api/designs?designerId=${designerId}`),
+          apiFetch(`/api/designs?designerId=${encodeURIComponent(cleanTargetId)}`),
           apiFetch('/api/categories')
         ]);
 
@@ -737,7 +750,7 @@ function DesignerPublicProfile() {
       }
     };
     fetchApprovedDesigns();
-  }, [designerId]);
+  }, [designer?.id, designerId]);
 
   /* ── Derive unique categories from products ── */
   const categories = useMemo(() => {

@@ -31,12 +31,13 @@ function DesignerIndex() {
 
         const recentOrders = myOrders.filter(o => getOrderTime(o) > oneDayAgo).length;
 
-        const totalEarnings = myOrders.reduce((sum, o) => {
+        const activeOrders = myOrders.filter(o => o.status !== 'cancelled');
+        const totalEarnings = activeOrders.reduce((sum, o) => {
             if (o.designer_earnings) return sum + o.designer_earnings;
             if (Array.isArray(o.items)) {
                 const itemRoyalties = o.items
                     .filter(item => item.designerId === user?.id)
-                    .reduce((s, item) => s + Math.round((Number(item.price) || 0) * (Number(item.qty) || 1) * 0.1), 0);
+                    .reduce((s, item) => s + (Number(item.designer_price) || Math.round((Number(item.price) || 0) * 0.1)) * (Number(item.qty) || 1), 0);
                 return sum + itemRoyalties;
             }
             return sum;
@@ -88,7 +89,7 @@ function DesignerIndex() {
 
         // C. Revenue Overview Time Series Chart
         const earningsByTime = {};
-        myOrders.forEach(o => {
+        myOrders.filter(o => o.status !== 'cancelled').forEach(o => {
             const time = getOrderTime(o);
             if (!time) return;
             const d = new Date(time);
@@ -110,7 +111,7 @@ function DesignerIndex() {
 
             const amt = o.designer_earnings || (Array.isArray(o.items) ? o.items
                 .filter(item => item.designerId === user?.id)
-                .reduce((s, item) => s + Math.round((Number(item.price) || 0) * (Number(item.qty) || 1) * 0.1), 0) : 0);
+                .reduce((s, item) => s + (Number(item.designer_price) || Math.round((Number(item.price) || 0) * 0.1)) * (Number(item.qty) || 1), 0) : 0);
 
             if (!earningsByTime[key]) {
                 earningsByTime[key] = { amount: 0, sortVal };

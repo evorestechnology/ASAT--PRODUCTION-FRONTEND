@@ -414,7 +414,7 @@ function DesignerRankings() {
                                             <div 
                                                 className={`rnk-podium-card ${rankClass}`} 
                                                 key={p.id}
-                                                onClick={() => navigate(`/designers/${p.id}`)}
+                                                onClick={() => navigate(`/designers/${p.id || p.username}`)}
                                             >
                                                 <span className="rnk-podium-medal">{medal}</span>
                                                 <div className="rnk-avatar-wrap">
@@ -461,7 +461,7 @@ function DesignerRankings() {
                                     </thead>
                                     <tbody>
                                         {tableItems.map(d => (
-                                            <tr key={d.id} onClick={() => navigate(`/designers/${d.id}`)}>
+                                            <tr key={d.id} onClick={() => navigate(`/designers/${d.id || d.username}`)}>
                                                 <td className="rnk-table-rank">#{d.rank}</td>
                                                 <td>
                                                     <div className="rnk-table-designer">

@@ -537,31 +537,69 @@ function Products() {
   const initialDesigner = searchParams.get('designer') || '';
   const initialSearch = searchParams.get('search') || '';
 
-  const [activeCategory, setActiveCategory] = useState('All');
+  const initialSort = searchParams.get('sort') || '';
+  const [activeCategory, setActiveCategory] = useState('All Drops');
   const [activeCollection, setActiveCollection] = useState('All');
   const [activeGender, setActiveGender] = useState('All');
-  const [sortBy, setSortBy] = useState('latest');
+  const [sortBy, setSortBy] = useState(
+    initialSort === 'bestsellers' || initialSort === 'best-sellers' ? 'best-sellers' : 'latest'
+  );
+  const [priceSort, setPriceSort] = useState('');
   const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [launched, setLaunched] = useState(false);
   const gridRef = useRef(null);
+
+  // Dropdown open states and refs
+  const [genderOpen, setGenderOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
+  const genderDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
+  const priceDropdownRef = useRef(null);
+
+  const toggleGender = () => {
+    setGenderOpen(prev => !prev);
+    setSortOpen(false);
+    setPriceOpen(false);
+  };
+  const toggleSort = () => {
+    setSortOpen(prev => !prev);
+    setGenderOpen(false);
+    setPriceOpen(false);
+  };
+  const togglePrice = () => {
+    setPriceOpen(prev => !prev);
+    setGenderOpen(false);
+    setSortOpen(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
+      if (genderDropdownRef.current && !genderDropdownRef.current.contains(e.target)) {
+        setGenderOpen(false);
+      }
       if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
         setSortOpen(false);
+      }
+      if (priceDropdownRef.current && !priceDropdownRef.current.contains(e.target)) {
+        setPriceOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Sync URL search params to local search term state
+  // Sync URL search and sort params to state
   useEffect(() => {
     setSearchTerm(searchParams.get('search') || '');
+    const s = searchParams.get('sort');
+    if (s === 'bestsellers' || s === 'best-sellers') {
+      setSortBy('best-sellers');
+    } else if (s === 'newest' || s === 'latest') {
+      setSortBy('latest');
+    }
   }, [searchParams]);
 
   /* ── Fetch products from Supabase ── */
@@ -629,6 +667,7 @@ function Products() {
             ordersCount: d.orders_count || 0,
             designerId: d.designer_id,
             designerUsername: d.designer_username,
+            gender: d.gender || d.products?.gender || d.catalogue?.gender || 'Unisex',
           }));
 
         const combined = [...approved];
@@ -656,12 +695,21 @@ function Products() {
     fetchAll();
   }, []);
 
-  /* ── Derive unique categories from data ── */
+  /* ── Derive unique categories from data + standard wardrobe drops ── */
   const categories = useMemo(() => {
-    const cats = new Set(
-      allProducts.map((p) => p.category || p.type || p.productType || '').filter(Boolean)
-    );
-    return ['All', ...Array.from(cats).sort()];
+    const base = ['All Drops', 'T-Shirt', 'Hoodies', 'Sweatshirts', 'Pants', 'Caps'];
+    const fromProducts = (allProducts || [])
+      .map((p) => p.category || p.type || p.productType || '')
+      .filter(Boolean);
+
+    const result = [...base];
+    for (const cat of fromProducts) {
+      const trimmed = cat.trim();
+      if (!result.some(existing => existing.toLowerCase() === trimmed.toLowerCase())) {
+        result.push(trimmed);
+      }
+    }
+    return result;
   }, [allProducts]);
 
   /* ── Apply URL param filters once data loads ── */
@@ -741,10 +789,27 @@ function Products() {
     }
 
     // Category
-    if (activeCategory !== 'All') {
-      items = items.filter(
-        (p) => (p.category || p.type || p.productType || '').toLowerCase() === activeCategory.toLowerCase()
-      );
+    if (activeCategory && activeCategory !== 'All' && activeCategory !== 'All Drops') {
+      const normTarget = activeCategory.toLowerCase().replace(/[^a-z0-9]/g, '');
+      items = items.filter((p) => {
+        const cat = (p.category || p.type || p.productType || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (normTarget.includes('tshirt') || normTarget.includes('tee')) {
+          return cat.includes('tshirt') || cat.includes('tee') || cat.includes('shirt');
+        }
+        if (normTarget.includes('hoodie')) {
+          return cat.includes('hoodie');
+        }
+        if (normTarget.includes('sweatshirt')) {
+          return cat.includes('sweatshirt') || cat.includes('sweater');
+        }
+        if (normTarget.includes('pant')) {
+          return cat.includes('pant') || cat.includes('trouser') || cat.includes('bottom');
+        }
+        if (normTarget.includes('cap')) {
+          return cat.includes('cap') || cat.includes('hat');
+        }
+        return cat.includes(normTarget) || normTarget.includes(cat);
+      });
     }
 
     // Collection
@@ -752,16 +817,19 @@ function Products() {
       items = items.filter((p) => p.collection === activeCollection);
     }
 
-    // Gender — if Male/Men or Female/Women is selected, Unisex products are also included
+    // Gender — if Male or Female is selected, Unisex products are also included
     if (activeGender !== 'All') {
       const targetGender = activeGender.toLowerCase();
       items = items.filter((p) => {
         const prodGender = (p.gender || 'Unisex').toLowerCase();
-        if (targetGender === 'male' || targetGender === 'men') {
+        if (targetGender === 'male') {
           return prodGender === 'male' || prodGender === 'men' || prodGender === 'unisex';
         }
-        if (targetGender === 'female' || targetGender === 'women') {
+        if (targetGender === 'female') {
           return prodGender === 'female' || prodGender === 'women' || prodGender === 'unisex';
+        }
+        if (targetGender === 'unisex') {
+          return prodGender === 'unisex';
         }
         return prodGender === targetGender;
       });
@@ -776,32 +844,22 @@ function Products() {
     if (min !== null) items = items.filter((p) => applyMarkup(p.price ?? 0) >= min);
     if (max !== null) items = items.filter((p) => applyMarkup(p.price ?? 0) <= max);
 
-    // Sort
-    switch (sortBy) {
-      case 'latest':
-        items.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-        break;
-      case 'top-sales':
+    // Sorting: Filter 4 (Price) takes precedence if selected; otherwise Filter 3 (Latest / Best Sellers)
+    if (priceSort === 'price-asc') {
+      items.sort((a, b) => applyMarkup(a.price ?? 0) - applyMarkup(b.price ?? 0));
+    } else if (priceSort === 'price-desc') {
+      items.sort((a, b) => applyMarkup(b.price ?? 0) - applyMarkup(a.price ?? 0));
+    } else {
+      if (sortBy === 'best-sellers' || sortBy === 'top-sales') {
         items.sort((a, b) => (b.ordersCount ?? b.orders_count ?? 0) - (a.ordersCount ?? a.orders_count ?? 0));
-        break;
-      case 'ranking':
-        items.sort((a, b) => (a.ranking ?? 9999) - (b.ranking ?? 9999));
-        break;
-      case 'price-asc':
-        items.sort((a, b) => applyMarkup(a.price ?? 0) - applyMarkup(b.price ?? 0));
-        break;
-      case 'price-desc':
-        items.sort((a, b) => applyMarkup(b.price ?? 0) - applyMarkup(a.price ?? 0));
-        break;
-      case 'name-asc':
-        items.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
-        break;
-      default:
-        break;
+      } else {
+        // default: latest
+        items.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      }
     }
 
     return items;
-  }, [allProducts, activeCategory, activeCollection, activeGender, sortBy, priceMin, priceMax, initialDesigner, searchTerm, currency, rates]);
+  }, [allProducts, activeCategory, activeCollection, activeGender, sortBy, priceSort, priceMin, priceMax, initialDesigner, searchTerm, currency, rates]);
 
   /* ── Set of IDs for the 15 most recently added products (for NEW badge) ── */
   const latestIds = useMemo(() => {
@@ -825,19 +883,21 @@ function Products() {
 
   /* ── Reset all filters ── */
   const resetFilters = useCallback(() => {
-    setActiveCategory('All');
+    setActiveCategory('All Drops');
     setActiveCollection('All');
     setActiveGender('All');
     setSortBy('latest');
+    setPriceSort('');
     setPriceMin('');
     setPriceMax('');
     setSearchTerm('');
   }, []);
 
   const hasFilters =
-    activeCategory !== 'All' ||
+    (activeCategory !== 'All' && activeCategory !== 'All Drops') ||
     activeCollection !== 'All' ||
     activeGender !== 'All' ||
+    priceSort !== '' ||
     priceMin !== '' ||
     priceMax !== '' ||
     searchTerm !== '' ||
@@ -889,7 +949,19 @@ function Products() {
         </div>
         <div className="pcard--standard__panel">
           <h4 className="pcard--standard__name">{product.name || product.title}</h4>
-          <span className="pcard--standard__brand">{subtitle}</span>
+          <span
+            className="pcard--standard__brand"
+            onClick={(e) => {
+              if (product.designerId || product.designerUsername) {
+                e.stopPropagation();
+                navigate(`/designers/${product.designerId || product.designerUsername}`);
+              }
+            }}
+            style={product.designerId || product.designerUsername ? { cursor: 'pointer' } : {}}
+            title={product.designerId || product.designerUsername ? 'View Designer Profile' : ''}
+          >
+            {subtitle}
+          </span>
           <span className="pcard--standard__price">{formatPrice(applyMarkup(product.price || 0))}</span>
         </div>
       </div>
@@ -914,7 +986,23 @@ function Products() {
         <p className="pcard--wide__desc">
           {product.subtitle || product.description?.slice(0, 80) || '—'} — curated from the{' '}
           {product.collection || 'ASAT'} collection
-          {product.designer ? ` by ${product.designer}` : ''}.
+          {product.designer ? (
+            <>
+              {' by '}
+              <span
+                onClick={(e) => {
+                  if (product.designerId || product.designerUsername) {
+                    e.stopPropagation();
+                    navigate(`/designers/${product.designerId || product.designerUsername}`);
+                  }
+                }}
+                style={{ cursor: 'pointer', color: 'var(--gold)', fontWeight: 600 }}
+                title="View Designer Profile"
+              >
+                {product.designer}
+              </span>
+            </>
+          ) : ''}.
         </p>
         <div className="pcard--wide__bottom">
           <span className="pcard--wide__price">{formatPrice(applyMarkup(product.price || 0))}</span>
@@ -940,86 +1028,154 @@ function Products() {
         <div className="pcol-filter-bar" style={{ background: '#FFFFFF', borderBottom: '1px solid #EBEBEB', padding: '12px 0' }}>
           <div className="pcol-filter-bar__inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
 
-            {/* Category Pills */}
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  style={{
-                    background: activeCategory === cat ? '#000000' : '#FFFFFF',
-                    color: activeCategory === cat ? '#FFFFFF' : '#000000',
-                    border: '1px solid ' + (activeCategory === cat ? '#000000' : '#E5E5E5'),
-                    borderRadius: '24px',
-                    padding: '8px 18px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  {cat === 'All' ? 'All Drops' : cat}
-                </button>
-              ))}
+            {/* Filter 1: Category / All Drops */}
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px', alignItems: 'center' }}>
+              {categories.map((cat) => {
+                const isSelected = activeCategory === cat || (cat === 'All Drops' && (activeCategory === 'All' || activeCategory === 'All Drops'));
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    style={{
+                      background: isSelected ? '#000000' : '#FFFFFF',
+                      color: isSelected ? '#FFFFFF' : '#000000',
+                      border: '1px solid ' + (isSelected ? '#000000' : '#E5E5E5'),
+                      borderRadius: '24px',
+                      padding: '8px 18px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      textTransform: 'uppercase',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Right Controls: Sort & Search */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-              <div className="pcol-sort-dropdown-wrap" ref={sortDropdownRef}>
+            {/* Right Controls: Filter 2 (Gender), Filter 3 (Latest / Best Sellers), Filter 4 (Price) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, flexWrap: 'wrap' }}>
+
+              {/* 2nd Filter: Gender */}
+              <div className="pcol-sort-dropdown-wrap" ref={genderDropdownRef}>
                 <button
                   className="pcol-sort-btn"
-                  onClick={() => setSortOpen(!sortOpen)}
-                  aria-label="Sort products"
+                  onClick={toggleGender}
+                  aria-label="Filter by gender"
+                  style={{
+                    background: activeGender !== 'All' ? '#000000' : '#FFFFFF',
+                    color: activeGender !== 'All' ? '#FFFFFF' : '#000000',
+                    borderColor: activeGender !== 'All' ? '#000000' : '#E5E5E5',
+                  }}
                 >
-                  <span>{SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'Sort'}</span>
-                  <i className={`fas fa-chevron-down${sortOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
+                  <span>{activeGender === 'All' ? 'Gender' : `Gender: ${activeGender}`}</span>
+                  <i className={`fas fa-chevron-down${genderOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
                 </button>
-                {sortOpen && (
+                {genderOpen && (
                   <div className="pcol-sort-popover">
-                    {SORT_OPTIONS.map((o) => (
+                    {[
+                      { label: 'All Genders', value: 'All' },
+                      { label: 'Male', value: 'Male' },
+                      { label: 'Female', value: 'Female' },
+                      { label: 'Unisex', value: 'Unisex' },
+                    ].map((g) => (
                       <button
-                        key={o.value}
-                        className={`pcol-sort-popover-item${sortBy === o.value ? ' active' : ''}`}
+                        key={g.value}
+                        className={`pcol-sort-popover-item${activeGender === g.value ? ' active' : ''}`}
                         onClick={() => {
-                          setSortBy(o.value);
-                          setSortOpen(false);
+                          setActiveGender(g.value);
+                          setGenderOpen(false);
                         }}
                       >
-                        {o.label}
+                        {g.label}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
 
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  placeholder="Search collection..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+              {/* 3rd Filter: Latest / Best Sellers */}
+              <div className="pcol-sort-dropdown-wrap" ref={sortDropdownRef}>
+                <button
+                  className="pcol-sort-btn"
+                  onClick={toggleSort}
+                  aria-label="Sort products"
                   style={{
-                    background: '#FAFAF8',
-                    border: '1px solid #E5E5E5',
-                    borderRadius: '24px',
-                    color: '#000000',
-                    padding: '8px 32px 8px 16px',
-                    fontSize: '12px',
-                    outline: 'none',
-                    width: '160px',
+                    background: (sortBy === 'best-sellers' || sortBy === 'top-sales') ? '#000000' : '#FFFFFF',
+                    color: (sortBy === 'best-sellers' || sortBy === 'top-sales') ? '#FFFFFF' : '#000000',
+                    borderColor: (sortBy === 'best-sellers' || sortBy === 'top-sales') ? '#000000' : '#E5E5E5',
                   }}
-                />
-                {searchTerm && (
-                  <i 
-                    className="fas fa-times" 
-                    onClick={() => setSearchTerm('')} 
-                    style={{ position: 'absolute', right: 28, color: '#999', cursor: 'pointer', fontSize: '0.75rem' }}
-                  />
+                >
+                  <span>{sortBy === 'best-sellers' || sortBy === 'top-sales' ? 'Best Sellers' : 'Latest'}</span>
+                  <i className={`fas fa-chevron-down${sortOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
+                </button>
+                {sortOpen && (
+                  <div className="pcol-sort-popover">
+                    {[
+                      { label: 'Latest', value: 'latest' },
+                      { label: 'Best Sellers', value: 'best-sellers' },
+                    ].map((s) => (
+                      <button
+                        key={s.value}
+                        className={`pcol-sort-popover-item${(sortBy === s.value || (s.value === 'best-sellers' && sortBy === 'top-sales')) ? ' active' : ''}`}
+                        onClick={() => {
+                          setSortBy(s.value);
+                          setSortOpen(false);
+                        }}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
                 )}
-                <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: '#999', fontSize: '0.75rem' }} />
               </div>
+
+              {/* 4th Filter: Price (Low to High / High to Low) */}
+              <div className="pcol-sort-dropdown-wrap" ref={priceDropdownRef}>
+                <button
+                  className="pcol-sort-btn"
+                  onClick={togglePrice}
+                  aria-label="Sort by price"
+                  style={{
+                    background: priceSort ? '#000000' : '#FFFFFF',
+                    color: priceSort ? '#FFFFFF' : '#000000',
+                    borderColor: priceSort ? '#000000' : '#E5E5E5',
+                  }}
+                >
+                  <span>
+                    {priceSort === 'price-asc'
+                      ? 'Price: Low to High'
+                      : priceSort === 'price-desc'
+                        ? 'Price: High to Low'
+                        : 'Price'}
+                  </span>
+                  <i className={`fas fa-chevron-down${priceOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
+                </button>
+                {priceOpen && (
+                  <div className="pcol-sort-popover">
+                    {[
+                      { label: 'All Prices', value: '' },
+                      { label: 'Price: Low to High', value: 'price-asc' },
+                      { label: 'Price: High to Low', value: 'price-desc' },
+                    ].map((p) => (
+                      <button
+                        key={p.value}
+                        className={`pcol-sort-popover-item${priceSort === p.value ? ' active' : ''}`}
+                        onClick={() => {
+                          setPriceSort(p.value);
+                          setPriceOpen(false);
+                        }}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             </div>
 
           </div>
@@ -1031,7 +1187,12 @@ function Products() {
           {/* Results Bar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h1 style={{ fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.5px', textTransform: 'uppercase', margin: 0, color: '#000' }}>
-              {activeCategory === 'All' ? 'ALL DROPS' : activeCategory.toUpperCase()}
+              {activeCategory === 'All' || activeCategory === 'All Drops' ? 'ALL DROPS' : activeCategory.toUpperCase()}
+              {activeGender !== 'All' && (
+                <span style={{ color: '#666', fontWeight: '700', marginLeft: '8px', fontSize: '1rem' }}>
+                  · {activeGender.toUpperCase()}
+                </span>
+              )}
               <span style={{ fontSize: '12px', color: '#888', fontWeight: '600', marginLeft: '12px' }}>
                 ({filtered.length} {filtered.length === 1 ? 'DROP' : 'DROPS'})
               </span>

@@ -51,8 +51,9 @@ function MfgIndex() {
                 return new Date(o.created_at).getTime();
             };
 
+            const activeOrders = myOrders.filter(o => o.status !== 'cancelled');
             const last24h = myOrders.filter(o => getOrderTime(o) > oneDayAgo).length;
-            const earnings = myOrders.reduce((sum, o) => sum + (Number(o.mfg_earnings) || 0), 0);
+            const earnings = activeOrders.reduce((sum, o) => sum + (Number(o.mfg_earnings) || 0), 0);
             const inProgress = myOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length;
 
             setStats({

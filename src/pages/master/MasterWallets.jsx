@@ -80,29 +80,24 @@ function MasterWallets() {
     const [pendingReject, setPendingReject] = useState(null);   // withdrawal item
     const [rejectionReason, setRejectionReason] = useState('');
 
+    const [orderLedger, setOrderLedger] = useState([]);
+
     const fetchEarningsStats = async () => {
         try {
-            const data = await apiFetch('/api/orders');
-            const completed = (data || []).filter(o => o.status === 'completed');
-
-            let income = 0;
-            let designers = 0;
-            let mfg = 0;
-
-            completed.forEach(o => {
-                income += Number(o.total_amount || 0);
-                designers += Number(o.designer_earnings || 0);
-                mfg += Number(o.mfg_earnings || 0);
-            });
-
-            setWallet({
-                totalIncome: income,
-                designerPayouts: designers,
-                mfgPayouts: mfg,
-                platformEarnings: income - designers - mfg
-            });
+            const data = await apiFetch('/api/wallets/admin-stats');
+            if (data) {
+                setWallet({
+                    totalIncome: Number(data.totalRevenue) || 0,
+                    designerPayouts: Number(data.designerPayouts) || 0,
+                    mfgPayouts: Number(data.mfgPayouts) || 0,
+                    platformEarnings: Number(data.platformEarnings) || 0,
+                    completed: data.completed || { revenue: 0, designer: 0, mfg: 0, platform: 0 },
+                    pending: data.pending || { revenue: 0, designer: 0, mfg: 0, platform: 0 }
+                });
+                setOrderLedger(data.ledger || []);
+            }
         } catch (err) {
-            console.error('Error fetching live order earnings:', err);
+            console.error('Error fetching live admin wallet stats:', err);
             setError('Failed to fetch financial stats.');
         }
     };
@@ -235,6 +230,28 @@ function MasterWallets() {
                 </div>
             </div>
 
+            {/* Realized vs Escrow Breakdown Ribbon */}
+            <div style={{ display: 'flex', gap: 15, flexWrap: 'wrap', marginBottom: 28 }}>
+                <div style={{ flex: 1, minWidth: 260, background: '#1c1c1c', border: '1px solid rgba(46, 204, 113, 0.3)', borderRadius: 6, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <i className="fas fa-check-circle" style={{ color: '#2ecc71', fontSize: '1.4rem' }}></i>
+                    <div>
+                        <div style={{ fontSize: '0.72rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Settled (Completed / Delivered)</div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginTop: 2 }}>
+                            Revenue: ₹{(wallet.completed?.revenue || 0).toLocaleString()} <span style={{ color: '#666', margin: '0 6px' }}>|</span> <span style={{ color: '#2ecc71' }}>Profit: ₹{(wallet.completed?.platform || 0).toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+                <div style={{ flex: 1, minWidth: 260, background: '#1c1c1c', border: '1px solid rgba(243, 156, 18, 0.3)', borderRadius: 6, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <i className="fas fa-hourglass-half" style={{ color: '#f39c12', fontSize: '1.4rem' }}></i>
+                    <div>
+                        <div style={{ fontSize: '0.72rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>In Escrow (In Progress / Shipping)</div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginTop: 2 }}>
+                            Revenue: ₹{(wallet.pending?.revenue || 0).toLocaleString()} <span style={{ color: '#666', margin: '0 6px' }}>|</span> <span style={{ color: '#f39c12' }}>Mfg Escrow: ₹{(wallet.pending?.mfg || 0).toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <h2 style={{ fontFamily: "'Cinzel', serif", fontSize: '1rem', letterSpacing: '1px', marginBottom: '16px' }}>WITHDRAWAL REQUESTS</h2>
             
             {loading ? (
@@ -314,6 +331,59 @@ function MasterWallets() {
                     </table>
                 </div>
             )}
+
+            {/* Order Financial Ledger */}
+            <h2 style={{ fontFamily: "'Cinzel', serif", fontSize: '1rem', letterSpacing: '1px', margin: '35px 0 16px 0' }}>
+                ORDER FINANCIAL LEDGER & MARGINS
+            </h2>
+            <div className="adm-table-wrap">
+                <table className="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Total Charged</th>
+                            <th>Mfg Payout</th>
+                            <th>Designer Royalty</th>
+                            <th>Platform Margin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orderLedger.length === 0 ? (
+                            <tr>
+                                <td colSpan="8" className="adm-table__empty">
+                                    <i className="fas fa-file-invoice-dollar"></i>No order transactions recorded yet.
+                                </td>
+                            </tr>
+                        ) : (
+                            orderLedger.map(tx => (
+                                <tr key={tx.id} style={tx.isCancelled ? { opacity: 0.6 } : {}}>
+                                    <td><strong>{tx.orderId || tx.id}</strong></td>
+                                    <td>{formatDate(tx.date)}</td>
+                                    <td>{tx.customer}</td>
+                                    <td>
+                                        <span className={`adm-badge adm-badge--${getStatusType(tx.status)}`}>
+                                            {tx.status?.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td>₹{tx.totalAmount.toLocaleString('en-IN')}</td>
+                                    <td style={{ color: tx.isCancelled ? '#888' : '#e67e22' }}>
+                                        {tx.isCancelled ? '₹0 (Cancelled)' : `₹${tx.mfgEarnings.toLocaleString('en-IN')}`}
+                                    </td>
+                                    <td style={{ color: tx.isCancelled ? '#888' : 'var(--gold)' }}>
+                                        {tx.isCancelled ? '₹0 (Cancelled)' : `₹${tx.designerEarnings.toLocaleString('en-IN')}`}
+                                    </td>
+                                    <td style={{ fontWeight: 600, color: tx.isCancelled ? '#888' : '#2ecc71' }}>
+                                        {tx.isCancelled ? '₹0 (Cancelled)' : `₹${tx.platformEarnings.toLocaleString('en-IN')}`}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
             {/* Approval Modal */}
             {pendingApprove && (

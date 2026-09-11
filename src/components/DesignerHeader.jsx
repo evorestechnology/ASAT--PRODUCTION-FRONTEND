@@ -1,13 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { apiFetch } from '../api';
 
 function DesignerHeader() {
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { user, profile, logout } = useAuth();
     const [profileOpen, setProfileOpen] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [designerName, setDesignerName] = useState('');
     const profileRef = useRef(null);
+
+    useEffect(() => {
+        if (profile?.full_name || profile?.username) {
+            setDesignerName(profile.full_name || profile.username);
+        } else if (user) {
+            apiFetch('/api/designers/me')
+                .then(d => {
+                    if (d?.full_name || d?.username) {
+                        setDesignerName(d.full_name || d.username);
+                    }
+                })
+                .catch(() => {});
+        }
+    }, [profile, user]);
 
     useEffect(() => {
         const handler = (e) => {
@@ -30,8 +46,17 @@ function DesignerHeader() {
     return (
         <header className="dsn-header">
             <div className="dsn-header__inner">
-                <div className="dsn-header__left" onClick={() => navigate('/designer')}>
-                    <img src="/logo.png" alt="AS SIMPLE AS THAT" className="dsn-header__logo-img" />
+                <div className="dsn-header__left" onClick={() => navigate('/designer')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontFamily: "'Cinzel', 'Cormorant Garamond', serif", fontSize: '1.05rem', letterSpacing: '2px', fontWeight: '700', color: 'var(--gold, #C5A059)' }}>
+                            DESIGNER PARADISE
+                        </span>
+                        {designerName && (
+                            <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.72rem', letterSpacing: '1px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' }}>
+                                {designerName}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 <nav className={`dsn-header__nav ${mobileOpen ? 'dsn-header__nav--open' : ''}`}>

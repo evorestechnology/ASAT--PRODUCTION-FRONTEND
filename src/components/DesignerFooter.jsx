@@ -24,9 +24,9 @@ function DesignerFooter() {
 
                 .blu-footer-card__grid {
                     display: grid;
-                    grid-template-columns: 1fr 1fr 1fr 1.8fr;
-                    gap: 36px;
-                    align-items: center;
+                    grid-template-columns: auto auto auto 1fr;
+                    gap: clamp(24px, 4vw, 56px);
+                    align-items: flex-start;
                 }
 
                 .blu-footer-card__col-title {
@@ -35,6 +35,7 @@ function DesignerFooter() {
                     color: #000000;
                     margin-bottom: 18px;
                     display: block;
+                    white-space: nowrap;
                 }
                 .blu-footer-card__col-chevron {
                     display: none;
@@ -204,6 +205,7 @@ function DesignerFooter() {
                         <ul className="blu-footer-card__list">
                             <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">Instagram</a></li>
                             <li><a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">YouTube</a></li>
+                            <li><a href="/designer/login" className="blu-footer-card__link">Design Sign In</a></li>
                             <li><a href="/designer/register" className="blu-footer-card__link">Join as a Designer</a></li>
                         </ul>
                     </div>
@@ -215,17 +217,15 @@ function DesignerFooter() {
                             <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
                         </span>
                         <ul className="blu-footer-card__list">
-                            <li><Link to="/terms" className="blu-footer-card__link">Refund/Exchange policy</Link></li>
-                            <li><Link to="/terms" className="blu-footer-card__link">Shipping policy</Link></li>
                             <li><Link to="/support" className="blu-footer-card__link">FAQ's</Link></li>
-                            <li><Link to="/terms" className="blu-footer-card__link">Terms and Conditions</Link></li>
+                            <li><Link to="/terms" className="blu-footer-card__link">Terms and Conditions Policies</Link></li>
                         </ul>
                     </div>
 
-                    {/* Column 3: We at ASAT */}
+                    {/* Column 3: We at Designer Paradise */}
                     <div className={`blu-footer-card__col${openCol === 2 ? ' open' : ''}`}>
                         <span className="blu-footer-card__col-title" onClick={() => toggleCol(2)}>
-                            We at ASAT
+                            We at Designer Paradise
                             <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
                         </span>
                         <ul className="blu-footer-card__list">
@@ -234,80 +234,24 @@ function DesignerFooter() {
                         </ul>
                     </div>
 
-                    {/* Column 4: Side-by-Side Logos + 3D Mockup Bag */}
+                    {/* Column 4: Side-by-Side Logos */}
                     <div className="blu-footer-card__brand-showcase">
-                        <img src="/logo.png" alt="AS SIMPLE AS THAT" style={{ height: '36px', objectFit: 'contain' }} />
-
-                        <div className="blu-footer-card__bag-wrap" title="ASAT Luxury Shopping Bag">
-                            {/* Realistic 3D SVG Luxury Shopping Bag */}
-                            <svg className="blu-footer-card__bag-svg" viewBox="0 0 160 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <linearGradient id="bagFrontGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stopColor="#FFFFFF" />
-                                        <stop offset="100%" stopColor="#EDEDED" />
-                                    </linearGradient>
-                                    <linearGradient id="bagSideGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stopColor="#E4E4E4" />
-                                        <stop offset="100%" stopColor="#D5D5D5" />
-                                    </linearGradient>
-                                    <linearGradient id="bagFoldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                        <stop offset="0%" stopColor="#DDDDDD" />
-                                        <stop offset="100%" stopColor="#F9F9F9" />
-                                    </linearGradient>
-                                </defs>
-
-                                {/* Side Perspective Panel */}
-                                <polygon points="35,45 65,30 65,170 35,185" fill="url(#bagSideGrad)" />
-                                <polygon points="50,38 50,178 65,170 65,30" fill="url(#bagFoldGrad)" opacity="0.4" />
-
-                                {/* Front Panel */}
-                                <polygon points="65,30 145,45 130,190 65,170" fill="url(#bagFrontGrad)" stroke="#E0E0E0" strokeWidth="0.5" />
-
-                                {/* Top Inset Handle Hole */}
-                                <ellipse cx="103" cy="58" rx="14" ry="5" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5" />
-                                <ellipse cx="103" cy="59" rx="12" ry="4" fill="#FFFFFF" />
-
-                                {/* ASAT DESIGNER PARADISE Brandmark printed on bag */}
-                                <g transform="translate(100, 110) rotate(7)">
-                                    <text
-                                        x="0"
-                                        y="-12"
-                                        textAnchor="middle"
-                                        fill="#111111"
-                                        fontFamily="-apple-system, Montserrat, sans-serif"
-                                        fontWeight="900"
-                                        fontSize="9"
-                                        letterSpacing="1.5"
-                                    >
-                                        ASAT
-                                    </text>
-                                    <text
-                                        x="0"
-                                        y="0"
-                                        textAnchor="middle"
-                                        fill="#111111"
-                                        fontFamily="-apple-system, Montserrat, sans-serif"
-                                        fontWeight="900"
-                                        fontSize="7"
-                                        letterSpacing="1"
-                                    >
-                                        DESIGNER
-                                    </text>
-                                    <text
-                                        x="0"
-                                        y="10"
-                                        textAnchor="middle"
-                                        fill="#111111"
-                                        fontFamily="-apple-system, Montserrat, sans-serif"
-                                        fontWeight="900"
-                                        fontSize="7"
-                                        letterSpacing="1"
-                                    >
-                                        PARADISE
-                                    </text>
-                                </g>
-                            </svg>
-                        </div>
+                        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="Designer Paradise">
+                            <img 
+                                src="/logo.png" 
+                                alt="ASAT DESIGNER PARADISE" 
+                                className="blu-footer-card__dp-logo"
+                                style={{ height: '36px', width: 'auto', objectFit: 'contain' }} 
+                            />
+                        </Link>
+                        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="ASAT">
+                            <img 
+                                src="/ast-logo.jpg" 
+                                alt="ASAT Logo" 
+                                className="blu-footer-card__ast-logo"
+                                style={{ height: '48px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} 
+                            />
+                        </Link>
                     </div>
                 </div>
 

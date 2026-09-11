@@ -254,7 +254,13 @@ function UserTracking() {
         fetchOrders();
     }, [user, orderIdParam]);
 
-    const statuses = ['pending', 'manufacturing', 'shipping', 'completed'];
+    const getStageIndex = (status) => {
+        if (!status) return 0;
+        const s = status.toLowerCase();
+        if (s === 'completed' || s === 'delivered') return 2;
+        if (s === 'shipping') return 1;
+        return 0; // pending, confirmed, manufacturing, in_progress
+    };
 
     const formatDate = (createdAt) => {
         if (!createdAt) return 'Pending';
@@ -293,8 +299,8 @@ function UserTracking() {
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                             {orders.map(order => {
-                                const activeIndex = statuses.indexOf(order.status || 'pending');
-                                const fillPercent = activeIndex > -1 ? (activeIndex / (statuses.length - 1)) * 100 : 0;
+                                const activeIndex = getStageIndex(order.status);
+                                const fillPercent = activeIndex > -1 ? (activeIndex / 2) * 100 : 0;
                                 const getNodeClass = (nodeIndex) => {
                                     if (nodeIndex === activeIndex) return 'active';
                                     if (nodeIndex < activeIndex) return 'completed';
@@ -328,20 +334,16 @@ function UserTracking() {
                                                 <div className="progress-bar-fill" style={{ width: `${fillPercent}%`, position: 'absolute', height: '4px', background: order.status === 'cancelled' ? '#dc3545' : 'var(--gold)', zIndex: 2, transition: 'width 0.8s ease-in-out' }} />
                                                 
                                                 <div className={`progress-node ${getNodeClass(0)}`}>
-                                                    <i className="fas fa-clipboard" />
-                                                    <span className="node-label">Pending</span>
+                                                    <i className="fas fa-clock" />
+                                                    <span className="node-label">In Progress</span>
                                                 </div>
                                                 <div className={`progress-node ${getNodeClass(1)}`}>
-                                                    <i className="fas fa-industry" />
-                                                    <span className="node-label">Mfg</span>
+                                                    <i className="fas fa-truck" />
+                                                    <span className="node-label">Shipping</span>
                                                 </div>
                                                 <div className={`progress-node ${getNodeClass(2)}`}>
-                                                    <i className="fas fa-shipping-fast" />
-                                                    <span className="node-label">Shipped</span>
-                                                </div>
-                                                <div className={`progress-node ${getNodeClass(3)}`}>
                                                     <i className="fas fa-check-circle" />
-                                                    <span className="node-label">{order.status === 'cancelled' ? 'Cancelled' : 'Delivered'}</span>
+                                                    <span className="node-label">{order.status === 'cancelled' ? 'Cancelled' : 'Completed'}</span>
                                                 </div>
                                             </div>
                                         </div>

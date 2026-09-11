@@ -290,7 +290,10 @@ export default function MfgDesignDetail() {
                                     </div>
                                     <div>
                                         <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 600 }}>Fabric / Material Cost:</span>
-                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111' }}>₹{baseProduct.cost?.toLocaleString('en-IN')}</div>
+                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111' }}>
+                                            ₹{(snapshottedBaseCost !== null ? snapshottedBaseCost : baseProduct.cost)?.toLocaleString('en-IN')}
+                                            {snapshottedBaseCost !== null && <span style={{ fontSize: '0.7rem', color: '#888', marginLeft: 4 }}>(Order Lock)</span>}
+                                        </div>
                                     </div>
                                 </div>
                                 {baseProduct.details && baseProduct.details.length > 0 && (
@@ -368,6 +371,12 @@ export default function MfgDesignDetail() {
                                     <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: 600 }}>Total Printing Price:</span>
                                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>₹{totalPrintingPrice.toLocaleString('en-IN')}</span>
                                 </div>
+                                {snapshottedMfgPrice !== null && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f5f5f5', paddingBottom: 8, background: 'rgba(197, 160, 89, 0.08)', padding: '6px 8px', borderRadius: 4 }}>
+                                        <span style={{ fontSize: '0.8rem', color: '#C5A059', fontWeight: 700 }}>Locked Order Unit Payout:</span>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#C5A059' }}>₹{snapshottedMfgPrice.toLocaleString('en-IN')} (Snapshot)</span>
+                                    </div>
+                                )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f5f5f5', paddingBottom: 8 }}>
                                     <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: 600 }}>Packing Cost:</span>
                                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111' }}>₹{packingCost.toLocaleString('en-IN')}</span>
