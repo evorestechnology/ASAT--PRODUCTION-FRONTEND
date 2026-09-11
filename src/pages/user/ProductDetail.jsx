@@ -2214,7 +2214,7 @@ function ProductDetail() {
                                         key={p.id} 
                                         className="blu-card" 
                                         onClick={() => {
-                                            navigate(`/product/${p.id}`);
+                                            navigate(`/products/${p.id}`);
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
                                         style={{ cursor: 'pointer' }}
