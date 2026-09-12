@@ -49,7 +49,8 @@ function DesignerHeader() {
                 <div className="dsn-header__left" onClick={() => navigate('/designer')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontFamily: "'Cinzel', 'Cormorant Garamond', serif", fontSize: '1.05rem', letterSpacing: '2px', fontWeight: '700', color: 'var(--gold, #C5A059)' }}>
-                            ASAT Designer Paradise
+                            <image src="/dp-logo.png" alt="ASAT Designer Paradise" style={{ width: '30px', height: '30px', marginRight: '8px' }} />
+                            
                         </span>
                         {designerName && (
                             <span style={{color: 'rgba(0, 0, 0, 0.7)', fontFamily: "'Montserrat', sans-serif", fontSize: '0.72rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
