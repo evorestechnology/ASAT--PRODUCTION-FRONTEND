@@ -36,25 +36,26 @@ const PRINT_TYPES = ["DTF", "DTG", "Embroidery"];
 function StyleSummaryCard({ ps, idx, onEdit, onToggleActive, onRemove }) {
     return (
         <div style={{
-            background: '#1c1c1c',
-            border: '1px solid #333',
-            borderLeft: '4px solid white',
-            borderRadius: 6,
+            background: '#ffffff',
+            border: '1px solid #e5e7eb',
+            borderLeft: '4px solid #111114',
+            borderRadius: 12,
             display: 'flex', alignItems: 'stretch',
             overflow: 'hidden',
-            transition: 'box-shadow 0.2s',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            transition: 'box-shadow 0.2s, transform 0.2s',
         }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)'}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; e.currentTarget.style.transform = 'none'; }}
         >
             {/* Index strip */}
-            <div style={{ width: 40, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'black', writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: 1 }}>#{idx + 1}</span>
+            <div style={{ width: 44, background: '#111114', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ffffff', writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: 1 }}>#{idx + 1}</span>
             </div>
 
             {/* Reference image */}
             {ps.imageUrl && (
-                <div style={{ width: 72, flexShrink: 0, overflow: 'hidden' }}>
+                <div style={{ width: 80, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #f3f4f6' }}>
                     <img src={ps.imageUrl} alt={ps.name}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
                         onClick={() => window.open(ps.imageUrl, '_blank')} title="View reference image" />
@@ -62,12 +63,12 @@ function StyleSummaryCard({ ps, idx, onEdit, onToggleActive, onRemove }) {
             )}
 
             {/* Content */}
-            <div style={{ flex: 1, padding: '14px 16px', minWidth: 0 }}>
+            <div style={{ flex: 1, padding: '16px 20px', minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span style={{ fontSize: '1rem', fontWeight: 700, color: '#111114', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {ps.name || 'Unnamed Method'}
                     </span>
-                    <span style={{ flexShrink: 0, padding: '3px 8px', background: '#2c2c2c', border: '1px solid #444', borderRadius: 4, fontSize: '0.62rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase' }}>
+                    <span style={{ flexShrink: 0, padding: '3px 10px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 20, fontSize: '0.65rem', fontWeight: 700, color: '#4b5563', textTransform: 'uppercase' }}>
                         {ps.category || 'DTF'}
                     </span>
                 </div>
@@ -78,15 +79,15 @@ function StyleSummaryCard({ ps, idx, onEdit, onToggleActive, onRemove }) {
                         <span key={i} style={{
                             display: 'inline-flex', alignItems: 'center', gap: 5,
                             padding: '3px 10px', borderRadius: 20,
-                            background: '#2c2c2c', border: '1px solid #444',
-                            fontSize: '0.65rem', fontWeight: 700, color: '#ccc',
+                            background: '#f9fafb', border: '1px solid #e5e7eb',
+                            fontSize: '0.68rem', fontWeight: 600, color: '#4b5563',
                         }}>
-                            <i className="fas fa-map-marker-alt" style={{ fontSize: '0.55rem', color: 'white' }} />
+                            <i className="fas fa-map-marker-alt" style={{ fontSize: '0.6rem', color: '#b45309' }} />
                             {cat.category} ({cat.count})
                         </span>
                     ))}
                     {(!ps.placementCategories || ps.placementCategories.length === 0) && (
-                        <span style={{ padding: '3px 10px', borderRadius: 20, background: '#2c2c2c', fontSize: '0.65rem', color: '#555', fontStyle: 'italic' }}>
+                        <span style={{ padding: '3px 10px', borderRadius: 20, background: '#f9fafb', border: '1px solid #e5e7eb', fontSize: '0.68rem', color: '#9ca3af', fontStyle: 'italic' }}>
                             No placements configured
                         </span>
                     )}
@@ -94,20 +95,20 @@ function StyleSummaryCard({ ps, idx, onEdit, onToggleActive, onRemove }) {
             </div>
 
             {/* Action buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8, padding: '12px 14px', borderLeft: '1px solid #333', flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8, padding: '12px 16px', borderLeft: '1px solid #f3f4f6', flexShrink: 0 }}>
                 <button type="button" onClick={onEdit}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#2c2c2c', color: 'white', border: '1px solid #444', borderRadius: 4, cursor: 'pointer', fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap', transition: 'all 0.2s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = 'black'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#2c2c2c'; e.currentTarget.style.color = 'white'; }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#f9fafb', color: '#111114', border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#111114'; e.currentTarget.style.color = '#ffffff'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#f9fafb'; e.currentTarget.style.color = '#111114'; }}>
                     <i className="fas fa-pencil-alt" /> Edit
                 </button>
                 <button type="button" onClick={onToggleActive}
                     style={{
                         display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
-                        background: ps.active !== false ? 'rgba(40,167,69,0.15)' : 'rgba(255,193,7,0.15)',
-                        color: ps.active !== false ? '#28a745' : '#ffc107',
-                        border: `1px solid ${ps.active !== false ? 'rgba(40,167,69,0.4)' : 'rgba(255,193,7,0.4)'}`,
-                        borderRadius: 4, cursor: 'pointer', fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap', transition: 'all 0.2s'
+                        background: ps.active !== false ? '#ecfdf5' : '#fef3c7',
+                        color: ps.active !== false ? '#059669' : '#d97706',
+                        border: `1px solid ${ps.active !== false ? '#a7f3d0' : '#fde68a'}`,
+                        borderRadius: 6, cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.2s'
                     }}>
                     <i className={`fas ${ps.active !== false ? 'fa-check-circle' : 'fa-ban'}`} />
                     {ps.active !== false ? 'Available' : 'Unavailable'}
@@ -267,20 +268,20 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
     };
 
     return (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000, backdropFilter: 'blur(4px)' }}
             onClick={e => e.target === e.currentTarget && onClose()}>
-            <div style={{ background: '#1c1c1c', border: '1px solid #444', borderRadius: 8, width: '540px', maxHeight: '88vh', overflowY: 'auto', color: 'white', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+            <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 14, width: '540px', maxHeight: '88vh', overflowY: 'auto', color: '#111114', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
                 {/* Modal Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid #333' }}>
-                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid #f3f4f6' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#111114' }}>
                         {editingStyle?.id ? 'Edit Print Style' : 'Add Printing Method'}
                     </h3>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1, fontWeight: 300 }}>×</button>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1, fontWeight: 300 }}>×</button>
                 </div>
 
                 <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
                     {error && (
-                        <div style={{ padding: '10px 14px', background: 'rgba(220,53,69,0.15)', border: '1px solid rgba(220,53,69,0.4)', borderRadius: 4, color: '#ff6b6b', fontSize: '0.82rem' }}>
+                        <div style={{ padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: '0.82rem' }}>
                             <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }} />{error}
                         </div>
                     )}
@@ -534,13 +535,13 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
 
                                                             {/* Option expanded form */}
                                                             {isOptExpanded && (
-                                                                <div style={{ padding: '12px', background: '#1c1c1c', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                                <div style={{ padding: '12px', background: '#f9fafb', borderTop: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: 10 }}>
                                                                     {/* Image area */}
-                                                                    <div style={{ border: '1px dashed #555', borderRadius: 4, overflow: 'hidden', textAlign: 'center', background: '#222', minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                    <div style={{ border: '1px dashed #d1d5db', borderRadius: 4, overflow: 'hidden', textAlign: 'center', background: '#ffffff', minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                                         {opt.imagePreview ? (
                                                                             <img src={opt.imagePreview} alt="preview" style={{ maxHeight: 80, objectFit: 'contain' }} />
                                                                         ) : (
-                                                                            <span style={{ fontSize: '0.75rem', color: '#666' }}>print position image</span>
+                                                                            <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>print position image</span>
                                                                         )}
                                                                     </div>
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -550,7 +551,7 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                                                                                 updateOption(pc.category, optName, 'imagePreview', URL.createObjectURL(e.target.files[0]));
                                                                                 updateOption(pc.category, optName, 'imageFile', e.target.files[0]);
                                                                             }
-                                                                        }} style={{ flex: 1, fontSize: '0.75rem', color: '#aaa' }} />
+                                                                        }} style={{ flex: 1, fontSize: '0.75rem', color: '#4b5563' }} />
                                                                     </div>
 
                                                                     {/* Prices */}
@@ -559,19 +560,19 @@ function PrintStyleModal({ editingStyle, dbCategories = [], onSave, onClose, upl
                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                                                 <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Dark Garment (₹):</label>
                                                                                 <input type="number" min="0" value={opt.darkPrice} onChange={e => updateOption(pc.category, optName, 'darkPrice', e.target.value)}
-                                                                                    style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
+                                                                                    style={{ flex: 1, padding: '6px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6, outline: 'none' }} />
                                                                             </div>
                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                                                 <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Light Garment (₹):</label>
                                                                                 <input type="number" min="0" value={opt.lightPrice} onChange={e => updateOption(pc.category, optName, 'lightPrice', e.target.value)}
-                                                                                    style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
+                                                                                    style={{ flex: 1, padding: '6px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6, outline: 'none' }} />
                                                                             </div>
                                                                         </>
                                                                     ) : (
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                                             <label style={{ ...LABEL_ST, margin: 0, width: 120, flexShrink: 0 }}>Set Price (₹):</label>
                                                                             <input type="number" min="0" value={opt.price} onChange={e => updateOption(pc.category, optName, 'price', e.target.value)}
-                                                                                style={{ flex: 1, padding: '6px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }} />
+                                                                                style={{ flex: 1, padding: '6px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6, outline: 'none' }} />
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -754,11 +755,11 @@ export default function MfgPrintStyles() {
                 <div style={{ maxWidth: 860 }}>
                     {/* Toolbar */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                        <span style={{ fontSize: '0.75rem', color: '#888' }}>
+                        <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 500 }}>
                             {styles.length} method{styles.length !== 1 ? 's' : ''} configured
                         </span>
                         <button type="button" onClick={openAddModal}
-                            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', background: 'white', color: 'black', border: 'none', borderRadius: 4, fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.2s' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 20px', background: '#111114', color: '#ffffff', border: 'none', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}
                             onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                             onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
                             <i className="fas fa-plus" /> Add Printing Method
@@ -767,10 +768,10 @@ export default function MfgPrintStyles() {
 
                     {/* Empty state */}
                     {styles.length === 0 && (
-                        <div style={{ padding: '60px 20px', textAlign: 'center', border: '2px dashed #333', borderRadius: 8, background: '#1a1a1a' }}>
-                            <i className="fas fa-print" style={{ fontSize: '2.5rem', color: '#444', display: 'block', marginBottom: 14 }} />
-                            <p style={{ fontSize: '0.82rem', color: '#888', margin: 0 }}>
-                                No print styles yet. Click <strong style={{ color: 'white' }}>+ Add Printing Method</strong> to get started.
+                        <div style={{ padding: '60px 20px', textAlign: 'center', border: '2px dashed #e5e7eb', borderRadius: 12, background: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                            <i className="fas fa-print" style={{ fontSize: '2.5rem', color: '#9ca3af', display: 'block', marginBottom: 14 }} />
+                            <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: 0 }}>
+                                No print styles yet. Click <strong style={{ color: '#111114' }}>+ Add Printing Method</strong> to get started.
                             </p>
                         </div>
                     )}
@@ -804,13 +805,13 @@ export default function MfgPrintStyles() {
 
             {/* Delete Confirmation Modal */}
             {pendingDeleteId && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <div className="modal-header"><h3>Delete Print Style</h3></div>
-                        <div className="modal-body">Are you sure you want to permanently delete this print style?</div>
-                        <div className="modal-footer">
-                            <button className="adm-settings__btn" style={{ background: '#3a3a3c', marginTop: 0 }} onClick={() => setPendingDeleteId(null)}>Cancel</button>
-                            <button className="adm-settings__btn" style={{ background: '#dc3545', color: '#fff', marginTop: 0 }} onClick={executeDelete}>Delete</button>
+                <div className="modal-overlay" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
+                    <div className="modal-content" style={{ maxWidth: 420, padding: 26, borderRadius: 14, background: '#ffffff', border: '1px solid #e5e7eb', color: '#111114', boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }}>
+                        <div className="modal-header"><h3 style={{ margin: '0 0 10px', color: '#dc2626', fontSize: '1.05rem', fontWeight: 700 }}>Delete Print Style?</h3></div>
+                        <div className="modal-body" style={{ color: '#6b7280', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: 20 }}>Are you sure you want to permanently delete this print style?</div>
+                        <div className="modal-footer" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                            <button className="adm-settings__btn" style={{ background: '#f3f4f6', color: '#4b5563', border: '1px solid #e5e7eb', borderRadius: 8, marginTop: 0, padding: '9px 18px', cursor: 'pointer', fontWeight: 600 }} onClick={() => setPendingDeleteId(null)}>Cancel</button>
+                            <button className="adm-settings__btn" style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, marginTop: 0, padding: '9px 20px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 2px 6px rgba(220,38,38,0.2)' }} onClick={executeDelete}>Delete</button>
                         </div>
                     </div>
                 </div>
@@ -819,6 +820,6 @@ export default function MfgPrintStyles() {
     );
 }
 
-const LABEL_ST = { display: 'block', fontSize: '0.65rem', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: '#aaa', marginBottom: 5 };
-const INPUT_ST = { width: '100%', padding: '9px 11px', border: '1px solid #444', fontSize: '0.82rem', color: 'white', borderRadius: 4, outline: 'none', boxSizing: 'border-box', background: '#2c2c2c', transition: 'border-color 0.2s' };
+const LABEL_ST = { display: 'block', fontSize: '0.72rem', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', color: '#4b5563', marginBottom: 6 };
+const INPUT_ST = { width: '100%', padding: '10px 14px', border: '1px solid #e5e7eb', fontSize: '0.82rem', color: '#111114', borderRadius: 8, outline: 'none', boxSizing: 'border-box', background: '#f9fafb', transition: 'border-color 0.2s' };
 

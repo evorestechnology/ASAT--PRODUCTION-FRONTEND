@@ -12,8 +12,8 @@ const inlineStyles = `
         max-width: 640px;
         aspect-ratio: 16/9;
         background: #000;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
         overflow: hidden;
         margin-bottom: 20px;
         position: relative;
@@ -29,24 +29,24 @@ const inlineStyles = `
         align-items: center;
         justify-content: center;
         height: 100%;
-        color: #666;
+        color: #9ca3af;
         gap: 10px;
-        background: #0d0d0d;
+        background: #f9fafb;
     }
     .upload-drop-zone {
         display: block;
-        border: 2px dashed rgba(197, 160, 89, 0.3);
-        border-radius: 6px;
+        border: 2px dashed rgba(197, 160, 89, 0.4);
+        border-radius: 8px;
         padding: 30px;
         text-align: center;
-        background: rgba(197, 160, 89, 0.02);
+        background: rgba(197, 160, 89, 0.03);
         cursor: pointer;
         transition: all 0.3s;
         margin-bottom: 20px;
     }
     .upload-drop-zone:hover {
         border-color: var(--gold);
-        background: rgba(197, 160, 89, 0.05);
+        background: rgba(197, 160, 89, 0.08);
     }
     .upload-drop-zone i {
         font-size: 2rem;
@@ -54,25 +54,26 @@ const inlineStyles = `
         margin-bottom: 12px;
     }
     .editor-section {
-        background: #141414;
-        border: 1px solid rgba(197, 160, 89, 0.2);
-        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
         padding: 24px;
         margin-top: 30px;
         margin-bottom: 40px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
     .editor-title {
         font-family: 'Cinzel', serif;
-        font-size: 1.4rem;
-        color: #fff;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #111114;
         margin-bottom: 6px;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
     }
     .editor-subtitle {
         font-family: 'Montserrat', sans-serif;
         font-size: 0.85rem;
-        color: #888;
+        color: #6b7280;
         margin-bottom: 24px;
         line-height: 1.5;
     }
@@ -83,28 +84,28 @@ const inlineStyles = `
         margin-bottom: 24px;
     }
     .slide-card {
-        background: #1c1c1c;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 6px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
         padding: 20px;
         position: relative;
         transition: border-color 0.3s;
     }
     .slide-card:hover {
-        border-color: rgba(197, 160, 89, 0.3);
+        border-color: rgba(197, 160, 89, 0.5);
     }
     .slide-card__header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid #e5e7eb;
         padding-bottom: 12px;
     }
     .slide-card__badge {
         font-family: 'Cinzel', serif;
         font-size: 0.85rem;
-        color: var(--gold);
+        color: #b45309;
         font-weight: 700;
         letter-spacing: 1px;
     }
@@ -113,28 +114,28 @@ const inlineStyles = `
         gap: 8px;
     }
     .slide-card__btn {
-        background: rgba(255,255,255,0.05);
-        color: #ccc;
-        border: 1px solid rgba(255,255,255,0.1);
-        padding: 5px 10px;
+        background: #ffffff;
+        color: #4b5563;
+        border: 1px solid #e5e7eb;
+        padding: 5px 12px;
         font-size: 0.75rem;
         font-family: 'Montserrat', sans-serif;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
-        border-radius: 2px;
+        border-radius: 6px;
     }
     .slide-card__btn:hover {
-        background: rgba(255,255,255,0.15);
-        color: white;
+        background: #f3f4f6;
+        color: #111114;
     }
     .slide-card__btn--delete {
-        background: rgba(229, 57, 53, 0.1);
-        color: #ff5252;
-        border-color: rgba(229, 57, 53, 0.2);
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fecaca;
     }
     .slide-card__btn--delete:hover {
-        background: #e53935;
+        background: #dc2626;
         color: white;
     }
     .editor-input-group {
@@ -144,44 +145,48 @@ const inlineStyles = `
         display: block;
         font-family: 'Montserrat', sans-serif;
         font-size: 0.75rem;
-        color: #aaa;
+        color: #6b7280;
         margin-bottom: 6px;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
         font-weight: 600;
     }
     .editor-input {
         width: 100%;
-        padding: 10px 12px;
-        background: #121212;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #fff;
+        padding: 10px 14px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        color: #111114;
         font-family: 'Montserrat', sans-serif;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         outline: none;
         transition: border-color 0.3s;
-        border-radius: 3px;
+        border-radius: 8px;
+        box-sizing: border-box;
     }
     .editor-input:focus {
         border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.12);
     }
     .editor-textarea {
         width: 100%;
         min-height: 80px;
-        padding: 10px 12px;
-        background: #121212;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #fff;
+        padding: 10px 14px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        color: #111114;
         font-family: 'Montserrat', sans-serif;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         outline: none;
         resize: vertical;
         transition: border-color 0.3s;
-        border-radius: 3px;
+        border-radius: 8px;
         line-height: 1.5;
+        box-sizing: border-box;
     }
     .editor-textarea:focus {
         border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.12);
     }
     .bullets-container {
         display: flex;
@@ -200,40 +205,40 @@ const inlineStyles = `
     .bullet-remove-btn {
         background: transparent;
         border: none;
-        color: rgba(255, 255, 255, 0.4);
+        color: #9ca3af;
         font-size: 1.2rem;
         cursor: pointer;
         padding: 0 5px;
         transition: color 0.2s;
     }
     .bullet-remove-btn:hover {
-        color: #ff5252;
+        color: #dc2626;
     }
     .bullets-add-btn {
         background: transparent;
-        color: var(--gold);
-        border: 1px dashed rgba(197, 160, 89, 0.4);
-        padding: 6px 12px;
+        color: #b45309;
+        border: 1px dashed rgba(197, 160, 89, 0.6);
+        padding: 6px 14px;
         font-size: 0.78rem;
         font-family: 'Montserrat', sans-serif;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
-        border-radius: 2px;
+        border-radius: 6px;
         align-self: flex-start;
         display: flex;
         align-items: center;
         gap: 6px;
     }
     .bullets-add-btn:hover {
-        background: rgba(197, 160, 89, 0.05);
+        background: rgba(197, 160, 89, 0.08);
         border-color: var(--gold);
     }
     .editor-actions {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-top: 1px solid #f3f4f6;
         padding-top: 20px;
         margin-top: 24px;
     }
@@ -849,25 +854,18 @@ function MasterSettings() {
                     </button>
                 </div>
 
-                <div style={{ marginBottom: '15px' }}>
+                <div style={{ marginBottom: '15px' }} className="adm-search-wrap">
+                    <i className="fas fa-search adm-search-icon"></i>
                     <input 
                         type="text" 
                         placeholder="Search currencies (e.g. USD, Euro, Yen...)" 
                         value={currencySearchQuery}
                         onChange={(e) => setCurrencySearchQuery(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '10px 15px',
-                            background: '#141414',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '4px',
-                            color: '#fff',
-                            fontFamily: "'Montserrat', sans-serif"
-                        }}
+                        className="adm-search-input"
                     />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto', padding: '10px 0' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto', padding: '6px 0' }}>
                     {globalCurrencies && Object.entries(globalCurrencies)
                         .filter(([code, info]) => {
                             if (!currencySearchQuery) return true;
@@ -879,15 +877,16 @@ function MasterSettings() {
                         return (
                             <div key={code} onClick={() => toggleCurrency(code)} style={{
                                 padding: '12px 16px',
-                                background: isSupported ? 'rgba(197, 160, 89, 0.1)' : '#141414',
-                                border: `1px solid ${isSupported ? 'var(--gold)' : 'rgba(255,255,255,0.1)'}`,
-                                borderRadius: '6px',
+                                background: isSupported ? 'rgba(197, 160, 89, 0.08)' : '#ffffff',
+                                border: `1px solid ${isSupported ? 'var(--gold)' : '#e5e7eb'}`,
+                                borderRadius: '10px',
                                 cursor: code === 'INR' ? 'not-allowed' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '10px',
                                 opacity: code === 'INR' ? 0.5 : 1,
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                boxShadow: '0 1px 4px rgba(0,0,0,0.02)'
                             }}>
                                 <input 
                                     type="checkbox" 
@@ -896,10 +895,10 @@ function MasterSettings() {
                                     style={{ accentColor: 'var(--gold)' }} 
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 'bold', color: isSupported ? 'var(--gold)' : '#fff' }}>
-                                        {code} <span style={{ color: '#888', fontWeight: 'normal', marginLeft: '5px' }}>{info.symbol}</span>
+                                    <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 'bold', color: isSupported ? '#b45309' : '#111114' }}>
+                                        {code} <span style={{ color: '#6b7280', fontWeight: 'normal', marginLeft: '5px' }}>{info.symbol}</span>
                                     </span>
-                                    <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.7rem', color: '#888' }}>
+                                    <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.72rem', color: '#6b7280' }}>
                                         {info.name}
                                     </span>
                                 </div>
@@ -912,36 +911,37 @@ function MasterSettings() {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
                     gap: '12px',
-                    background: '#141414',
-                    border: '1px solid rgba(197, 160, 89, 0.2)',
+                    background: '#f9fafb',
+                    border: '1px solid #e5e7eb',
                     padding: '20px',
-                    borderRadius: '8px'
+                    borderRadius: '12px'
                 }}>
-                    <div style={{ gridColumn: '1 / -1', marginBottom: '10px', fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem', color: '#999' }}>
+                    <div style={{ gridColumn: '1 / -1', marginBottom: '8px', fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', color: '#4b5563' }}>
                         <strong>Live Cache:</strong> These rates are currently live across the storefront.
                     </div>
                     {cachedRates ? (
                         Object.entries(cachedRates).filter(([code]) => code !== 'INR' && supportedCurrencies.includes(code)).map(([code, rate]) => (
                             <div key={code} style={{
-                                padding: '10px',
-                                background: '#1c1c1c',
-                                borderRadius: '6px',
-                                border: '1px solid rgba(255,255,255,0.05)',
+                                padding: '12px',
+                                background: '#ffffff',
+                                borderRadius: '8px',
+                                border: '1px solid #e5e7eb',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '4px'
+                                gap: '4px',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
                             }}>
-                                <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 'bold', color: 'var(--gold)', letterSpacing: '1px' }}>
+                                <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 'bold', color: '#b45309', letterSpacing: '1px' }}>
                                     1 {code}
                                 </span>
-                                <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem', color: '#ddd' }}>
+                                <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.85rem', color: '#111114', fontWeight: 600 }}>
                                     = ₹{(1 / rate).toFixed(2)}
                                 </span>
                             </div>
                         ))
                     ) : (
-                        <p style={{ color: '#888', fontSize: '0.85rem', gridColumn: '1 / -1' }}>No cached rates found in this browser.</p>
+                        <p style={{ color: '#6b7280', fontSize: '0.85rem', gridColumn: '1 / -1' }}>No cached rates found in this browser.</p>
                     )}
                 </div>
             </div>

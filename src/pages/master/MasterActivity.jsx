@@ -67,10 +67,11 @@ export default function MasterActivity() {
                     onClick={fetchActivity}
                     disabled={refreshing}
                     style={{
-                        padding: '9px 18px', background: 'var(--admin-dark)', color: 'white',
-                        border: 'none', borderRadius: 4, cursor: refreshing ? 'not-allowed' : 'pointer',
-                        fontFamily: "'Montserrat', sans-serif", fontSize: '0.72rem', fontWeight: 700,
+                        padding: '8px 20px', background: '#111114', color: 'white',
+                        border: 'none', borderRadius: 100, cursor: refreshing ? 'not-allowed' : 'pointer',
+                        fontFamily: "'Montserrat', sans-serif", fontSize: '0.72rem', fontWeight: 600,
                         display: 'flex', alignItems: 'center', gap: 7, letterSpacing: 0.5,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                     }}
                 >
                     <i className={`fas fa-sync-alt ${refreshing ? 'fa-spin' : ''}`} />
@@ -79,7 +80,7 @@ export default function MasterActivity() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 24, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24, marginTop: 8, flexWrap: 'wrap' }}>
                 {[
                     { key: 'all', label: 'All Activity', icon: 'fa-list' },
                     { key: 'mfg', label: 'Manufacturers', icon: 'fa-industry' },
@@ -88,24 +89,17 @@ export default function MasterActivity() {
                     <button
                         key={t.key}
                         onClick={() => setTab(t.key)}
-                        style={{
-                            padding: '8px 16px',
-                            background: tab === t.key ? 'var(--admin-dark)' : 'white',
-                            color: tab === t.key ? 'var(--admin-gold)' : 'var(--admin-muted)',
-                            border: `1px solid ${tab === t.key ? 'var(--admin-dark)' : 'var(--admin-border)'}`,
-                            borderRadius: 4, cursor: 'pointer',
-                            fontFamily: "'Montserrat', sans-serif", fontSize: '0.72rem', fontWeight: 700,
-                            display: 'flex', alignItems: 'center', gap: 7,
-                            transition: 'all 0.15s',
-                        }}
+                        className={`adm-page__filter-btn ${tab === t.key ? 'adm-page__filter-btn--active' : ''}`}
+                        style={{ display: 'flex', alignItems: 'center', gap: 7 }}
                     >
                         <i className={`fas ${t.icon}`} />
                         {t.label}
                         <span style={{
                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                            background: tab === t.key ? 'var(--admin-gold)' : '#f0f0f0',
-                            color: tab === t.key ? '#121212' : '#555',
+                            background: tab === t.key ? 'rgba(197, 160, 89, 0.25)' : '#eee',
+                            color: tab === t.key ? '#C5A059' : '#666',
                             borderRadius: 10, padding: '1px 7px', fontSize: '0.65rem', fontWeight: 700,
+                            marginLeft: 2
                         }}>{counts[t.key]}</span>
                     </button>
                 ))}
@@ -123,9 +117,9 @@ export default function MasterActivity() {
                 <div style={{
                     background: 'white',
                     border: '1px solid var(--admin-border)',
-                    borderRadius: 6,
+                    borderRadius: 14,
                     overflow: 'hidden',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                    boxShadow: 'var(--admin-shadow)',
                 }}>
                     {filtered.map((evt, idx) => {
                         const meta = ICONS[evt.type] || ICONS.product_added;

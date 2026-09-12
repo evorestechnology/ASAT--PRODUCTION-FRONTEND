@@ -500,18 +500,8 @@ function MfgOrders() {
                         <button
                             key={st.id}
                             onClick={() => setStatusFilter(st.id)}
-                            style={{
-                                padding: '6px 12px',
-                                fontSize: '0.75rem',
-                                borderRadius: '4px',
-                                border: '1px solid',
-                                cursor: 'pointer',
-                                textTransform: 'capitalize',
-                                borderColor: statusFilter === st.id ? 'var(--gold)' : 'rgba(255,255,255,0.15)',
-                                background: statusFilter === st.id ? 'rgba(197, 160, 89, 0.15)' : '#1c1c1c',
-                                color: statusFilter === st.id ? 'var(--gold)' : '#aaa',
-                                fontWeight: statusFilter === st.id ? '600' : 'normal'
-                            }}
+                            className={`adm-page__filter-btn ${statusFilter === st.id ? 'adm-page__filter-btn--active' : ''}`}
+                            style={{ textTransform: 'capitalize' }}
                         >
                             {st.label}
                         </button>
@@ -519,28 +509,15 @@ function MfgOrders() {
                 </div>
 
                 {orders.length > 0 && (
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <div className="adm-search-wrap">
                         <input
                             type="text"
-                            placeholder="Search live orders..."
+                            placeholder="Search live orders, items, barcodes..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            style={{
-                                padding: '10px 35px 10px 15px',
-                                background: '#1c1c1c',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '4px',
-                                color: 'white',
-                                fontFamily: "'Montserrat', sans-serif",
-                                fontSize: '0.82rem',
-                                width: '280px',
-                                outline: 'none',
-                                transition: 'border-color 0.2s'
-                            }}
-                            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
-                            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                            className="adm-search-input"
                         />
-                        <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                        <i className="fas fa-search adm-search-icon"></i>
                     </div>
                 )}
             </div>
@@ -1341,8 +1318,8 @@ function MfgOrders() {
                             }}
                         >
                             <img 
-                                src="/ast-logo.jpg" 
-                                alt="AST Logo" 
+                                src="/dp-logo.png" 
+                                alt="Designer Paradise Logo" 
                                 style={{
                                     width: '80px',
                                     height: 'auto',

@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/admin.css';
+import '../../styles/designer.css';
 
 function MfgIndex() {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [stats, setStats] = useState({ orders: 0, last24h: 0, earnings: 0, inProgress: 0 });
     const [loading, setLoading] = useState(true);
@@ -215,52 +218,93 @@ function MfgIndex() {
     }, [catalogueData, regionData, statesData]);
 
     return (
-        <main className="adm-dash">
-            <h1 className="adm-dash__title">MANUFACTURER DASHBOARD</h1>
-
-            {/* Hero */}
-            <div className="adm-dash__hero">
+        <main className="dsn-dash">
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 14 }}>
                 <div>
-                    <div className="adm-dash__hero-number">{loading ? '...' : stats.orders.toLocaleString()}</div>
-                    <div className="adm-dash__hero-label">Total Orders</div>
+                    <h1 className="dsn-dash__chart-title" style={{ fontSize: '1.45rem', letterSpacing: '0.5px' }}>Manufacturer Operations</h1>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#888', fontFamily: "'Montserrat', sans-serif" }}>
+                        Real-time factory production metrics, active order fulfillment, and geographic distribution.
+                    </p>
                 </div>
-                {!loading && stats.last24h > 0 && (
-                    <div className="adm-dash__hero-badge">
-                        <i className="fas fa-arrow-up" style={{ marginRight: 4 }}></i> +{stats.last24h} in 24 hrs
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 7,
+                        background: '#ffffff',
+                        border: '1px solid rgba(0,0,0,0.08)',
+                        padding: '6px 14px',
+                        borderRadius: 100,
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        color: '#16a34a',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                        fontFamily: "'Montserrat', sans-serif"
+                    }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block' }}></span>
+                        Facility Online
+                    </span>
+                </div>
+            </div>
+
+            {/* 4 KPI Stat Cards */}
+            <div className="dsn-dash__stats">
+                <div className="dsn-dash__stat-card dsn-dash__stat-card--primary" onClick={() => navigate('/mfg/orders')}>
+                    <div className="dsn-dash__stat-icon"><i className="fas fa-shopping-bag"></i></div>
+                    <div className="dsn-dash__stat-info">
+                        <span className="dsn-dash__stat-num">{loading ? '...' : stats.orders.toLocaleString()}</span>
+                        <span className="dsn-dash__stat-label">Total Orders</span>
                     </div>
-                )}
+                    {!loading && stats.last24h > 0 && <span className="dsn-dash__stat-badge">+{stats.last24h} in 24 hrs</span>}
+                </div>
+
+                <div className="dsn-dash__stat-card" onClick={() => navigate('/mfg/wallet')}>
+                    <div className="dsn-dash__stat-icon"><i className="fas fa-coins"></i></div>
+                    <div className="dsn-dash__stat-info">
+                        <span className="dsn-dash__stat-num">₹{loading ? '...' : stats.earnings.toLocaleString('en-IN')}</span>
+                        <span className="dsn-dash__stat-label">Total Earnings</span>
+                    </div>
+                </div>
+
+                <div className="dsn-dash__stat-card" onClick={() => navigate('/mfg/orders')}>
+                    <div className="dsn-dash__stat-icon"><i className="fas fa-cogs"></i></div>
+                    <div className="dsn-dash__stat-info">
+                        <span className="dsn-dash__stat-num">{loading ? '...' : stats.inProgress}</span>
+                        <span className="dsn-dash__stat-label">In-Progress Orders</span>
+                    </div>
+                </div>
+
+                <div className="dsn-dash__stat-card" onClick={() => navigate('/mfg/history')}>
+                    <div className="dsn-dash__stat-icon"><i className="fas fa-check-circle"></i></div>
+                    <div className="dsn-dash__stat-info">
+                        <span className="dsn-dash__stat-num">{loading ? '...' : (stats.orders - stats.inProgress)}</span>
+                        <span className="dsn-dash__stat-label">Completed Orders</span>
+                    </div>
+                </div>
             </div>
 
-            {/* Stats */}
-            <div className="adm-dash__revenue" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                <div className="adm-dash__rev-card">
-                    <div className="adm-dash__rev-label">Total Earnings</div>
-                    <div className="adm-dash__rev-value">₹{loading ? '...' : stats.earnings.toLocaleString('en-IN')}</div>
+            {/* Charts Section */}
+            <section className="dsn-dash__chart-section">
+                <div className="dsn-dash__chart-head">
+                    <h3 className="dsn-dash__chart-title">Orders by Catalogue Category</h3>
                 </div>
-                <div className="adm-dash__rev-card">
-                    <div className="adm-dash__rev-label">In-Progress Orders</div>
-                    <div className="adm-dash__rev-value">{loading ? '...' : stats.inProgress}</div>
-                </div>
-                <div className="adm-dash__rev-card">
-                    <div className="adm-dash__rev-label">Completed Orders</div>
-                    <div className="adm-dash__rev-value">{loading ? '...' : (stats.orders - stats.inProgress)}</div>
-                </div>
-            </div>
+                <div className="dsn-dash__chart-wrap"><canvas ref={catalogueRef}></canvas></div>
+            </section>
 
-            {/* Charts */}
-            <div className="adm-dash__charts">
-                <div className="adm-dash__chart-card">
-                    <div className="adm-dash__chart-title">Orders By Catalogue</div>
-                    <div className="adm-dash__chart-wrap"><canvas ref={catalogueRef}></canvas></div>
-                </div>
-                <div className="adm-dash__chart-card">
-                    <div className="adm-dash__chart-title">Global vs Domestic</div>
-                    <div className="adm-dash__chart-wrap"><canvas ref={regionRef}></canvas></div>
-                </div>
-                <div className="adm-dash__chart-card">
-                    <div className="adm-dash__chart-title">Domestic States</div>
-                    <div className="adm-dash__chart-wrap"><canvas ref={statesRef}></canvas></div>
-                </div>
+            <div className="dsn-dash__pies">
+                <section className="dsn-dash__chart-section dsn-dash__chart-section--half">
+                    <div className="dsn-dash__chart-head">
+                        <h3 className="dsn-dash__chart-title">Global vs Domestic</h3>
+                    </div>
+                    <div className="dsn-dash__chart-wrap dsn-dash__chart-wrap--pie"><canvas ref={regionRef}></canvas></div>
+                </section>
+                <section className="dsn-dash__chart-section dsn-dash__chart-section--half">
+                    <div className="dsn-dash__chart-head">
+                        <h3 className="dsn-dash__chart-title">Domestic States Breakdown</h3>
+                    </div>
+                    <div className="dsn-dash__chart-wrap dsn-dash__chart-wrap--pie"><canvas ref={statesRef}></canvas></div>
+                </section>
             </div>
         </main>
     );

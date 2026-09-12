@@ -126,25 +126,25 @@ function MfgWallets() {
             <p className="adm-page__subtitle">Withdrawable balance, in-production pending escrow, and withdrawal requests</p>
 
             <div className="adm-wallet-cards" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 25 }}>
-                <div className="adm-wallet-card" style={{ background: '#121212', color: '#fff', borderBottom: '5px solid #2ecc71' }}>
-                    <div className="adm-wallet-card__label" style={{ color: '#aaa' }}>Withdrawable Balance</div>
-                    <div className="adm-wallet-card__value" style={{ color: '#2ecc71' }}>₹{wallet.balance.toLocaleString('en-IN')}</div>
-                    <div style={{ fontSize: '0.72rem', color: '#888', marginTop: 4 }}>Available for immediate withdrawal</div>
+                <div className="adm-wallet-card" style={{ background: '#ffffff', color: '#111114', border: '1px solid #e5e7eb', borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderBottom: '4px solid #16a34a' }}>
+                    <div className="adm-wallet-card__label" style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>Withdrawable Balance</div>
+                    <div className="adm-wallet-card__value" style={{ color: '#16a34a', fontFamily: "'Cinzel', serif", fontWeight: 700 }}>₹{wallet.balance.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: 4 }}>Available for immediate withdrawal</div>
                 </div>
-                <div className="adm-wallet-card" style={{ background: '#121212', color: '#fff', borderBottom: '5px solid #f39c12' }}>
-                    <div className="adm-wallet-card__label" style={{ color: '#aaa' }}>Pending / In Production</div>
-                    <div className="adm-wallet-card__value" style={{ color: '#f39c12' }}>₹{wallet.pendingBalance.toLocaleString('en-IN')}</div>
-                    <div style={{ fontSize: '0.72rem', color: '#888', marginTop: 4 }}>Credited upon order delivery</div>
+                <div className="adm-wallet-card" style={{ background: '#ffffff', color: '#111114', border: '1px solid #e5e7eb', borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderBottom: '4px solid #d97706' }}>
+                    <div className="adm-wallet-card__label" style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>Pending / In Production</div>
+                    <div className="adm-wallet-card__value" style={{ color: '#d97706', fontFamily: "'Cinzel', serif", fontWeight: 700 }}>₹{wallet.pendingBalance.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: 4 }}>Credited upon order delivery</div>
                 </div>
-                <div className="adm-wallet-card" style={{ background: '#121212', color: '#fff', borderBottom: '5px solid #C5A059' }}>
-                    <div className="adm-wallet-card__label" style={{ color: '#aaa' }}>Lifetime Settled Earnings</div>
-                    <div className="adm-wallet-card__value" style={{ color: '#C5A059' }}>₹{wallet.totalEarnings.toLocaleString('en-IN')}</div>
-                    <div style={{ fontSize: '0.72rem', color: '#888', marginTop: 4 }}>Total completed orders earnings</div>
+                <div className="adm-wallet-card" style={{ background: '#ffffff', color: '#111114', border: '1px solid #e5e7eb', borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderBottom: '4px solid #111114' }}>
+                    <div className="adm-wallet-card__label" style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>Lifetime Settled Earnings</div>
+                    <div className="adm-wallet-card__value" style={{ color: '#111114', fontFamily: "'Cinzel', serif", fontWeight: 700 }}>₹{wallet.totalEarnings.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: 4 }}>Total completed orders earnings</div>
                 </div>
             </div>
 
             <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
-                <button className="adm-settings__btn" style={{ background: '#C5A059', color: '#121212', fontWeight: 600 }} onClick={() => setShowModal(true)}>
+                <button className="adm-settings__btn" style={{ background: '#111114', color: '#ffffff', fontWeight: 600, padding: '11px 22px', borderRadius: 8, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }} onClick={() => setShowModal(true)}>
                     <i className="fas fa-paper-plane" style={{ marginRight: 6 }}></i> Request Withdrawal
                 </button>
             </div>

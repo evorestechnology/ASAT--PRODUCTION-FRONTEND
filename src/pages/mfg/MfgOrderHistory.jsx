@@ -220,28 +220,15 @@ function MfgOrderHistory() {
             {/* Search Input Bar */}
             {orders.length > 0 && (
                 <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <div className="adm-search-wrap">
                         <input
                             type="text"
                             placeholder="Search archived orders..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            style={{
-                                padding: '10px 35px 10px 15px',
-                                background: '#1c1c1c',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '4px',
-                                color: 'white',
-                                fontFamily: "'Montserrat', sans-serif",
-                                fontSize: '0.82rem',
-                                width: '280px',
-                                outline: 'none',
-                                transition: 'border-color 0.2s'
-                            }}
-                            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
-                            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                            className="adm-search-input"
                         />
-                        <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                        <i className="fas fa-search adm-search-icon"></i>
                     </div>
                 </div>
             )}
@@ -628,8 +615,8 @@ function MfgOrderHistory() {
                             }}
                         >
                             <img 
-                                src="/ast-logo.jpg" 
-                                alt="AST Logo" 
+                                src="/dp-logo.png" 
+                                alt="Designer Paradise Logo" 
                                 style={{
                                     width: '80px',
                                     height: 'auto',
@@ -669,7 +656,7 @@ function MfgOrderHistory() {
                                 alignItems: 'center',
                                 gap: 8,
                                 transition: 'background 0.2s'
-                            }}
+                            }}Generate Neck Logo
                         >
                             {isGeneratingLogo ? (
                                 <><i className="fas fa-spinner fa-spin"></i> Generating...</>

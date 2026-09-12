@@ -11,7 +11,7 @@ const modalStyles = `
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.75);
+        background: rgba(0, 0, 0, 0.5);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -19,46 +19,49 @@ const modalStyles = `
         backdrop-filter: blur(4px);
     }
     .modal-content {
-        background: #1c1c1c;
-        border: 1px solid rgba(197, 160, 89, 0.3);
-        border-radius: 8px;
-        padding: 30px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 28px;
         width: 100%;
         max-width: 480px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        color: #fff;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        color: #111114;
         font-family: 'Montserrat', sans-serif;
     }
     .modal-header h3 {
         margin: 0 0 15px 0;
         font-family: 'Cinzel', serif;
-        color: var(--gold);
-        font-size: 1.1rem;
-        letter-spacing: 1px;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
-        padding-bottom: 10px;
+        color: #111114;
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #f3f4f6;
+        padding-bottom: 12px;
     }
     .modal-body {
         font-size: 0.85rem;
-        color: #ccc;
+        color: #4b5563;
         margin-bottom: 20px;
         line-height: 1.6;
     }
     .modal-body textarea {
         width: 100%;
         min-height: 80px;
-        padding: 10px;
-        background: #141414;
-        border: 1px solid rgba(255,255,255,0.1);
-        color: #fff;
+        padding: 10px 14px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #111114;
         margin-top: 10px;
         font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         box-sizing: border-box;
     }
     .modal-body textarea:focus {
-        border-color: var(--gold);
+        border-color: #C5A059;
         outline: none;
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.12);
     }
     .modal-footer {
         display: flex;
@@ -231,22 +234,26 @@ function MasterWallets() {
             </div>
 
             {/* Realized vs Escrow Breakdown Ribbon */}
-            <div style={{ display: 'flex', gap: 15, flexWrap: 'wrap', marginBottom: 28 }}>
-                <div style={{ flex: 1, minWidth: 260, background: '#1c1c1c', border: '1px solid rgba(46, 204, 113, 0.3)', borderRadius: 6, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <i className="fas fa-check-circle" style={{ color: '#2ecc71', fontSize: '1.4rem' }}></i>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 28 }}>
+                <div style={{ flex: 1, minWidth: 260, background: '#ffffff', border: '1px solid rgba(46, 204, 113, 0.25)', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: 'var(--admin-shadow)' }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 12, background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <i className="fas fa-check-circle" style={{ color: '#16a34a', fontSize: '1.25rem' }}></i>
+                    </div>
                     <div>
-                        <div style={{ fontSize: '0.72rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Settled (Completed / Delivered)</div>
-                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginTop: 2 }}>
-                            Revenue: ₹{(wallet.completed?.revenue || 0).toLocaleString()} <span style={{ color: '#666', margin: '0 6px' }}>|</span> <span style={{ color: '#2ecc71' }}>Profit: ₹{(wallet.completed?.platform || 0).toLocaleString()}</span>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--admin-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>Settled (Completed / Delivered)</div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--admin-text)', marginTop: 3 }}>
+                            Revenue: ₹{(wallet.completed?.revenue || 0).toLocaleString()} <span style={{ color: '#ccc', margin: '0 8px' }}>|</span> <span style={{ color: '#16a34a' }}>Profit: ₹{(wallet.completed?.platform || 0).toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
-                <div style={{ flex: 1, minWidth: 260, background: '#1c1c1c', border: '1px solid rgba(243, 156, 18, 0.3)', borderRadius: 6, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <i className="fas fa-hourglass-half" style={{ color: '#f39c12', fontSize: '1.4rem' }}></i>
+                <div style={{ flex: 1, minWidth: 260, background: '#ffffff', border: '1px solid rgba(243, 156, 18, 0.25)', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: 'var(--admin-shadow)' }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 12, background: '#fefce8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <i className="fas fa-hourglass-half" style={{ color: '#d97706', fontSize: '1.25rem' }}></i>
+                    </div>
                     <div>
-                        <div style={{ fontSize: '0.72rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>In Escrow (In Progress / Shipping)</div>
-                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginTop: 2 }}>
-                            Revenue: ₹{(wallet.pending?.revenue || 0).toLocaleString()} <span style={{ color: '#666', margin: '0 6px' }}>|</span> <span style={{ color: '#f39c12' }}>Mfg Escrow: ₹{(wallet.pending?.mfg || 0).toLocaleString()}</span>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--admin-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>In Escrow (In Progress / Shipping)</div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--admin-text)', marginTop: 3 }}>
+                            Revenue: ₹{(wallet.pending?.revenue || 0).toLocaleString()} <span style={{ color: '#ccc', margin: '0 8px' }}>|</span> <span style={{ color: '#d97706' }}>Mfg Escrow: ₹{(wallet.pending?.mfg || 0).toLocaleString()}</span>
                         </div>
                     </div>
                 </div>

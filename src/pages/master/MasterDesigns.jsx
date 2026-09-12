@@ -574,13 +574,15 @@ function MasterDesigns() {
                         </button>
                     ))}
                 </div>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <input type="text" placeholder="Search designs..."
-                        value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                        style={{ padding: '10px 35px 10px 15px', background: '#1c1c1c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', color: 'white', fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', width: '280px', outline: 'none' }}
-                        onFocus={e => e.target.style.borderColor = 'var(--gold)'}
-                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
-                    <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }} />
+                <div className="adm-search-wrap">
+                    <input
+                        type="text"
+                        placeholder="Search designs..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="adm-search-input"
+                    />
+                    <i className="fas fa-search adm-search-icon" />
                 </div>
             </div>
 

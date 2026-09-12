@@ -257,7 +257,7 @@ function DesignerFooter() {
                         </Link>
                         <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="ASAT">
                             <img 
-                                src="/ast-logo.jpg" 
+                                src="/dp-logo.png" 
                                 alt="ASAT Logo" 
                                 className="blu-footer-card__ast-logo"
                                 style={{ height: '48px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} 

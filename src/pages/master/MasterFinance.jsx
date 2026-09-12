@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../../api';
 import { COUNTRIES, getMergedCountries } from '../../constants/countries';
+import BackButton from '../../components/BackButton';
 import '../../styles/admin.css';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -241,12 +242,15 @@ export default function MasterFinance() {
 
   // ────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="fin-root">
+    <main className="adm-page fin-root">
       <Toast toasts={toasts} />
 
-      <div className="fin-page-header">
-        <h1>Finance Configuration</h1>
-        <p>Master-controlled pricing rules — markup %, tax slabs, and shipping rates. Saved to database and applied at checkout.</p>
+      <BackButton label="Dashboard" />
+      <div className="adm-page__header" style={{ marginBottom: 28, marginTop: 10 }}>
+        <div>
+          <h1 className="adm-page__title">FINANCE CONFIGURATION</h1>
+          <p className="adm-page__subtitle">Master-controlled pricing rules — markup %, tax slabs, and shipping rates applied globally at checkout</p>
+        </div>
       </div>
 
       <div className="fin-grid">
@@ -553,6 +557,6 @@ export default function MasterFinance() {
         </div>
 
       </div>
-    </div>
+    </main>
   );
 }

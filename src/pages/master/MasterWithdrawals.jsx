@@ -22,30 +22,32 @@ const localStyles = `
         }
     }
     .withdraw-stat-card {
-        background: #18181b;
-        border: 1px solid rgba(197, 160, 89, 0.2);
-        border-radius: 8px;
-        padding: 20px;
-        color: white;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 22px;
+        color: #111114;
         transition: 0.3s ease;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
     .withdraw-stat-card:hover {
-        border-color: var(--gold);
+        border-color: #C5A059;
         transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
     }
     .withdraw-stat-label {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
+        font-weight: 700;
         text-transform: uppercase;
-        color: #a1a1aa;
-        letter-spacing: 1px;
+        color: #6b7280;
+        letter-spacing: 0.5px;
         margin-bottom: 8px;
     }
     .withdraw-stat-value {
         font-family: 'Cinzel', serif;
         font-size: 1.8rem;
         font-weight: 700;
-        color: var(--gold);
+        color: #111114;
     }
     
     .withdraw-controls {
@@ -57,19 +59,21 @@ const localStyles = `
         margin-bottom: 20px;
     }
     .withdraw-search {
-        background: #18181b;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 4px;
-        padding: 10px 15px;
-        color: white;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 9px 15px;
+        color: #111114;
         font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         outline: none;
         min-width: 250px;
-        transition: 0.3s;
+        transition: 0.2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
     .withdraw-search:focus {
-        border-color: var(--gold);
+        border-color: #C5A059;
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.12);
     }
     
     .withdraw-filters {
@@ -78,24 +82,26 @@ const localStyles = `
         flex-wrap: wrap;
     }
     .withdraw-filter-btn {
-        background: #18181b;
-        border: 1px solid rgba(255,255,255,0.1);
-        color: #ccc;
-        padding: 8px 16px;
-        border-radius: 4px;
-        font-size: 0.8rem;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        color: #4b5563;
+        padding: 7px 16px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 500;
         cursor: pointer;
         transition: 0.2s;
     }
     .withdraw-filter-btn:hover {
-        border-color: var(--gold);
-        color: white;
+        border-color: #111114;
+        color: #111114;
     }
     .withdraw-filter-btn--active {
-        background: var(--gold);
-        color: black !important;
-        font-weight: 600;
-        border-color: var(--gold);
+        background: #111114;
+        color: #ffffff !important;
+        font-weight: 700;
+        border-color: #111114;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     .modal-overlay {
@@ -104,7 +110,7 @@ const localStyles = `
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.75);
+        background: rgba(0, 0, 0, 0.5);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -112,46 +118,49 @@ const localStyles = `
         backdrop-filter: blur(4px);
     }
     .modal-content {
-        background: #1c1c1c;
-        border: 1px solid rgba(197, 160, 89, 0.3);
-        border-radius: 8px;
-        padding: 30px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 28px;
         width: 100%;
         max-width: 480px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        color: #fff;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        color: #111114;
         font-family: 'Montserrat', sans-serif;
     }
     .modal-header h3 {
         margin: 0 0 15px 0;
         font-family: 'Cinzel', serif;
-        color: var(--gold);
-        font-size: 1.1rem;
-        letter-spacing: 1px;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
-        padding-bottom: 10px;
+        color: #111114;
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #f3f4f6;
+        padding-bottom: 12px;
     }
     .modal-body {
         font-size: 0.85rem;
-        color: #ccc;
+        color: #4b5563;
         margin-bottom: 20px;
         line-height: 1.6;
     }
     .modal-body textarea {
         width: 100%;
         min-height: 80px;
-        padding: 10px;
-        background: #141414;
-        border: 1px solid rgba(255,255,255,0.1);
-        color: #fff;
+        padding: 10px 14px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #111114;
         margin-top: 10px;
         font-family: 'Montserrat', sans-serif;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         box-sizing: border-box;
     }
     .modal-body textarea:focus {
-        border-color: var(--gold);
+        border-color: #C5A059;
         outline: none;
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.12);
     }
     .modal-footer {
         display: flex;
@@ -468,7 +477,7 @@ function MasterWithdrawals() {
                         </div>
                         <div className="modal-footer">
                             <button className="adm-settings__btn" style={{ background: '#3a3a3c', marginTop: 0 }} onClick={() => setPendingApprove(null)}>Cancel</button>
-                            <button className="adm-settings__btn" style={{ background: 'var(--gold)', color: '#000', marginTop: 0 }} onClick={executeApprove}>Approve</button>
+                            <button className="adm-settings__btn" style={{ background: '#3a3a3c', color: '#ffffff', marginTop: 0 }} onClick={executeApprove}>Approve</button>
                         </div>
                     </div>
                 </div>

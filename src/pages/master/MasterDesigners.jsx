@@ -219,28 +219,15 @@ function MasterDesigners() {
 
             {/* Search Input Bar */}
             <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div className="adm-search-wrap">
                     <input
                         type="text"
                         placeholder="Search designers by name or username..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{
-                            padding: '10px 35px 10px 15px',
-                            background: '#1c1c1c',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '4px',
-                            color: 'white',
-                            fontFamily: "'Montserrat', sans-serif",
-                            fontSize: '0.82rem',
-                            width: '280px',
-                            outline: 'none',
-                            transition: 'border-color 0.2s'
-                        }}
-                        onFocus={e => e.target.style.borderColor = 'var(--gold)'}
-                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                        className="adm-search-input"
                     />
-                    <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                    <i className="fas fa-search adm-search-icon"></i>
                 </div>
             </div>
 
@@ -336,11 +323,11 @@ function MasterDesigners() {
 
             {/* Password Reset Modal */}
             {editingPasswordUser && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ background: '#1e1e1e', borderRadius: 8, padding: 32, width: '90%', maxWidth: 400, border: '1px solid #333' }}>
-                        <h3 style={{ fontFamily: "'Cinzel', serif", color: 'var(--admin-gold)', fontSize: '1rem', margin: '0 0 8px' }}>Reset Password</h3>
-                        <p style={{ color: '#aaa', fontFamily: "'Montserrat', sans-serif", fontSize: '0.75rem', marginBottom: 20 }}>
-                            Setting new password for <strong style={{ color: 'white' }}>{editingPasswordUser.name}</strong>
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+                    <div style={{ background: '#ffffff', borderRadius: 14, padding: 30, width: '90%', maxWidth: 420, border: '1px solid #e5e7eb', boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }}>
+                        <h3 style={{ fontFamily: "'Cinzel', serif", color: '#111114', fontSize: '1.1rem', margin: '0 0 8px', fontWeight: 700 }}>Reset Password</h3>
+                        <p style={{ color: '#6b7280', fontFamily: "'Montserrat', sans-serif", fontSize: '0.78rem', marginBottom: 20 }}>
+                            Setting new password for <strong style={{ color: '#111114' }}>{editingPasswordUser.name}</strong>
                         </p>
                         <form onSubmit={handleUpdatePassword}>
                             <input
@@ -350,13 +337,13 @@ function MasterDesigners() {
                                 placeholder="New password (min. 6 characters)"
                                 value={newPassword}
                                 onChange={e => setNewPassword(e.target.value)}
-                                style={{ width: '100%', padding: '10px 14px', background: '#2a2a2a', border: '1px solid #444', borderRadius: 4, color: 'white', fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', marginBottom: 16, boxSizing: 'border-box' }}
+                                style={{ width: '100%', padding: '10px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#111114', fontFamily: "'Montserrat', sans-serif", fontSize: '0.82rem', marginBottom: 18, boxSizing: 'border-box', outline: 'none' }}
                             />
                             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                                 <button type="button" onClick={() => { setEditingPasswordUser(null); setNewPassword(''); }}
-                                    style={{ padding: '9px 18px', background: '#333', color: '#aaa', border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: "'Montserrat', sans-serif", fontSize: '0.75rem' }}>Cancel</button>
+                                    style={{ padding: '9px 18px', background: '#f3f4f6', color: '#4b5563', border: '1px solid #e5e7eb', borderRadius: 8, cursor: 'pointer', fontFamily: "'Montserrat', sans-serif", fontSize: '0.78rem', fontWeight: 600 }}>Cancel</button>
                                 <button type="submit" disabled={updatingPassword}
-                                    style={{ padding: '9px 18px', background: 'var(--admin-gold)', color: '#000', border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: "'Montserrat', sans-serif", fontSize: '0.75rem', fontWeight: 700 }}>
+                                    style={{ padding: '9px 20px', background: '#111114', color: '#ffffff', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: "'Montserrat', sans-serif", fontSize: '0.78rem', fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
                                     {updatingPassword ? 'Updating…' : 'Update Password'}
                                 </button>
                             </div>
@@ -431,29 +418,29 @@ function MasterDesigners() {
                         width: '520px',
                         maxWidth: '90%',
                         height: '100%',
-                        background: 'rgba(18, 18, 18, 0.96)',
-                        borderLeft: '1px solid var(--gold)',
-                        boxShadow: '-10px 0 45px rgba(0, 0, 0, 0.6)',
+                        background: '#ffffff',
+                        borderLeft: '1px solid #e5e7eb',
+                        boxShadow: '-10px 0 35px rgba(0, 0, 0, 0.08)',
                         zIndex: 2000,
                         display: 'flex',
                         flexDirection: 'column',
                         fontFamily: "'Montserrat', sans-serif",
-                        color: 'white',
+                        color: '#111114',
                         overflowY: 'auto'
                     }}>
                         {/* Header */}
                         <div style={{
                             padding: '24px 20px',
-                            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderBottom: '1px solid #f3f4f6',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center'
                         }}>
                             <div>
-                                <h3 style={{ fontFamily: "'Cinzel', serif", margin: 0, color: 'var(--gold)', fontSize: '1.2rem', letterSpacing: 1 }}>
+                                <h3 style={{ fontFamily: "'Cinzel', serif", margin: 0, color: '#111114', fontSize: '1.2rem', fontWeight: 700, letterSpacing: 1 }}>
                                     DESIGNER PROFILE
                                 </h3>
-                                <div style={{ fontSize: '0.75rem', color: '#aaa', marginTop: 4 }}>
+                                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 4 }}>
                                     UID: {selectedDesignerId}
                                 </div>
                             </div>
@@ -462,20 +449,20 @@ function MasterDesigners() {
                                 style={{
                                     background: 'transparent',
                                     border: 'none',
-                                    color: '#aaa',
+                                    color: '#9ca3af',
                                     fontSize: '1.2rem',
                                     cursor: 'pointer',
                                     transition: 'color 0.2s'
                                 }}
-                                onMouseEnter={(e) => e.target.style.color = 'var(--gold)'}
-                                onMouseLeave={(e) => e.target.style.color = '#aaa'}
+                                onMouseEnter={(e) => e.target.style.color = '#111114'}
+                                onMouseLeave={(e) => e.target.style.color = '#9ca3af'}
                             >
                                 <i className="fas fa-times"></i>
                             </button>
                         </div>
 
                         {detailsLoading ? (
-                            <div style={{ margin: 'auto', textAlign: 'center', color: '#aaa', fontSize: '0.9rem' }}>
+                            <div style={{ margin: 'auto', textAlign: 'center', color: '#6b7280', fontSize: '0.9rem' }}>
                                 <div className="adm-spinner" style={{ marginBottom: 15 }}></div>
                                 Loading details...
                             </div>
@@ -483,7 +470,7 @@ function MasterDesigners() {
                             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                                 
                                 {/* Info Section */}
-                                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '8px' }}>
+                                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', background: '#f9fafb', padding: '16px', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
                                     {selectedDesignerDetails.designer.avatar_url ? (
                                         <img 
                                             src={selectedDesignerDetails.designer.avatar_url} 
@@ -491,23 +478,23 @@ function MasterDesigners() {
                                             style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--gold)' }} 
                                         />
                                     ) : (
-                                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--gold)', color: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 'bold', fontFamily: "'Cinzel'" }}>
+                                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#111114', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 'bold', fontFamily: "'Cinzel'" }}>
                                             {(selectedDesignerDetails.designer.full_name || 'D')[0].toUpperCase()}
                                         </div>
                                     )}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{selectedDesignerDetails.designer.full_name}</h4>
-                                        <span style={{ color: 'var(--gold)', fontSize: '0.8rem' }}>@{selectedDesignerDetails.designer.username}</span>
-                                        <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="far fa-envelope" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.email}</span>
+                                        <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#111114' }}>{selectedDesignerDetails.designer.full_name}</h4>
+                                        <span style={{ color: '#b45309', fontSize: '0.8rem', fontWeight: 600 }}>@{selectedDesignerDetails.designer.username}</span>
+                                        <span style={{ color: '#6b7280', fontSize: '0.78rem' }}><i className="far fa-envelope" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.email}</span>
                                         {selectedDesignerDetails.designer.contact && (
-                                            <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="fas fa-phone-alt" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.contact}</span>
+                                            <span style={{ color: '#6b7280', fontSize: '0.78rem' }}><i className="fas fa-phone-alt" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.contact}</span>
                                         )}
                                         {selectedDesignerDetails.designer.address && (
-                                            <span style={{ color: '#aaa', fontSize: '0.78rem' }}><i className="fas fa-map-marker-alt" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.address}, {selectedDesignerDetails.designer.country}</span>
+                                            <span style={{ color: '#6b7280', fontSize: '0.78rem' }}><i className="fas fa-map-marker-alt" style={{ marginRight: 6 }}></i>{selectedDesignerDetails.designer.address}, {selectedDesignerDetails.designer.country}</span>
                                         )}
                                         {(selectedDesignerDetails.designer.description || selectedDesignerDetails.designer.bio) && (
-                                            <div style={{ marginTop: '6px', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.08)', fontSize: '0.78rem', color: '#ddd' }}>
-                                                <strong style={{ color: 'var(--gold)' }}>Bio: </strong>{selectedDesignerDetails.designer.description || selectedDesignerDetails.designer.bio}
+                                            <div style={{ marginTop: '6px', padding: '8px 12px', background: '#f3f4f6', borderRadius: 6, border: '1px solid #e5e7eb', fontSize: '0.78rem', color: '#374151' }}>
+                                                <strong style={{ color: '#b45309' }}>Bio: </strong>{selectedDesignerDetails.designer.description || selectedDesignerDetails.designer.bio}
                                             </div>
                                         )}
                                         <div style={{ display: 'flex', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
@@ -537,59 +524,59 @@ function MasterDesigners() {
 
                                 {/* Ledger / Financial Grid */}
                                 <div>
-                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: '#111114', borderBottom: '1px solid #f3f4f6', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 700, letterSpacing: 1 }}>
                                         FINANCIAL LEDGER
                                     </h4>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
-                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Total Income</div>
+                                        <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', marginBottom: 4, fontWeight: 600 }}>Total Income</div>
                                             <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981' }}>₹{Number(selectedDesignerDetails.wallet.total_earnings || 0).toLocaleString()}</div>
                                         </div>
-                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
-                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Payouts</div>
+                                        <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', marginBottom: 4, fontWeight: 600 }}>Payouts</div>
                                             <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#f59e0b' }}>₹{Number(selectedDesignerDetails.wallet.total_withdrawn || 0).toLocaleString()}</div>
                                         </div>
-                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
-                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Balance</div>
-                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--gold)' }}>₹{Number(selectedDesignerDetails.wallet.balance || 0).toLocaleString()}</div>
+                                        <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', marginBottom: 4, fontWeight: 600 }}>Balance</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#111114' }}>₹{Number(selectedDesignerDetails.wallet.balance || 0).toLocaleString()}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Activity / Metrics Grid */}
                                 <div>
-                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: '#111114', borderBottom: '1px solid #f3f4f6', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 700, letterSpacing: 1 }}>
                                         PLATFORM ACTIVITY
                                     </h4>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
-                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Designs Uploaded</div>
-                                            <div style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>{selectedDesignerDetails.designs.length}</div>
+                                        <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', marginBottom: 4, fontWeight: 600 }}>Designs Uploaded</div>
+                                            <div style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#111114' }}>{selectedDesignerDetails.designs.length}</div>
                                         </div>
-                                        <div style={{ background: '#1c1c1e', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
-                                            <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Sales Orders</div>
-                                            <div style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>{selectedDesignerDetails.orders.length}</div>
+                                        <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', marginBottom: 4, fontWeight: 600 }}>Sales Orders</div>
+                                            <div style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#111114' }}>{selectedDesignerDetails.orders.length}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Designs list */}
                                 <div>
-                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: '#111114', borderBottom: '1px solid #f3f4f6', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 700, letterSpacing: 1 }}>
                                         DESIGNS ({selectedDesignerDetails.designs.length})
                                     </h4>
                                     {selectedDesignerDetails.designs.length === 0 ? (
-                                        <div style={{ color: '#666', fontSize: '0.8rem', padding: '10px 0' }}>No designs uploaded yet.</div>
+                                        <div style={{ color: '#6b7280', fontSize: '0.8rem', padding: '10px 0' }}>No designs uploaded yet.</div>
                                     ) : (
                                         <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             {selectedDesignerDetails.designs.map(d => (
-                                                <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9fafb', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
                                                     <div>
-                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{d.title}</div>
-                                                        <div style={{ fontSize: '0.7rem', color: '#888' }}>ID: {d.id.substring(0,8)}...</div>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111114' }}>{d.title}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>ID: {d.id.substring(0,8)}...</div>
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                        <span style={{ fontSize: '0.85rem', color: 'var(--gold)', fontWeight: 600 }}>₹{d.price.toLocaleString()}</span>
+                                                        <span style={{ fontSize: '0.85rem', color: '#111114', fontWeight: 700 }}>₹{d.price.toLocaleString()}</span>
                                                         <span className={`adm-badge adm-badge--${d.status === 'approved' ? 'active' : d.status === 'pending' ? 'pending' : 'danger'}`} style={{ fontSize: '0.62rem' }}>
                                                             {d.status || 'pending'}
                                                         </span>
@@ -602,22 +589,22 @@ function MasterDesigners() {
 
                                 {/* Orders list */}
                                 <div>
-                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', letterSpacing: 1 }}>
+                                    <h4 style={{ fontFamily: "'Cinzel', serif", color: '#111114', borderBottom: '1px solid #f3f4f6', paddingBottom: '6px', marginBottom: '12px', fontSize: '0.9rem', fontWeight: 700, letterSpacing: 1 }}>
                                         SALES ORDERS ({selectedDesignerDetails.orders.length})
                                     </h4>
                                     {selectedDesignerDetails.orders.length === 0 ? (
-                                        <div style={{ color: '#666', fontSize: '0.8rem', padding: '10px 0' }}>No sales recorded.</div>
+                                        <div style={{ color: '#6b7280', fontSize: '0.8rem', padding: '10px 0' }}>No sales recorded.</div>
                                     ) : (
                                         <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             {selectedDesignerDetails.orders.map(o => (
-                                                <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9fafb', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
                                                     <div>
-                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Order #{o.order_id || o.id}</div>
-                                                        <div style={{ fontSize: '0.7rem', color: '#888' }}>{formatDate(o.created_at)}</div>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111114' }}>Order #{o.order_id || o.id}</div>
+                                                        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>{formatDate(o.created_at)}</div>
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                                            <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>₹{Number(o.total_amount || 0).toLocaleString()}</span>
+                                                            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#111114' }}>₹{Number(o.total_amount || 0).toLocaleString()}</span>
                                                             <span style={{ fontSize: '0.65rem', color: '#10b981' }}>Earned: ₹{Number(o.designer_earnings || 0).toLocaleString()}</span>
                                                         </div>
                                                         <span className={`adm-badge adm-badge--${o.status === 'completed' ? 'active' : o.status === 'cancelled' ? 'danger' : 'info'}`} style={{ fontSize: '0.62rem' }}>
@@ -631,7 +618,7 @@ function MasterDesigners() {
                                 </div>
                             </div>
                         ) : (
-                            <div style={{ margin: 'auto', color: '#666' }}>No details found.</div>
+                            <div style={{ margin: 'auto', color: '#6b7280' }}>No details found.</div>
                         )}
                     </div>
                 </>

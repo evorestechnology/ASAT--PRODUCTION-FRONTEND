@@ -1,373 +1,525 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const navSections = [
+const NAV_GROUPS = [
     {
-        title: 'Overview',
-        links: [
-            { to: '/master', label: 'Dashboard', icon: 'fas fa-chart-pie', end: true },
-            { to: '/master/orders', label: 'Orders', icon: 'fas fa-receipt' },
-            { to: '/master/activity', label: 'Live Activity', icon: 'fas fa-bolt' },
+        id: 'dashboard',
+        label: 'Dashboard',
+        icon: 'fas fa-chart-pie',
+        to: '/master',
+        exact: true
+    },
+    {
+        id: 'orders',
+        label: 'Orders',
+        icon: 'fas fa-receipt',
+        children: [
+            { to: '/master/orders', label: 'Order History', icon: 'fas fa-receipt', desc: 'Manage all order records' },
+            { to: '/master/activity', label: 'Live Activity', icon: 'fas fa-bolt', desc: 'Real-time production stream' },
+            { to: '/master/delivery', label: 'Delivery & Logistics', icon: 'fas fa-truck', desc: 'Couriers & tracking' },
         ]
     },
     {
-        title: 'Partners & Network',
-        links: [
-            { to: '/master/designers', label: 'Designers', icon: 'fas fa-paint-brush' },
-            { to: '/master/manufacturers', label: 'Manufacturers', icon: 'fas fa-industry' },
+        id: 'network',
+        label: 'Network',
+        icon: 'fas fa-users-cog',
+        children: [
+            { to: '/master/designers', label: 'Designers', icon: 'fas fa-paint-brush', desc: 'Profiles, rankings & cuts' },
+            { to: '/master/manufacturers', label: 'Manufacturers', icon: 'fas fa-industry', desc: 'Production facilities & rates' },
         ]
     },
     {
-        title: 'Catalog Management',
-        links: [
-            { to: '/master/designs', label: 'Designs', icon: 'fas fa-palette' },
-            { to: '/master/products', label: 'Base Products', icon: 'fas fa-boxes' },
-            { to: '/master/categories', label: 'Categories', icon: 'fas fa-tags' },
+        id: 'catalog',
+        label: 'Catalog',
+        icon: 'fas fa-boxes',
+        children: [
+            { to: '/master/designs', label: 'Designs', icon: 'fas fa-palette', desc: 'Community submissions' },
+            { to: '/master/products', label: 'Base Products', icon: 'fas fa-tshirt', desc: 'Garments & specs' },
+            { to: '/master/categories', label: 'Categories', icon: 'fas fa-tags', desc: 'Taxonomy & tags' },
+            { to: '/master/catalogue', label: 'Catalogue Items', icon: 'fas fa-book-open', desc: 'Item repository' },
         ]
     },
     {
-        title: 'Financials',
-        links: [
-            { to: '/master/wallet', label: 'Master Wallet', icon: 'fas fa-wallet' },
-            { to: '/master/withdrawals', label: 'Withdrawals', icon: 'fas fa-hand-holding-usd' },
-            { to: '/master/finance', label: 'Finance & Analytics', icon: 'fas fa-calculator' },
-            { to: '/master/gst-report', label: 'GST Report', icon: 'fas fa-file-invoice' },
+        id: 'financials',
+        label: 'Financials',
+        icon: 'fas fa-coins',
+        children: [
+            { to: '/master/wallet', label: 'Master Wallet', icon: 'fas fa-wallet', desc: 'Balances & deposits' },
+            { to: '/master/withdrawals', label: 'Withdrawals', icon: 'fas fa-hand-holding-usd', desc: 'Pending payout requests' },
+            { to: '/master/finance', label: 'Finance & Analytics', icon: 'fas fa-chart-line', desc: 'Margins & cost breakdown' },
+            { to: '/master/gst-report', label: 'GST Statutory Report', icon: 'fas fa-file-invoice-dollar', desc: 'Tax filings & invoices' },
         ]
     },
     {
-        title: 'Operations',
-        links: [
-            { to: '/master/delivery', label: 'Delivery & Logistics', icon: 'fas fa-truck' },
-            { to: '/master/tickets', label: 'Support Tickets', icon: 'fas fa-headset' },
-            { to: '/master/tutorials', label: 'Tutorials', icon: 'fas fa-graduation-cap' },
-        ]
-    },
-    {
-        title: 'Administration',
-        links: [
-            { to: '/master/settings', label: 'Platform Settings', icon: 'fas fa-cog' },
-            { to: '/master/profile', label: 'Admin Profile', icon: 'fas fa-user-shield' },
+        id: 'operations',
+        label: 'Operations',
+        icon: 'fas fa-headset',
+        children: [
+            { to: '/master/tickets', label: 'Support Tickets', icon: 'fas fa-headset', desc: 'Customer & partner issues' },
+            { to: '/master/tutorials', label: 'Tutorials & Guides', icon: 'fas fa-graduation-cap', desc: 'Documentation & videos' },
         ]
     }
 ];
-
-// Flat list for the main scrollable bar
-const allNavLinks = navSections.flatMap(section => section.links);
 
 function MasterHeader() {
     const navigate = useNavigate();
     const location = useLocation();
     const { logout, profile, user } = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const navRef = useRef(null);
+    const [profileOpen, setProfileOpen] = useState(false);
+    const [activeDropdown, setActiveDropdown] = useState(null);
+    const dropdownTimeoutRef = useRef(null);
+    const profileRef = useRef(null);
 
     const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Master Admin';
     const email = profile?.email || user?.email || 'admin@asat.com';
+    const initial = displayName ? displayName.charAt(0).toUpperCase() : 'M';
 
-    // Track scroll for subtle shadow elevation
+    // Close dropdowns on outside click
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 10);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        const handler = (e) => {
+            if (profileRef.current && !profileRef.current.contains(e.target)) {
+                setProfileOpen(false);
+            }
+        };
+        document.addEventListener('click', handler);
+        return () => document.removeEventListener('click', handler);
     }, []);
 
-    // Auto-scroll active link into view
+    // Close on route change
     useEffect(() => {
-        if (!navRef.current) return;
-        const activeEl = navRef.current.querySelector('.mst-nav__link--active');
-        if (activeEl) {
-            activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        }
+        setActiveDropdown(null);
+        setMobileOpen(false);
+        setProfileOpen(false);
     }, [location.pathname]);
 
-    const scrollNav = (direction) => {
-        if (navRef.current) {
-            navRef.current.scrollBy({ left: direction * 240, behavior: 'smooth' });
+    const handleMouseEnter = (groupId) => {
+        if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+        setActiveDropdown(groupId);
+    };
+
+    const handleMouseLeave = () => {
+        dropdownTimeoutRef.current = setTimeout(() => {
+            setActiveDropdown(null);
+        }, 150);
+    };
+
+    const isGroupActive = (group) => {
+        if (group.exact) {
+            return location.pathname === group.to;
         }
+        if (group.children) {
+            return group.children.some(child => location.pathname === child.to || location.pathname.startsWith(child.to + '/'));
+        }
+        return false;
     };
 
     return (
-        <header className={`mst-header ${scrolled ? 'mst-header--scrolled' : ''}`}>
+        <header className="mst-header">
             <style>{`
                 .mst-header {
-                    background: #0d0d0f;
-                    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+                    height: 68px;
+                    background: rgba(255, 255, 255, 0.96);
+                    backdrop-filter: blur(16px);
+                    -webkit-backdrop-filter: blur(16px);
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
                     position: sticky;
                     top: 0;
                     z-index: 1000;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+                    transition: all 0.25s ease;
+                    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.03);
                 }
-                .mst-header--scrolled {
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-                    border-bottom-color: rgba(197, 160, 89, 0.35);
-                }
-                .mst-topbar {
+                .mst-header__inner {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 12px 3%;
-                    background: linear-gradient(180deg, #131316 0%, #0d0d0f 100%);
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                    height: 100%;
+                    width: 100%;
+                    max-width: 1440px;
+                    margin: 0 auto;
+                    padding: 0 clamp(16px, 2.5vw, 36px);
+                    box-sizing: border-box;
                 }
-                .mst-topbar__left {
+                .mst-header__left {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    cursor: pointer;
+                    user-select: none;
+                    transition: opacity 0.2s ease;
+                }
+                .mst-header__left:hover {
+                    opacity: 0.9;
+                }
+                .mst-header__logo-img {
+                    height: 26px;
+                    width: auto;
+                    object-fit: contain;
+                    display: block;
+                }
+                .mst-header__badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 3px 10px 3px 6px;
+                    background: rgba(197, 160, 89, 0.08);
+                    border: 1px solid rgba(197, 160, 89, 0.25);
+                    border-radius: 20px;
+                    line-height: 1;
+                }
+                .mst-header__badge-tag {
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.58rem;
+                    font-weight: 800;
+                    letter-spacing: 1.2px;
+                    color: #927333;
+                    text-transform: uppercase;
+                    background: rgba(197, 160, 89, 0.18);
+                    padding: 2.5px 6px;
+                    border-radius: 12px;
+                }
+                .mst-header__badge-title {
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.68rem;
+                    font-weight: 600;
+                    color: #1f2937;
+                    letter-spacing: 0.4px;
+                    text-transform: uppercase;
+                }
+                .mst-header__nav {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex: 1;
+                    margin: 0 16px;
+                }
+                .mst-header__nav-capsule {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 3px;
+                    background: #f4f4f6;
+                    padding: 4px;
+                    border-radius: 100px;
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                }
+                .mst-nav__item {
+                    position: relative;
+                }
+                .mst-nav__link {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 6px 13px;
+                    border-radius: 100px;
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.74rem;
+                    font-weight: 500;
+                    color: #4b5563;
+                    text-decoration: none;
+                    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+                    white-space: nowrap;
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                }
+                .mst-nav__link:hover {
+                    color: #111827;
+                    background: rgba(255, 255, 255, 0.7);
+                }
+                .mst-nav__link--active {
+                    color: #ffffff !important;
+                    background: #111114 !important;
+                    font-weight: 600 !important;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+                }
+                .mst-nav__link--active i {
+                    color: #C5A059 !important;
+                }
+                .mst-nav__icon {
+                    font-size: 0.7rem;
+                    color: #9ca3af;
+                    transition: color 0.2s ease;
+                }
+                .mst-nav__chevron {
+                    font-size: 0.55rem;
+                    color: #9ca3af;
+                    margin-left: 2px;
+                    transition: transform 0.2s ease;
+                }
+                .mst-nav__chevron--open {
+                    transform: rotate(180deg);
+                }
+
+                /* ── Floating Dropdown Menu ── */
+                .mst-dropdown-menu {
+                    position: absolute;
+                    top: calc(100% + 8px);
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #ffffff;
+                    border: 1px solid rgba(0, 0, 0, 0.08);
+                    border-radius: 14px;
+                    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+                    min-width: 220px;
+                    padding: 6px;
+                    z-index: 1050;
+                    animation: mstDropIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                @keyframes mstDropIn {
+                    from { opacity: 0; transform: translate(-50%, -6px); }
+                    to { opacity: 1; transform: translate(-50%, 0); }
+                }
+                .mst-dropdown-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.74rem;
+                    color: #374151;
+                    text-decoration: none;
+                    transition: all 0.15s ease;
+                }
+                .mst-dropdown-item:hover {
+                    background: #f9fafb;
+                    color: #111827;
+                }
+                .mst-dropdown-item--active {
+                    background: rgba(197, 160, 89, 0.1) !important;
+                    color: #927333 !important;
+                    font-weight: 600;
+                }
+                .mst-dropdown-item--active i {
+                    color: #C5A059 !important;
+                }
+                .mst-dropdown-item__icon {
+                    width: 16px;
+                    text-align: center;
+                    font-size: 0.75rem;
+                    color: #9ca3af;
+                }
+                .mst-dropdown-item__content {
+                    display: flex;
+                    flex-direction: column;
+                }
+                .mst-dropdown-item__label {
+                    font-weight: 600;
+                }
+                .mst-dropdown-item__desc {
+                    font-size: 0.62rem;
+                    color: #9ca3af;
+                    margin-top: 1px;
+                }
+
+                /* ── Profile Area ── */
+                .mst-header__right {
                     display: flex;
                     align-items: center;
                     gap: 12px;
                 }
-                .mst-badge {
+                .mst-header__profile {
+                    position: relative;
+                }
+                .mst-header__profile-pill {
                     display: inline-flex;
                     align-items: center;
-                    gap: 6px;
-                    padding: 4px 12px;
-                    background: rgba(197, 160, 89, 0.12);
-                    border: 1px solid rgba(197, 160, 89, 0.3);
-                    border-radius: 20px;
-                    color: var(--gold, #C5A059);
-                    font-family: 'Montserrat', sans-serif;
-                    font-size: 0.65rem;
-                    font-weight: 700;
-                    letter-spacing: 1.5px;
-                    text-transform: uppercase;
-                }
-                .mst-live-dot {
-                    width: 7px;
-                    height: 7px;
-                    border-radius: 50%;
-                    background: #10b981;
-                    box-shadow: 0 0 8px #10b981;
-                    animation: mst-pulse 2s infinite;
-                }
-                @keyframes mst-pulse {
-                    0%, 100% { transform: scale(1); opacity: 1; }
-                    50% { transform: scale(1.3); opacity: 0.6; }
-                }
-                .mst-topbar__brand {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    cursor: pointer;
-                    user-select: none;
-                    transition: transform 0.2s ease;
-                }
-                .mst-topbar__brand:hover {
-                    transform: scale(1.02);
-                }
-                .mst-brand__title {
-                    font-family: 'Cinzel', serif;
-                    font-size: 1.35rem;
-                    font-weight: 800;
-                    letter-spacing: 4px;
-                    color: #ffffff;
-                    text-shadow: 0 2px 10px rgba(197, 160, 89, 0.3);
-                }
-                .mst-brand__title span {
-                    color: var(--gold, #C5A059);
-                }
-                .mst-brand__tagline {
-                    font-family: 'Montserrat', sans-serif;
-                    font-size: 0.55rem;
-                    letter-spacing: 3.5px;
-                    text-transform: uppercase;
-                    color: rgba(197, 160, 89, 0.85);
-                    margin-top: 1px;
-                }
-                .mst-topbar__right {
-                    display: flex;
-                    align-items: center;
-                    gap: 14px;
-                }
-                .mst-user-pill {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    padding: 5px 12px 5px 6px;
-                    background: rgba(255, 255, 255, 0.04);
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-radius: 30px;
+                    gap: 8px;
+                    padding: 3px 10px 3px 4px;
+                    background: #ffffff;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 100px;
                     cursor: pointer;
                     transition: all 0.2s ease;
-                    text-decoration: none;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
                 }
-                .mst-user-pill:hover {
-                    background: rgba(197, 160, 89, 0.1);
-                    border-color: rgba(197, 160, 89, 0.35);
+                .mst-header__profile-pill:hover,
+                .mst-header__profile-pill--active {
+                    border-color: #C5A059;
+                    box-shadow: 0 2px 10px rgba(197, 160, 89, 0.18);
                 }
-                .mst-user-avatar {
+                .mst-header__avatar-badge {
                     width: 28px;
                     height: 28px;
                     border-radius: 50%;
-                    background: linear-gradient(135deg, #C5A059, #8c6a28);
-                    color: #000;
+                    background: linear-gradient(135deg, #1f1f23 0%, #09090b 100%);
+                    color: #C5A059;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 0.75rem;
-                    font-weight: 700;
                     font-family: 'Montserrat', sans-serif;
+                    font-size: 0.72rem;
+                    font-weight: 700;
+                    border: 1px solid rgba(197, 160, 89, 0.4);
                 }
-                .mst-user-info {
-                    display: flex;
-                    flex-direction: column;
-                }
-                .mst-user-name {
+                .mst-header__profile-name {
                     font-family: 'Montserrat', sans-serif;
                     font-size: 0.72rem;
                     font-weight: 600;
-                    color: #f3f4f6;
-                    letter-spacing: 0.3px;
+                    color: #1f2937;
+                    max-width: 110px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
-                .mst-user-role {
-                    font-family: 'Montserrat', sans-serif;
-                    font-size: 0.58rem;
-                    color: rgba(197, 160, 89, 0.75);
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                .mst-header__profile-caret {
+                    font-size: 0.6rem;
+                    color: #9ca3af;
+                    transition: transform 0.2s ease;
                 }
-                .mst-btn-logout {
+                .mst-header__profile-caret--open {
+                    transform: rotate(180deg);
+                    color: #C5A059;
+                }
+                .mst-profile-dropdown {
+                    position: absolute;
+                    top: calc(100% + 12px);
+                    right: 0;
+                    background: #ffffff;
+                    border: 1px solid rgba(0, 0, 0, 0.08);
+                    border-radius: 14px;
+                    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+                    min-width: 220px;
+                    z-index: 1100;
+                    overflow: hidden;
+                    padding: 6px 0;
+                    animation: mstProfileDropIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                @keyframes mstProfileDropIn {
+                    from { opacity: 0; transform: translateY(-8px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .mst-profile-header {
                     display: flex;
                     align-items: center;
-                    gap: 6px;
-                    padding: 7px 14px;
-                    background: rgba(239, 68, 68, 0.08);
-                    border: 1px solid rgba(239, 68, 68, 0.25);
-                    border-radius: 6px;
-                    color: #f87171;
-                    font-family: 'Montserrat', sans-serif;
-                    font-size: 0.68rem;
-                    font-weight: 600;
-                    letter-spacing: 0.5px;
-                    text-transform: uppercase;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
+                    gap: 10px;
+                    padding: 10px 16px 8px;
                 }
-                .mst-btn-logout:hover {
-                    background: rgba(239, 68, 68, 0.2);
-                    border-color: rgba(239, 68, 68, 0.5);
-                    color: #ffffff;
-                }
-                .mst-hamburger-btn {
-                    display: none;
-                    background: none;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 6px;
-                    color: #ffffff;
-                    font-size: 1.1rem;
-                    padding: 6px 10px;
-                    cursor: pointer;
-                }
-
-                /* ── Navigation Strip ── */
-                .mst-nav-wrapper {
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                    background: #09090b;
-                    padding: 0 1%;
-                }
-                .mst-nav-arrow {
-                    background: #09090b;
-                    border: none;
-                    color: rgba(197, 160, 89, 0.6);
-                    font-size: 0.85rem;
-                    padding: 10px 8px;
-                    cursor: pointer;
-                    transition: color 0.2s;
-                    z-index: 2;
+                .mst-profile-header__avatar {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    background: #111114;
+                    color: #C5A059;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                    border: 1px solid rgba(197, 160, 89, 0.3);
                 }
-                .mst-nav-arrow:hover {
-                    color: var(--gold, #C5A059);
-                }
-                .mst-nav {
+                .mst-profile-header__meta {
                     display: flex;
-                    align-items: flex-end;
-                    gap: 4px;
-                    overflow-x: auto;
-                    scroll-behavior: smooth;
-                    scrollbar-width: none;
-                    -ms-overflow-style: none;
-                    padding: 4px 4px 6px;
-                    flex: 1;
+                    flex-direction: column;
+                    overflow: hidden;
                 }
-                .mst-nav::-webkit-scrollbar {
-                    display: none;
+                .mst-profile-header__name {
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.76rem;
+                    font-weight: 600;
+                    color: #111827;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
-                .mst-nav__link {
+                .mst-profile-header__email {
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.65rem;
+                    color: #9ca3af;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .mst-profile-link {
                     display: flex;
                     align-items: center;
-                    gap: 7px;
-                    padding: 8px 14px;
-                    border-radius: 6px;
+                    gap: 10px;
+                    padding: 9px 16px;
                     font-family: 'Montserrat', sans-serif;
-                    font-size: 0.7rem;
-                    font-weight: 500;
-                    letter-spacing: 0.4px;
-                    color: #9ca3af;
+                    font-size: 0.75rem;
+                    color: #374151;
                     text-decoration: none;
-                    white-space: nowrap;
-                    transition: all 0.2s ease;
-                    border: 1px solid transparent;
+                    transition: all 0.15s ease;
                 }
-                .mst-nav__link i {
+                .mst-profile-link:hover {
+                    background: #f9fafb;
+                    color: #111827;
+                }
+                .mst-profile-link:hover i {
+                    color: #C5A059;
+                }
+                .mst-profile-link i {
+                    width: 16px;
+                    text-align: center;
+                    color: #9ca3af;
                     font-size: 0.78rem;
-                    color: rgba(255, 255, 255, 0.35);
-                    transition: color 0.2s ease;
                 }
-                .mst-nav__link:hover {
-                    color: #ffffff;
-                    background: rgba(255, 255, 255, 0.05);
+                .mst-profile-divider {
+                    height: 1px;
+                    background: #f3f4f6;
+                    margin: 4px 0;
                 }
-                .mst-nav__link:hover i {
-                    color: var(--gold, #C5A059);
+                .mst-profile-logout {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 9px 16px;
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.75rem;
+                    color: #dc2626;
+                    background: transparent;
+                    border: none;
+                    width: 100%;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.15s ease;
                 }
-                .mst-nav__link--active {
-                    color: #000000 !important;
-                    background: linear-gradient(135deg, #e6ca85 0%, #C5A059 100%) !important;
-                    font-weight: 700 !important;
-                    box-shadow: 0 2px 10px rgba(197, 160, 89, 0.3);
+                .mst-profile-logout:hover {
+                    background: #fef2f2;
+                    color: #b91c1c;
                 }
-                .mst-nav__link--active i {
-                    color: #000000 !important;
+                .mst-header__hamburger {
+                    display: none;
+                    background: none;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    font-size: 1.1rem;
+                    cursor: pointer;
+                    color: #1f2937;
+                    padding: 6px 10px;
+                    transition: all 0.2s;
                 }
 
                 /* ── Mobile Drawer ── */
                 .mst-mobile-overlay {
                     position: fixed;
                     inset: 0;
-                    background: rgba(0, 0, 0, 0.8);
+                    background: rgba(0, 0, 0, 0.65);
                     backdrop-filter: blur(8px);
                     z-index: 9999;
                     display: flex;
                     justify-content: flex-end;
-                    animation: mst-fade 0.2s ease;
-                }
-                @keyframes mst-fade {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
+                    animation: mstFadeIn 0.2s ease;
                 }
                 .mst-mobile-drawer {
                     width: 82%;
-                    max-width: 340px;
+                    max-width: 320px;
                     height: 100%;
-                    background: #111114;
-                    border-left: 1px solid rgba(197, 160, 89, 0.25);
+                    background: #ffffff;
                     display: flex;
                     flex-direction: column;
-                    box-shadow: -10px 0 40px rgba(0,0,0,0.9);
-                    animation: mst-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                    box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+                    animation: mstSlideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                 }
-                @keyframes mst-slide {
+                @keyframes mstSlideLeft {
                     from { transform: translateX(100%); }
                     to { transform: translateX(0); }
                 }
                 .mst-drawer__header {
-                    padding: 20px;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    padding: 18px 20px;
+                    border-bottom: 1px solid #e5e7eb;
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
@@ -381,193 +533,209 @@ function MasterHeader() {
                     font-family: 'Montserrat', sans-serif;
                     font-size: 0.62rem;
                     font-weight: 700;
-                    letter-spacing: 1.5px;
+                    letter-spacing: 1.2px;
                     text-transform: uppercase;
-                    color: var(--gold, #C5A059);
-                    margin: 18px 0 8px 10px;
+                    color: #C5A059;
+                    margin: 14px 0 6px 8px;
                 }
                 .mst-drawer__link {
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    padding: 10px 14px;
+                    gap: 10px;
+                    padding: 9px 12px;
                     border-radius: 8px;
-                    color: #d1d5db;
+                    color: #374151;
                     font-family: 'Montserrat', sans-serif;
-                    font-size: 0.82rem;
+                    font-size: 0.78rem;
                     text-decoration: none;
-                    transition: all 0.2s;
-                    margin-bottom: 4px;
-                }
-                .mst-drawer__link i {
-                    width: 18px;
-                    color: rgba(255, 255, 255, 0.4);
+                    transition: all 0.15s;
+                    margin-bottom: 2px;
                 }
                 .mst-drawer__link--active {
-                    background: rgba(197, 160, 89, 0.15);
-                    border: 1px solid rgba(197, 160, 89, 0.3);
-                    color: var(--gold, #C5A059);
+                    background: #111114;
+                    color: #ffffff;
                     font-weight: 600;
                 }
                 .mst-drawer__link--active i {
-                    color: var(--gold, #C5A059);
-                }
-                .mst-drawer__footer {
-                    padding: 16px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.08);
-                    background: #09090b;
+                    color: #C5A059;
                 }
 
-                @media (max-width: 1024px) {
-                    .mst-hamburger-btn { display: block; }
-                    .mst-topbar__role, .mst-user-info { display: none; }
-                    .mst-nav-wrapper { display: none; }
-                }
-                @media (min-width: 1025px) {
-                    .mst-mobile-overlay { display: none !important; }
-                }
-                 /* ── Nav Section Divider ── */
-                .mst-nav__divider {
-                    display: flex;
-                    align-items: center;
-                    padding: 0 4px;
-                    flex-shrink: 0;
-                    align-self: stretch;
-                }
-                .mst-nav__divider-line {
-                    width: 1px;
-                    height: 100%;
-                    background: rgba(197, 160, 89, 0.2);
-                }
-                .mst-nav__section-group {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-start;
-                    flex-shrink: 0;
-                }
-                .mst-nav__section-label {
-                    font-family: 'Montserrat', sans-serif;
-                    font-size: 0.52rem;
-                    font-weight: 700;
-                    letter-spacing: 1.2px;
-                    text-transform: uppercase;
-                    color: rgba(197, 160, 89, 0.75);
-                    background: rgba(197, 160, 89, 0.08);
-                    border: 1px solid rgba(197, 160, 89, 0.15);
-                    white-space: nowrap;
-                    padding: 2px 7px;
-                    border-radius: 3px;
-                    margin-bottom: 3px;
-                }
-                .mst-nav__group {
-                    display: flex;
-                    align-items: center;
-                    gap: 2px;
-                    flex-shrink: 0;
+                @media (max-width: 1080px) {
+                    .mst-header__nav {
+                        display: none;
+                    }
+                    .mst-header__hamburger {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .mst-header__profile-name {
+                        display: none;
+                    }
                 }
             `}</style>
 
-            {/* ── Top Bar ── */}
-            <div className="mst-topbar">
-                <div className="mst-topbar__left">
-                    <div className="mst-badge mst-topbar__role">
-                        <span className="mst-live-dot"></span>
-                        Master Control
+            <div className="mst-header__inner">
+                {/* Brand & Master Role Identity */}
+                <div className="mst-header__left" onClick={() => navigate('/master')} title="ASAT Master Control Portal">
+                    <img
+                        src="/logo.png"
+                        alt="ASAT Designer Paradise"
+                        className="mst-header__logo-img"
+                    />
+                    <div className="mst-header__badge">
+                        <span className="mst-header__badge-tag">MASTER</span>
+                        <span className="mst-header__badge-title">CONTROL</span>
                     </div>
                 </div>
 
-                <div className="mst-topbar__brand" onClick={() => navigate('/master')}>
-                    <div className="mst-brand__title">
-                        ASAT Designer Paradise
+                {/* Capsule Navigation with Dropdown Groups */}
+                <nav className="mst-header__nav">
+                    <div className="mst-header__nav-capsule">
+                        {NAV_GROUPS.map(group => {
+                            const active = isGroupActive(group);
+
+                            if (group.exact) {
+                                return (
+                                    <NavLink
+                                        key={group.id}
+                                        to={group.to}
+                                        end
+                                        className={({ isActive }) => `mst-nav__link ${isActive ? 'mst-nav__link--active' : ''}`}
+                                    >
+                                        <i className={`${group.icon} mst-nav__icon`}></i>
+                                        <span>{group.label}</span>
+                                    </NavLink>
+                                );
+                            }
+
+                            return (
+                                <div
+                                    key={group.id}
+                                    className="mst-nav__item"
+                                    onMouseEnter={() => handleMouseEnter(group.id)}
+                                    onMouseLeave={handleMouseLeave}
+                                >
+                                    <button
+                                        type="button"
+                                        className={`mst-nav__link ${active ? 'mst-nav__link--active' : ''}`}
+                                        onClick={() => setActiveDropdown(activeDropdown === group.id ? null : group.id)}
+                                    >
+                                        <i className={`${group.icon} mst-nav__icon`}></i>
+                                        <span>{group.label}</span>
+                                        <i className={`fas fa-chevron-down mst-nav__chevron ${activeDropdown === group.id ? 'mst-nav__chevron--open' : ''}`}></i>
+                                    </button>
+
+                                    {activeDropdown === group.id && (
+                                        <div className="mst-dropdown-menu">
+                                            {group.children.map(child => {
+                                                const childActive = location.pathname === child.to || location.pathname.startsWith(child.to + '/');
+                                                return (
+                                                    <Link
+                                                        key={child.to}
+                                                        to={child.to}
+                                                        className={`mst-dropdown-item ${childActive ? 'mst-dropdown-item--active' : ''}`}
+                                                        onClick={() => setActiveDropdown(null)}
+                                                    >
+                                                        <i className={`${child.icon} mst-dropdown-item__icon`}></i>
+                                                        <div className="mst-dropdown-item__content">
+                                                            <span className="mst-dropdown-item__label">{child.label}</span>
+                                                            {child.desc && <span className="mst-dropdown-item__desc">{child.desc}</span>}
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
-                    <div className="mst-brand__tagline">
-                        ★ Master Administration Portal ★
+                </nav>
+
+                {/* Right Profile & Actions */}
+                <div className="mst-header__right">
+                    <div className="mst-header__profile" ref={profileRef}>
+                        <button
+                            type="button"
+                            className={`mst-header__profile-pill ${profileOpen ? 'mst-header__profile-pill--active' : ''}`}
+                            onClick={() => setProfileOpen(p => !p)}
+                            title="Administrator Menu"
+                        >
+                            <div className="mst-header__avatar-badge">
+                                {initial}
+                            </div>
+                            <span className="mst-header__profile-name">
+                                {displayName}
+                            </span>
+                            <i className={`fas fa-chevron-down mst-header__profile-caret ${profileOpen ? 'mst-header__profile-caret--open' : ''}`}></i>
+                        </button>
+
+                        {profileOpen && (
+                            <div className="mst-profile-dropdown">
+                                <div className="mst-profile-header">
+                                    <div className="mst-profile-header__avatar">{initial}</div>
+                                    <div className="mst-profile-header__meta">
+                                        <span className="mst-profile-header__name">{displayName}</span>
+                                        <span className="mst-profile-header__email">{email}</span>
+                                    </div>
+                                </div>
+                                <div className="mst-profile-divider"></div>
+                                <Link to="/master/settings" className="mst-profile-link" onClick={() => setProfileOpen(false)}>
+                                    <i className="fas fa-cog"></i>
+                                    <span>Platform Settings</span>
+                                </Link>
+                                <Link to="/master/profile" className="mst-profile-link" onClick={() => setProfileOpen(false)}>
+                                    <i className="fas fa-user-shield"></i>
+                                    <span>Admin Security &amp; Profile</span>
+                                </Link>
+                                <div className="mst-profile-divider"></div>
+                                <button
+                                    type="button"
+                                    className="mst-profile-logout"
+                                    onClick={async () => {
+                                        setProfileOpen(false);
+                                        try {
+                                            await logout();
+                                            navigate('/master/login');
+                                        } catch (err) {
+                                            console.error('Logout error:', err);
+                                        }
+                                    }}
+                                >
+                                    <i className="fas fa-power-off"></i>
+                                    <span>Sign Out</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
-                </div>
 
-                <div className="mst-topbar__right">
-                    <NavLink to="/master/profile" className="mst-user-pill" title="View Master Profile & Security">
-                        <div className="mst-user-avatar">
-                            {displayName.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="mst-user-info">
-                            <span className="mst-user-name">{displayName}</span>
-                            <span className="mst-user-role">Administrator</span>
-                        </div>
-                    </NavLink>
-
-                    <button className="mst-btn-logout" onClick={async () => {
-                        try {
-                            await logout();
-                            navigate('/master/login');
-                        } catch (err) {
-                            console.error('Logout error:', err);
-                        }
-                    }}>
-                        <i className="fas fa-power-off"></i>
-                        <span>Logout</span>
-                    </button>
-
-                    <button className="mst-hamburger-btn" onClick={() => setMobileOpen(true)} title="Open Navigation Menu">
+                    <button
+                        type="button"
+                        className="mst-header__hamburger"
+                        onClick={() => setMobileOpen(true)}
+                        aria-label="Open Navigation Menu"
+                    >
                         <i className="fas fa-bars"></i>
                     </button>
                 </div>
             </div>
 
-            {/* ── Horizontal Grouped Navigation Strip (Desktop) ── */}
-            <div className="mst-nav-wrapper">
-                <button className="mst-nav-arrow" onClick={() => scrollNav(-1)} title="Scroll Left">
-                    <i className="fas fa-chevron-left"></i>
-                </button>
-
-                <nav className="mst-nav" ref={navRef}>
-                    {navSections.map((section, sIdx) => (
-                        <React.Fragment key={section.title}>
-                            {sIdx > 0 && (
-                                <div className="mst-nav__divider">
-                                    <div className="mst-nav__divider-line"></div>
-                                </div>
-                            )}
-                            <div className="mst-nav__section-group">
-                                <div className="mst-nav__section-label">{section.title}</div>
-                                <div className="mst-nav__group">
-                                    {section.links.map(l => (
-                                        <NavLink
-                                            key={l.to}
-                                            to={l.to}
-                                            end={l.end}
-                                            className={({ isActive }) => `mst-nav__link ${isActive ? 'mst-nav__link--active' : ''}`}
-                                        >
-                                            <i className={l.icon}></i>
-                                            <span>{l.label}</span>
-                                        </NavLink>
-                                    ))}
-                                </div>
-                            </div>
-                        </React.Fragment>
-                    ))}
-                </nav>
-
-                <button className="mst-nav-arrow" onClick={() => scrollNav(1)} title="Scroll Right">
-                    <i className="fas fa-chevron-right"></i>
-                </button>
-            </div>
-
-            {/* ── Mobile Sidebar Drawer ── */}
+            {/* Mobile Drawer */}
             {mobileOpen && (
                 <div className="mst-mobile-overlay" onClick={() => setMobileOpen(false)}>
                     <div className="mst-mobile-drawer" onClick={e => e.stopPropagation()}>
                         <div className="mst-drawer__header">
                             <div>
-                                <div style={{ fontFamily: 'Cinzel', fontSize: '1rem', fontWeight: 700, color: '#fff' }}>
-                                    ASAT <span>ADMIN</span>
+                                <div style={{ fontFamily: 'Montserrat', fontSize: '0.9rem', fontWeight: 700, color: '#111827' }}>
+                                    Master Administration
                                 </div>
-                                <div style={{ fontSize: '0.68rem', color: '#888', fontFamily: 'Montserrat' }}>
+                                <div style={{ fontSize: '0.68rem', color: '#6b7280', fontFamily: 'Montserrat' }}>
                                     {email}
                                 </div>
                             </div>
                             <button
-                                style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}
+                                style={{ background: 'none', border: 'none', color: '#374151', fontSize: '1.2rem', cursor: 'pointer' }}
                                 onClick={() => setMobileOpen(false)}
                             >
                                 <i className="fas fa-times"></i>
@@ -575,29 +743,71 @@ function MasterHeader() {
                         </div>
 
                         <div className="mst-drawer__content">
-                            {navSections.map(section => (
-                                <div key={section.title}>
-                                    <div className="mst-drawer__section-title">{section.title}</div>
-                                    {section.links.map(l => (
+                            <NavLink
+                                to="/master"
+                                end
+                                className={({ isActive }) => `mst-drawer__link ${isActive ? 'mst-drawer__link--active' : ''}`}
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                <i className="fas fa-chart-pie" style={{ width: 18 }}></i>
+                                <span>Dashboard</span>
+                            </NavLink>
+
+                            {NAV_GROUPS.filter(g => !g.exact).map(group => (
+                                <div key={group.id}>
+                                    <div className="mst-drawer__section-title">{group.label}</div>
+                                    {group.children.map(child => (
                                         <NavLink
-                                            key={l.to}
-                                            to={l.to}
-                                            end={l.end}
+                                            key={child.to}
+                                            to={child.to}
                                             className={({ isActive }) => `mst-drawer__link ${isActive ? 'mst-drawer__link--active' : ''}`}
                                             onClick={() => setMobileOpen(false)}
                                         >
-                                            <i className={l.icon}></i>
-                                            <span>{l.label}</span>
+                                            <i className={child.icon} style={{ width: 18 }}></i>
+                                            <span>{child.label}</span>
                                         </NavLink>
                                     ))}
                                 </div>
                             ))}
+
+                            <div className="mst-drawer__section-title">Administration</div>
+                            <NavLink
+                                to="/master/settings"
+                                className={({ isActive }) => `mst-drawer__link ${isActive ? 'mst-drawer__link--active' : ''}`}
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                <i className="fas fa-cog" style={{ width: 18 }}></i>
+                                <span>Settings</span>
+                            </NavLink>
+                            <NavLink
+                                to="/master/profile"
+                                className={({ isActive }) => `mst-drawer__link ${isActive ? 'mst-drawer__link--active' : ''}`}
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                <i className="fas fa-user-shield" style={{ width: 18 }}></i>
+                                <span>Admin Profile</span>
+                            </NavLink>
                         </div>
 
-                        <div className="mst-drawer__footer">
+                        <div style={{ padding: 16, borderTop: '1px solid #e5e7eb' }}>
                             <button
-                                className="mst-btn-logout"
-                                style={{ width: '100%', justifyContent: 'center', padding: '10px' }}
+                                type="button"
+                                style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 8,
+                                    padding: '10px 14px',
+                                    background: '#fef2f2',
+                                    color: '#dc2626',
+                                    border: '1px solid #fecaca',
+                                    borderRadius: 8,
+                                    fontFamily: 'Montserrat',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                }}
                                 onClick={async () => {
                                     setMobileOpen(false);
                                     await logout();

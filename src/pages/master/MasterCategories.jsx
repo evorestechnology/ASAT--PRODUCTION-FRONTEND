@@ -179,29 +179,32 @@ function MasterCategories() {
             <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', marginTop: '20px' }}>
                 
                 {/* Left Column - Form Card */}
-                <div style={{ flex: '1 1 350px', maxWidth: '480px' }}>
+                <div style={{ flex: '1 1 360px', maxWidth: '440px' }}>
                     <div style={{
-                        background: 'rgba(18, 18, 18, 0.95)',
-                        border: '1px solid var(--admin-gold)',
-                        borderRadius: '8px',
-                        padding: '24px',
-                        color: 'white',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                        fontFamily: "'Montserrat', sans-serif",
+                        background: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '14px',
+                        padding: '24px 26px',
+                        color: '#111827',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
                         position: 'sticky',
                         top: '100px'
                     }}>
                         <h3 style={{
                             fontFamily: "'Cinzel', serif",
-                            color: 'var(--admin-gold)',
-                            fontSize: '1.2rem',
+                            color: '#111827',
+                            fontSize: '1.05rem',
+                            fontWeight: 700,
                             margin: '0 0 20px 0',
-                            letterSpacing: '1px',
+                            letterSpacing: '0.8px',
                             textTransform: 'uppercase',
-                            borderBottom: '1px solid rgba(197, 160, 89, 0.3)',
-                            paddingBottom: '10px'
+                            borderBottom: '1px solid #f3f4f6',
+                            paddingBottom: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
                         }}>
-                            {editingCategory ? 'Edit Category' : 'Add New Category'}
+                            <span>{editingCategory ? '✏️ Edit Category' : '➕ Add New Category'}</span>
                         </h3>
 
                         {isSaving ? (
@@ -210,7 +213,7 @@ function MasterCategories() {
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 padding: '24px 0',
-                                color: 'var(--admin-gold)',
+                                color: '#111827',
                                 fontWeight: 'bold'
                             }}>
                                 <div className="adm-spinner" style={{ marginBottom: 12 }}></div>
@@ -222,7 +225,7 @@ function MasterCategories() {
                             <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.75rem', color: '#ccc', marginBottom: 8, fontWeight: 600, letterSpacing: '0.5px' }}>
+                                    <label style={{ fontSize: '0.72rem', color: '#4b5563', marginBottom: 8, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                                         Category Name *
                                     </label>
                                     <input
@@ -232,34 +235,40 @@ function MasterCategories() {
                                         value={categoryName}
                                         onChange={e => setCategoryName(e.target.value)}
                                         style={{
-                                            padding: '12px 14px',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            border: '1px solid #444',
-                                            borderRadius: '4px',
-                                            color: 'white',
+                                            padding: '11px 14px',
+                                            background: '#f9fafb',
+                                            border: '1px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            color: '#111827',
                                             outline: 'none',
-                                            fontSize: '0.85rem',
+                                            fontSize: '0.875rem',
                                             fontFamily: "'Montserrat', sans-serif",
-                                            transition: 'border-color 0.2s'
+                                            transition: 'border-color 0.2s, box-shadow 0.2s',
+                                            width: '100%',
+                                            boxSizing: 'border-box'
                                         }}
-                                        onFocus={e => e.target.style.borderColor = 'var(--admin-gold)'}
-                                        onBlur={e => e.target.style.borderColor = '#444'}
+                                        onFocus={e => { e.target.style.borderColor = '#111114'; e.target.style.boxShadow = '0 0 0 3px rgba(17,17,20,0.08)'; }}
+                                        onBlur={e => { e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = 'none'; }}
                                     />
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: '0.75rem', color: '#ccc', marginBottom: 8, fontWeight: 600, letterSpacing: '0.5px' }}>
+                                    <label style={{ fontSize: '0.72rem', color: '#4b5563', marginBottom: 8, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                                         Cover Image *
                                     </label>
                                     
-                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                                         {categoryPreview && (
                                             <div style={{
-                                                width: '54px',
-                                                height: '54px',
-                                                background: `url(${categoryPreview}) center/cover no-repeat`,
-                                                borderRadius: '4px',
-                                                border: '1px solid var(--admin-gold)'
+                                                width: '58px',
+                                                height: '58px',
+                                                backgroundImage: `url(${categoryPreview})`,
+                                                backgroundPosition: 'center',
+                                                backgroundSize: 'cover',
+                                                borderRadius: '8px',
+                                                border: '1px solid #e5e7eb',
+                                                flexShrink: 0,
+                                                boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
                                             }}></div>
                                         )}
                                         <div style={{ flex: 1 }}>
@@ -268,10 +277,10 @@ function MasterCategories() {
                                                 accept="image/*"
                                                 required={!editingCategory}
                                                 onChange={e => handleCoverUpload(e.target.files[0])}
-                                                style={{ fontSize: '0.8rem', color: '#ccc' }}
+                                                style={{ fontSize: '0.8rem', color: '#4b5563' }}
                                             />
-                                            <p style={{ fontSize: '0.65rem', color: '#888', margin: '4px 0 0 0' }}>
-                                                Supported formats: JPG, PNG, WEBP.
+                                            <p style={{ fontSize: '0.7rem', color: '#9ca3af', margin: '4px 0 0 0' }}>
+                                                Supported: JPG, PNG, WEBP. Recommended: 600×600px.
                                             </p>
                                         </div>
                                     </div>
@@ -283,16 +292,16 @@ function MasterCategories() {
                                             type="button"
                                             onClick={handleCancelEdit}
                                             style={{
-                                                padding: '10px 20px',
-                                                background: 'transparent',
-                                                border: '1px solid var(--admin-danger)',
-                                                borderRadius: '4px',
-                                                color: 'var(--admin-danger)',
+                                                padding: '9px 18px',
+                                                background: '#ffffff',
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '20px',
+                                                color: '#6b7280',
                                                 cursor: 'pointer',
                                                 fontFamily: "'Montserrat', sans-serif",
-                                                fontSize: '0.75rem',
+                                                fontSize: '0.78rem',
                                                 fontWeight: 600,
-                                                letterSpacing: '0.5px'
+                                                transition: 'all 0.2s'
                                             }}
                                         >
                                             Cancel Edit
@@ -300,14 +309,19 @@ function MasterCategories() {
                                     )}
                                     <button
                                         type="submit"
-                                        className="adm-settings__btn"
                                         style={{
-                                            padding: '10px 20px',
-                                            borderRadius: '4px',
-                                            margin: 0,
-                                            fontSize: '0.75rem',
+                                            padding: '10px 22px',
+                                            background: '#111114',
+                                            border: 'none',
+                                            borderRadius: '20px',
+                                            color: '#ffffff',
+                                            cursor: 'pointer',
+                                            fontFamily: "'Montserrat', sans-serif",
+                                            fontSize: '0.78rem',
                                             fontWeight: 600,
-                                            letterSpacing: '0.5px'
+                                            letterSpacing: '0.5px',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                            transition: 'all 0.2s'
                                         }}
                                     >
                                         {editingCategory ? 'Save Changes' : 'Add Category'}
@@ -320,59 +334,78 @@ function MasterCategories() {
 
                 {/* Right Column - Categories Grid */}
                 <div style={{ flex: '2 2 500px', minWidth: '350px' }}>
-                    <div style={{ background: 'white', border: '1px solid var(--admin-border)', padding: '24px', borderRadius: '8px' }}>
-                        <h3 style={{
-                            fontFamily: "'Cinzel', serif",
-                            color: 'var(--admin-dark)',
-                            fontSize: '1.2rem',
-                            margin: '0 0 20px 0',
-                            letterSpacing: '1px',
-                            borderBottom: '1px solid #f0f0f0',
-                            paddingBottom: '10px'
-                        }}>
-                            All Categories ({dbCategories.length})
-                        </h3>
+                    <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', padding: '24px 28px', borderRadius: '14px', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f3f4f6', paddingBottom: '12px' }}>
+                            <h3 style={{
+                                fontFamily: "'Cinzel', serif",
+                                color: '#111827',
+                                fontSize: '1.05rem',
+                                fontWeight: 700,
+                                margin: 0,
+                                letterSpacing: '0.8px'
+                            }}>
+                                ALL CATEGORIES
+                            </h3>
+                            <span style={{
+                                background: '#f3f4f6',
+                                color: '#4b5563',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                padding: '4px 10px',
+                                borderRadius: '12px'
+                            }}>
+                                {dbCategories.length} items
+                            </span>
+                        </div>
 
                         {loading ? (
-                            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--admin-muted)' }}>
+                            <div style={{ textAlign: 'center', padding: '40px 0', color: '#6b7280' }}>
                                 <div className="adm-spinner" style={{ margin: '0 auto 12px auto' }}></div>
                                 <p>Loading categories...</p>
                             </div>
                         ) : dbCategories.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--admin-muted)' }}>
-                                <i className="fas fa-tags" style={{ fontSize: '2.5rem', marginBottom: '12px', display: 'block', color: '#ddd' }}></i>
+                            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+                                <i className="fas fa-tags" style={{ fontSize: '2.5rem', marginBottom: '12px', display: 'block', color: '#d1d5db' }}></i>
                                 No categories created yet. Use the form to add one.
                             </div>
                         ) : (
                             <div className="adm-catalogue__grid">
                                 {dbCategories.map(cat => (
                                     <div key={cat.id} className="adm-catalogue__card" style={{ 
-                                        borderRadius: '6px', 
+                                        borderRadius: '12px', 
                                         overflow: 'hidden',
-                                        opacity: cat.active === false ? 0.6 : 1,
-                                        outline: cat.active === false ? '2px solid rgba(220,53,69,0.5)' : 'none'
+                                        opacity: cat.active === false ? 0.65 : 1,
+                                        border: cat.active === false ? '1.5px dashed #fca5a5' : '1px solid #e5e7eb',
+                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                                        transition: 'all 0.2s ease',
+                                        background: '#ffffff'
                                     }}>
                                         <div 
                                             className="adm-catalogue__img" 
                                             style={{ 
                                                 backgroundImage: `url(${cat.image})`,
-                                                height: '160px',
+                                                height: '170px',
+                                                backgroundPosition: 'center',
+                                                backgroundSize: 'cover',
                                                 position: 'relative'
                                             }}
                                         >
+                                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60px', background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 100%)' }} />
+
                                             {/* Availability badge top-left */}
                                             <div style={{
                                                 position: 'absolute',
                                                 top: '10px',
                                                 left: '10px',
-                                                background: cat.active === false ? 'rgba(220,53,69,0.9)' : 'rgba(40,167,69,0.9)',
-                                                color: '#fff',
-                                                fontSize: '0.6rem',
+                                                background: cat.active === false ? '#ef4444' : '#10b981',
+                                                color: '#ffffff',
+                                                fontSize: '0.62rem',
                                                 fontWeight: 700,
-                                                letterSpacing: '1px',
+                                                letterSpacing: '0.8px',
                                                 padding: '3px 8px',
-                                                borderRadius: '4px',
-                                                textTransform: 'uppercase'
+                                                borderRadius: '20px',
+                                                textTransform: 'uppercase',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                                             }}>
                                                 {cat.active === false ? 'Inactive' : 'Active'}
                                             </div>
@@ -389,71 +422,66 @@ function MasterCategories() {
                                                 <button
                                                     onClick={() => handleToggleAvailability(cat)}
                                                     style={{
-                                                        background: cat.active === false ? 'rgba(40,167,69,0.85)' : 'rgba(220,53,69,0.85)',
+                                                        background: 'rgba(255, 255, 255, 0.92)',
                                                         border: 'none',
-                                                        borderRadius: '4px',
-                                                        color: '#fff',
-                                                        padding: '6px 8px',
-                                                        fontSize: '0.7rem',
+                                                        borderRadius: '8px',
+                                                        color: cat.active === false ? '#10b981' : '#6b7280',
+                                                        padding: '6px 9px',
+                                                        fontSize: '0.75rem',
                                                         cursor: 'pointer',
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        gap: '4px',
-                                                        fontWeight: 600,
-                                                        transition: 'transform 0.2s'
+                                                        boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                                                        transition: 'all 0.2s'
                                                     }}
                                                     title={cat.active === false ? 'Mark Active' : 'Mark Inactive'}
-                                                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                                                 >
                                                     <i className={cat.active === false ? 'fas fa-toggle-off' : 'fas fa-toggle-on'}></i>
                                                 </button>
                                                 <button
                                                     onClick={() => handleEditStart(cat)}
                                                     style={{
-                                                        background: 'rgba(18, 18, 18, 0.85)',
-                                                        border: '1px solid var(--admin-gold)',
-                                                        borderRadius: '4px',
-                                                        color: 'var(--admin-gold)',
-                                                        padding: '6px 8px',
+                                                        background: 'rgba(255, 255, 255, 0.92)',
+                                                        border: 'none',
+                                                        borderRadius: '8px',
+                                                        color: '#111827',
+                                                        padding: '6px 9px',
                                                         fontSize: '0.75rem',
                                                         cursor: 'pointer',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        transition: 'transform 0.2s, background-color 0.2s'
+                                                        boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                                                        transition: 'all 0.2s'
                                                     }}
                                                     title="Edit Category"
-                                                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                                                 >
                                                     <i className="fas fa-pencil-alt"></i>
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteCategory(cat)}
                                                     style={{
-                                                        background: 'rgba(18, 18, 18, 0.85)',
-                                                        border: '1px solid var(--admin-danger)',
-                                                        borderRadius: '4px',
-                                                        color: 'var(--admin-danger)',
-                                                        padding: '6px 8px',
+                                                        background: 'rgba(255, 255, 255, 0.92)',
+                                                        border: 'none',
+                                                        borderRadius: '8px',
+                                                        color: '#ef4444',
+                                                        padding: '6px 9px',
                                                         fontSize: '0.75rem',
                                                         cursor: 'pointer',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        transition: 'transform 0.2s, background-color 0.2s'
+                                                        boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                                                        transition: 'all 0.2s'
                                                     }}
                                                     title="Delete Category"
-                                                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                                                 >
                                                     <i className="fas fa-trash-alt"></i>
                                                 </button>
                                             </div>
                                         </div>
-                                        <div className="adm-catalogue__body" style={{ padding: '14px', background: '#fafafa' }}>
-                                            <h4 className="adm-catalogue__name" style={{ margin: 0, textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--admin-dark)' }}>
+                                        <div className="adm-catalogue__body" style={{ padding: '14px 16px', background: '#ffffff', borderTop: '1px solid #f3f4f6' }}>
+                                            <h4 className="adm-catalogue__name" style={{ margin: 0, textTransform: 'uppercase', fontSize: '0.82rem', fontWeight: 700, color: '#111827', letterSpacing: '0.5px' }}>
                                                 {cat.name}
                                             </h4>
                                         </div>
@@ -468,17 +496,19 @@ function MasterCategories() {
 
             {/* Delete Confirmation Modal */}
             {deleteTarget && (
-                <div style={{ position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.6)',backdropFilter:'blur(4px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1100,padding:20 }}>
-                    <div style={{ background:'#fff',borderRadius:12,padding:32,maxWidth:420,width:'100%',boxShadow:'0 10px 40px rgba(0,0,0,0.3)',fontFamily:"'Montserrat',sans-serif" }}>
-                        <div style={{ fontSize:'2rem',textAlign:'center',marginBottom:12,color:'#dc2626' }}><i className="fas fa-exclamation-triangle" /></div>
-                        <h3 style={{ fontFamily:"'Cinzel',serif",textAlign:'center',marginBottom:10,color:'#121212' }}>Delete Category?</h3>
-                        <p style={{ fontSize:'0.82rem',color:'#555',textAlign:'center',marginBottom:24,lineHeight:1.5 }}>
+                <div style={{ position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(17,24,39,0.5)',backdropFilter:'blur(6px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1100,padding:20 }}>
+                    <div style={{ background:'#ffffff',borderRadius:16,padding:32,maxWidth:420,width:'100%',boxShadow:'0 20px 50px rgba(0,0,0,0.15)',fontFamily:"'Montserrat',sans-serif",border:'1px solid #f3f4f6' }}>
+                        <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '1.25rem' }}>
+                            <i className="fas fa-exclamation-triangle" />
+                        </div>
+                        <h3 style={{ fontFamily:"'Cinzel',serif",textAlign:'center',marginBottom:10,color:'#111827',fontSize:'1.15rem' }}>Delete Category?</h3>
+                        <p style={{ fontSize:'0.85rem',color:'#6b7280',textAlign:'center',marginBottom:24,lineHeight:1.5 }}>
                             Permanently delete <strong>"{deleteTarget.name}"</strong>? All products in this category across all manufacturers will be marked as <em>Not Available</em>.
                         </p>
                         <div style={{ display:'flex',gap:12 }}>
-                            <button onClick={() => setDeleteTarget(null)} style={{ flex:1,padding:'11px',border:'1px solid #ddd',borderRadius:6,background:'transparent',cursor:'pointer',fontFamily:"'Montserrat',sans-serif",fontSize:'0.82rem' }}>Cancel</button>
-                            <button onClick={confirmDelete} disabled={isDeleting} style={{ flex:1,padding:'11px',border:'none',borderRadius:6,background:'#dc3545',color:'#fff',cursor:'pointer',fontFamily:"'Montserrat',sans-serif",fontSize:'0.82rem',fontWeight:600 }}>
-                                {isDeleting ? <i className="fas fa-spinner fa-spin" /> : 'Delete'}
+                            <button onClick={() => setDeleteTarget(null)} style={{ flex:1,padding:'11px',border:'1px solid #d1d5db',borderRadius:24,background:'#ffffff',color:'#374151',cursor:'pointer',fontFamily:"'Montserrat',sans-serif",fontSize:'0.82rem',fontWeight:600 }}>Cancel</button>
+                            <button onClick={confirmDelete} disabled={isDeleting} style={{ flex:1,padding:'11px',border:'none',borderRadius:24,background:'#dc2626',color:'#ffffff',cursor:'pointer',fontFamily:"'Montserrat',sans-serif",fontSize:'0.82rem',fontWeight:600,boxShadow:'0 2px 8px rgba(220,38,38,0.25)' }}>
+                                {isDeleting ? <i className="fas fa-spinner fa-spin" /> : 'Delete Category'}
                             </button>
                         </div>
                     </div>

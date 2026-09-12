@@ -170,48 +170,42 @@ function MasterTutorials() {
             </div>
 
             {/* Filter & Search Bar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 14, background: '#181818', padding: 14, borderRadius: 8, border: '1px solid #2a2a2a' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 14, background: '#ffffff', padding: '14px 18px', borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {allTags.map(tag => (
-                        <button
-                            key={tag}
-                            onClick={() => setSelectedTag(tag)}
-                            style={{
-                                padding: '6px 14px',
-                                borderRadius: 20,
-                                border: selectedTag === tag ? '1px solid var(--gold)' : '1px solid #333',
-                                background: selectedTag === tag ? 'rgba(197,160,89,0.15)' : '#222',
-                                color: selectedTag === tag ? 'var(--gold)' : '#aaa',
-                                fontSize: '0.78rem',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            {tag}
-                        </button>
-                    ))}
+                    {allTags.map(tag => {
+                        const isSel = selectedTag === tag;
+                        return (
+                            <button
+                                key={tag}
+                                onClick={() => setSelectedTag(tag)}
+                                style={{
+                                    padding: '7px 16px',
+                                    borderRadius: 20,
+                                    border: isSel ? '1px solid #111114' : '1px solid #e5e7eb',
+                                    background: isSel ? '#111114' : '#f9fafb',
+                                    color: isSel ? '#ffffff' : '#4b5563',
+                                    fontSize: '0.78rem',
+                                    fontWeight: isSel ? 700 : 500,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    boxShadow: isSel ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
+                                }}
+                            >
+                                {tag}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                <div style={{ position: 'relative', width: 260 }}>
+                <div className="adm-search-wrap" style={{ width: 260 }}>
+                    <i className="fas fa-search adm-search-icon"></i>
                     <input
                         type="text"
                         placeholder="Search video tutorials..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '8px 12px 8px 34px',
-                            background: '#121212',
-                            border: '1px solid #333',
-                            borderRadius: 6,
-                            color: '#fff',
-                            fontSize: '0.8rem',
-                            outline: 'none',
-                            boxSizing: 'border-box'
-                        }}
+                        className="adm-search-input"
                     />
-                    <i className="fas fa-search" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#666', fontSize: '0.75rem' }}></i>
                 </div>
             </div>
 
@@ -219,16 +213,16 @@ function MasterTutorials() {
             {loading ? (
                 <div className="adm-loading"><div className="adm-spinner"></div><p>Loading tutorials...</p></div>
             ) : filteredTutorials.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 20px', background: '#141414', borderRadius: 8, border: '1px solid #262626' }}>
-                    <i className="fas fa-video-slash" style={{ fontSize: '2.2rem', color: '#444', marginBottom: 12, display: 'block' }}></i>
-                    <p style={{ color: '#aaa', fontSize: '0.9rem' }}>No video tutorials found matching your filter.</p>
+                <div style={{ textAlign: 'center', padding: '60px 20px', background: '#ffffff', borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                    <i className="fas fa-video-slash" style={{ fontSize: '2.2rem', color: '#9ca3af', marginBottom: 12, display: 'block' }}></i>
+                    <p style={{ color: '#6b7280', fontSize: '0.9rem', fontWeight: 500 }}>No video tutorials found matching your filter.</p>
                 </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
                     {filteredTutorials.map(t => {
                         const embedUrl = getEmbedUrl(t.video_url);
                         return (
-                            <div key={t.id} style={{ background: '#1c1c1c', border: '1px solid #2e2e2e', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                            <div key={t.id} style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'transform 0.2s, box-shadow 0.2s' }}>
                                 {/* Video Iframe Preview */}
                                 <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000' }}>
                                     <iframe
@@ -240,37 +234,37 @@ function MasterTutorials() {
                                     />
                                 </div>
 
-                                <div style={{ padding: 16, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                <div style={{ padding: 18, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                                     <div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                                            <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '3px 8px', borderRadius: 12, background: 'rgba(197,160,89,0.15)', color: 'var(--gold)', border: '1px solid rgba(197,160,89,0.3)', textTransform: 'uppercase' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                                            <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '3px 10px', borderRadius: 12, background: 'rgba(197,160,89,0.12)', color: '#b45309', border: '1px solid rgba(197,160,89,0.25)', textTransform: 'uppercase' }}>
                                                 {t.tag || 'General'}
                                             </span>
-                                            <span style={{ fontSize: '0.68rem', color: '#666' }}>
-                                                {t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : ''}
+                                            <span style={{ fontSize: '0.72rem', color: '#9ca3af', fontWeight: 500 }}>
+                                                {t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}
                                             </span>
                                         </div>
 
-                                        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', margin: '6px 0', lineHeight: 1.4 }}>{t.title}</h3>
+                                        <h3 style={{ fontSize: '0.98rem', fontWeight: 700, color: '#111114', margin: '4px 0 8px', lineHeight: 1.4 }}>{t.title}</h3>
                                         {t.description && (
-                                            <p style={{ fontSize: '0.78rem', color: '#aaa', margin: '4px 0 14px', lineHeight: 1.5 }}>
+                                            <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '4px 0 14px', lineHeight: 1.5 }}>
                                                 {t.description}
                                             </p>
                                         )}
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: 8, marginTop: 14, paddingTop: 12, borderTop: '1px solid #282828' }}>
+                                    <div style={{ display: 'flex', gap: 10, marginTop: 14, paddingTop: 14, borderTop: '1px solid #f3f4f6' }}>
                                         <button
                                             onClick={() => handleOpenEditModal(t)}
-                                            style={{ flex: 1, padding: '8px', background: '#2a2a2a', border: '1px solid #3d3d3d', color: '#fff', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
+                                            style={{ flex: 1, padding: '8px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', color: '#374151', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}
                                         >
-                                            <i className="fas fa-edit" style={{ marginRight: 4 }}></i> Edit
+                                            <i className="fas fa-edit"></i> Edit
                                         </button>
                                         <button
                                             onClick={() => setDeleteId(t.id)}
-                                            style={{ flex: 1, padding: '8px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
+                                            style={{ flex: 1, padding: '8px 14px', background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}
                                         >
-                                            <i className="fas fa-trash-alt" style={{ marginRight: 4 }}></i> Delete
+                                            <i className="fas fa-trash-alt"></i> Delete
                                         </button>
                                     </div>
                                 </div>
@@ -283,14 +277,17 @@ function MasterTutorials() {
             {/* Create / Edit Modal */}
             {showModal && (
                 <div className="adm-modal-overlay" onClick={() => !saving && setShowModal(false)}>
-                    <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 500, background: '#1c1c1c', border: '1px solid #333', color: '#fff' }}>
-                        <h2 style={{ fontSize: '1.1rem', margin: '0 0 16px', color: 'var(--gold)' }}>
-                            {editingTutorial ? 'Edit Video Tutorial' : 'Add New Video Tutorial'}
-                        </h2>
+                    <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520, background: '#ffffff', border: '1px solid #e5e7eb', color: '#111114', borderRadius: 14, boxShadow: '0 20px 40px rgba(0,0,0,0.12)', padding: 28 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, borderBottom: '1px solid #f3f4f6', paddingBottom: 12 }}>
+                            <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: '#111114' }}>
+                                {editingTutorial ? 'Edit Video Tutorial' : 'Add New Video Tutorial'}
+                            </h2>
+                            <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: '#9ca3af', cursor: 'pointer' }}>×</button>
+                        </div>
 
-                        <form onSubmit={handleSaveTutorial} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <form onSubmit={handleSaveTutorial} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             <div>
-                                <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#aaa', display: 'block', marginBottom: 6 }}>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#4b5563', display: 'block', marginBottom: 6 }}>
                                     Tutorial Title *
                                 </label>
                                 <input
@@ -299,12 +296,12 @@ function MasterTutorials() {
                                     value={formTitle}
                                     onChange={e => setFormTitle(e.target.value)}
                                     required
-                                    style={{ width: '100%', padding: 10, background: '#121212', border: '1px solid #333', borderRadius: 6, color: '#fff', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '10px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#111114', fontSize: '0.82rem', boxSizing: 'border-box' }}
                                 />
                             </div>
 
                             <div>
-                                <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#aaa', display: 'block', marginBottom: 6 }}>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#4b5563', display: 'block', marginBottom: 6 }}>
                                     Video URL (YouTube / Vimeo / MP4) *
                                 </label>
                                 <input
@@ -313,18 +310,18 @@ function MasterTutorials() {
                                     value={formUrl}
                                     onChange={e => setFormUrl(e.target.value)}
                                     required
-                                    style={{ width: '100%', padding: 10, background: '#121212', border: '1px solid #333', borderRadius: 6, color: '#fff', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '10px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#111114', fontSize: '0.82rem', boxSizing: 'border-box' }}
                                 />
                             </div>
 
                             <div>
-                                <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#aaa', display: 'block', marginBottom: 6 }}>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#4b5563', display: 'block', marginBottom: 6 }}>
                                     Tag / Category *
                                 </label>
                                 <select
                                     value={formTag}
                                     onChange={e => setFormTag(e.target.value)}
-                                    style={{ width: '100%', padding: 10, background: '#121212', border: '1px solid #333', borderRadius: 6, color: '#fff', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '10px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#111114', fontSize: '0.82rem', boxSizing: 'border-box' }}
                                 >
                                     {PRESET_TAGS.map(t => <option key={t} value={t}>{t}</option>)}
                                     <option value="Other">Other Custom Tag</option>
@@ -333,7 +330,7 @@ function MasterTutorials() {
 
                             {formTag === 'Other' && (
                                 <div>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#aaa', display: 'block', marginBottom: 6 }}>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#4b5563', display: 'block', marginBottom: 6 }}>
                                         Custom Tag Name
                                     </label>
                                     <input
@@ -341,13 +338,13 @@ function MasterTutorials() {
                                         placeholder="e.g. Color Profiling"
                                         value={formCustomTag}
                                         onChange={e => setFormCustomTag(e.target.value)}
-                                        style={{ width: '100%', padding: 10, background: '#121212', border: '1px solid #333', borderRadius: 6, color: '#fff', boxSizing: 'border-box' }}
+                                        style={{ width: '100%', padding: '10px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#111114', fontSize: '0.82rem', boxSizing: 'border-box' }}
                                     />
                                 </div>
                             )}
 
                             <div>
-                                <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#aaa', display: 'block', marginBottom: 6 }}>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#4b5563', display: 'block', marginBottom: 6 }}>
                                     Description / Key Notes
                                 </label>
                                 <textarea
@@ -355,23 +352,23 @@ function MasterTutorials() {
                                     placeholder="Add helpful notes, guidelines, or summaries for this tutorial..."
                                     value={formDescription}
                                     onChange={e => setFormDescription(e.target.value)}
-                                    style={{ width: '100%', padding: 10, background: '#121212', border: '1px solid #333', borderRadius: 6, color: '#fff', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '10px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#111114', fontSize: '0.82rem', boxSizing: 'border-box', resize: 'vertical' }}
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 12 }}>
+                            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 14 }}>
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
                                     disabled={saving}
-                                    style={{ padding: '10px 18px', background: '#333', border: 'none', color: '#fff', borderRadius: 6, cursor: 'pointer' }}
+                                    style={{ padding: '10px 20px', background: '#f3f4f6', border: '1px solid #e5e7eb', color: '#4b5563', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    style={{ padding: '10px 22px', background: 'var(--gold)', border: 'none', color: '#121212', fontWeight: 700, borderRadius: 6, cursor: 'pointer' }}
+                                    style={{ padding: '10px 24px', background: '#111114', border: 'none', color: '#ffffff', fontWeight: 600, borderRadius: 8, cursor: 'pointer', fontSize: '0.8rem', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}
                                 >
                                     {saving ? 'Saving...' : editingTutorial ? 'Update Tutorial' : 'Publish Tutorial'}
                                 </button>
@@ -384,12 +381,12 @@ function MasterTutorials() {
             {/* Delete Confirmation Modal */}
             {deleteId && (
                 <div className="adm-modal-overlay" onClick={() => setDeleteId(null)}>
-                    <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 400, background: '#1c1c1c', border: '1px solid #333', color: '#fff' }}>
-                        <h3 style={{ margin: '0 0 8px', color: '#ef4444' }}>Delete Video Tutorial?</h3>
-                        <p style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: 20 }}>This tutorial will be permanently removed for all designers.</p>
+                    <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420, background: '#ffffff', border: '1px solid #e5e7eb', color: '#111114', borderRadius: 14, padding: 26, boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }}>
+                        <h3 style={{ margin: '0 0 10px', color: '#dc2626', fontSize: '1.05rem', fontWeight: 700 }}>Delete Video Tutorial?</h3>
+                        <p style={{ fontSize: '0.84rem', color: '#6b7280', marginBottom: 22, lineHeight: 1.5 }}>This tutorial will be permanently removed for all designers across the platform.</p>
                         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                            <button onClick={() => setDeleteId(null)} style={{ padding: '8px 16px', background: '#333', border: 'none', color: '#fff', borderRadius: 6, cursor: 'pointer' }}>Cancel</button>
-                            <button onClick={() => handleDeleteTutorial(deleteId)} style={{ padding: '8px 18px', background: '#ef4444', border: 'none', color: '#fff', fontWeight: 700, borderRadius: 6, cursor: 'pointer' }}>Delete</button>
+                            <button onClick={() => setDeleteId(null)} style={{ padding: '9px 18px', background: '#f3f4f6', border: '1px solid #e5e7eb', color: '#4b5563', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}>Cancel</button>
+                            <button onClick={() => handleDeleteTutorial(deleteId)} style={{ padding: '9px 20px', background: '#dc2626', border: 'none', color: '#fff', fontWeight: 600, borderRadius: 8, cursor: 'pointer', fontSize: '0.8rem', boxShadow: '0 2px 6px rgba(220,38,38,0.2)' }}>Delete</button>
                         </div>
                     </div>
                 </div>

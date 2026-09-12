@@ -766,17 +766,17 @@ function MfgProducts() {
                     </div>
                 </div>
 
-                <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 25, background: '#1c1c1c', padding: 30, borderRadius: 8, border: '1px solid #333' }}>
+                <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 25, background: '#ffffff', padding: 32, borderRadius: 14, border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
                     
                     {/* Category */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Category * {editProductId && '(Locked)'}</label>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Category * {editProductId && '(Locked)'}</label>
                         <select 
                             disabled={!!editProductId}
                             title={editProductId ? "Category cannot be changed once product is created" : ""}
                             value={formData.category}
                             onChange={e => setFormData({...formData, category: e.target.value})}
-                            style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#1f1f1f' : '#2c2c2c', opacity: editProductId ? 0.65 : 1, border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', cursor: editProductId ? 'not-allowed' : 'pointer' }}>
+                            style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#f3f4f6' : '#ffffff', opacity: editProductId ? 0.75 : 1, border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none', cursor: editProductId ? 'not-allowed' : 'pointer' }}>
                             {categoriesList.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
@@ -785,7 +785,7 @@ function MfgProducts() {
 
                     {/* Name */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Name of the Product * {editProductId && '(Locked)'}</label>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Name of the Product * {editProductId && '(Locked)'}</label>
                         <input 
                             type="text" 
                             disabled={!!editProductId}
@@ -793,20 +793,20 @@ function MfgProducts() {
                             placeholder="e.g. Premium Cotton T-Shirt"
                             value={formData.title}
                             onChange={e => setFormData({...formData, title: e.target.value})}
-                            style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#1f1f1f' : '#2c2c2c', opacity: editProductId ? 0.65 : 1, border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', cursor: editProductId ? 'not-allowed' : 'text' }}
+                            style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#f3f4f6' : '#ffffff', opacity: editProductId ? 0.75 : 1, border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none', cursor: editProductId ? 'not-allowed' : 'text' }}
                         />
                     </div>
 
                     {/* Upload Reference */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Upload Reference</label>
-                        <div style={{ padding: 15, background: '#2c2c2c', border: '1px solid #444', borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.85rem', color: formData.referenceFile || formData.referencePreview ? 'white' : '#888' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Upload Reference</label>
+                        <div style={{ padding: 15, background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.85rem', color: formData.referenceFile || formData.referencePreview ? '#111827' : '#6b7280' }}>
                                 {formData.referenceFile ? formData.referenceFile.name : (formData.referencePreview ? 'Reference Uploaded' : 'No file uploaded')}
                             </span>
                             <button 
                                 onClick={() => document.getElementById('refUpload').click()}
-                                style={{ padding: '6px 14px', background: 'transparent', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem' }}>
+                                style={{ padding: '6px 14px', background: '#ffffff', border: '1px solid #C5A059', color: '#8c6b2d', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
                                 Choose File
                             </button>
                             <input id="refUpload" type="file" style={{ display: 'none' }} accept="image/*,.pdf" onChange={e => {
@@ -820,96 +820,96 @@ function MfgProducts() {
                     {/* Gender & Base Cost row */}
                     <div style={{ display: 'flex', gap: 20 }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Target Gender * {editProductId && '(Locked)'}</label>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Target Gender * {editProductId && '(Locked)'}</label>
                             <select 
                                 disabled={!!editProductId}
                                 title={editProductId ? "Target gender cannot be changed once product is created" : ""}
                                 value={formData.gender}
                                 onChange={e => setFormData({...formData, gender: e.target.value})}
-                                style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#1f1f1f' : '#2c2c2c', opacity: editProductId ? 0.65 : 1, border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', cursor: editProductId ? 'not-allowed' : 'pointer' }}>
+                                style={{ width: '100%', padding: '10px 14px', background: editProductId ? '#f3f4f6' : '#ffffff', opacity: editProductId ? 0.75 : 1, border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none', cursor: editProductId ? 'not-allowed' : 'pointer' }}>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
                                 <option value="unisex">Unisex</option>
                             </select>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Base Cost (₹) *</label>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Base Cost (₹) *</label>
                             <input 
                                 type="number" step="0.01" min="0" placeholder="0.00"
                                 value={formData.cost}
                                 onChange={e => setFormData({...formData, cost: e.target.value})}
-                                style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}
+                                style={{ width: '100%', padding: '10px 14px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none' }}
                             />
                         </div>
                     </div>
 
                     {/* Details */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Product Details *</label>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Product Details *</label>
                         <textarea 
                             rows="3" placeholder="Enter product description (each line is a bullet point)"
                             value={formData.details}
                             onChange={e => setFormData({...formData, details: e.target.value})}
-                            style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', resize: 'vertical' }}
+                            style={{ width: '100%', padding: '10px 14px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none', resize: 'vertical' }}
                         ></textarea>
                     </div>
 
                     {/* Wash Care */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Wash Care Instructions *</label>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Wash Care Instructions *</label>
                         <textarea 
                             rows="3" placeholder="Enter washing care guidelines (each line is a bullet point)"
                             value={formData.washCare}
                             onChange={e => setFormData({...formData, washCare: e.target.value})}
-                            style={{ width: '100%', padding: '10px 14px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none', resize: 'vertical' }}
+                            style={{ width: '100%', padding: '10px 14px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none', resize: 'vertical' }}
                         ></textarea>
                     </div>
 
                     {/* Colors Module */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #333', paddingBottom: 8 }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Colors</label>
-                            <button type="button" onClick={() => setShowColorPanel(!showColorPanel)} style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Colors</label>
+                            <button type="button" onClick={() => setShowColorPanel(!showColorPanel)} style={{ background: 'none', border: 'none', color: '#C5A059', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
                                 {showColorPanel ? 'Cancel Color' : '+ Add Color'}
                             </button>
                         </div>
 
                         {showColorPanel && (
-                            <div style={{ padding: 20, background: '#252525', border: '1px solid #444', borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 15 }}>
+                            <div style={{ padding: 20, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 15 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
-                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#ccc' }}>Color swatch:</label>
+                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#4b5563', fontWeight: 600 }}>Color swatch:</label>
                                     <input type="color" value={pickerSwatch} onChange={e => setPickerSwatch(e.target.value)} style={{ width: 40, height: 40, cursor: 'pointer', border: 'none', background: 'transparent' }} />
-                                    <input type="text" value={pickerSwatch} onChange={e => setPickerSwatch(e.target.value)} style={{ width: 100, padding: '6px 10px', background: '#1c1c1c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                    <input type="text" value={pickerSwatch} onChange={e => setPickerSwatch(e.target.value)} style={{ width: 100, padding: '8px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6, outline: 'none' }} />
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
-                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#ccc' }}>RGB values:</label>
-                                    <input type="text" readOnly value={hexToRgbStr(pickerSwatch)} style={{ flex: 1, padding: '6px 10px', background: '#1c1c1c', border: '1px solid #444', color: '#aaa', borderRadius: 4 }} />
+                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#4b5563', fontWeight: 600 }}>RGB values:</label>
+                                    <input type="text" readOnly value={hexToRgbStr(pickerSwatch)} style={{ flex: 1, padding: '8px 10px', background: '#f3f4f6', border: '1px solid #d1d5db', color: '#6b7280', borderRadius: 6 }} />
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
-                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#ccc' }}>Color Name:</label>
+                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#4b5563', fontWeight: 600 }}>Color Name:</label>
                                     <input type="text" placeholder="e.g. Jet Black" value={pickerName} onChange={e => {
                                         setPickerName(e.target.value);
                                         const v = e.target.value.toLowerCase();
                                         if (v.includes('white')) setPickerMode('light');
                                         else if (v.includes('black') || v.includes('navy')) setPickerMode('dark');
-                                    }} style={{ flex: 1, padding: '6px 10px', background: '#1c1c1c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                    }} style={{ flex: 1, padding: '8px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6, outline: 'none' }} />
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
-                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#ccc' }}>Garment Mode:</label>
-                                    <select value={pickerMode} onChange={e => setPickerMode(e.target.value)} style={{ flex: 1, padding: '6px 10px', background: '#1c1c1c', border: '1px solid #444', color: 'white', borderRadius: 4, outline: 'none' }}>
+                                    <label style={{ width: 100, fontSize: '0.8rem', color: '#4b5563', fontWeight: 600 }}>Garment Mode:</label>
+                                    <select value={pickerMode} onChange={e => setPickerMode(e.target.value)} style={{ flex: 1, padding: '8px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6, outline: 'none' }}>
                                         <option value="dark">Dark</option>
                                         <option value="light">Light</option>
                                     </select>
                                 </div>
-                                <div style={{ borderTop: '1px solid #333', paddingTop: 15, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc' }}>Front Reference Image:</label>
-                                    <input type="file" accept="image/*" onChange={e => setPickerFrontFile(e.target.files[0])} style={{ color: '#ccc', fontSize: '0.8rem' }} />
+                                <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 15, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <label style={{ fontSize: '0.8rem', color: '#4b5563', fontWeight: 600 }}>Front Reference Image:</label>
+                                    <input type="file" accept="image/*" onChange={e => setPickerFrontFile(e.target.files[0])} style={{ color: '#4b5563', fontSize: '0.8rem' }} />
                                     
-                                    <label style={{ fontSize: '0.8rem', color: '#ccc', marginTop: 10 }}>Back View Reference Image:</label>
-                                    <input type="file" accept="image/*" onChange={e => setPickerBackFile(e.target.files[0])} style={{ color: '#ccc', fontSize: '0.8rem' }} />
+                                    <label style={{ fontSize: '0.8rem', color: '#4b5563', fontWeight: 600, marginTop: 10 }}>Back View Reference Image:</label>
+                                    <input type="file" accept="image/*" onChange={e => setPickerBackFile(e.target.files[0])} style={{ color: '#4b5563', fontSize: '0.8rem' }} />
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 10 }}>
-                                    <button onClick={handleSaveColor} style={{ padding: '8px 20px', background: 'var(--gold)', border: 'none', borderRadius: 4, color: 'black', fontWeight: 600, cursor: 'pointer' }}>
+                                    <button onClick={handleSaveColor} style={{ padding: '8px 22px', background: '#111114', border: 'none', borderRadius: 20, color: '#ffffff', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
                                         Save Color
                                     </button>
                                 </div>
@@ -917,16 +917,16 @@ function MfgProducts() {
                         )}
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {colors.length === 0 && <p style={{ fontSize: '0.8rem', color: '#777', fontStyle: 'italic' }}>No colors added yet.</p>}
+                            {colors.length === 0 && <p style={{ fontSize: '0.8rem', color: '#6b7280', fontStyle: 'italic' }}>No colors added yet.</p>}
                             {colors.map(color => (
-                                <div key={color.id} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, background: '#252525', border: '1px solid #444', borderRadius: 4 }}>
+                                <div key={color.id} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 14, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                            <div style={{ width: 20, height: 20, borderRadius: '50%', background: color.color, border: '1px solid #666' }}></div>
-                                            <span style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600 }}>{color.colorName}</span>
-                                            <span style={{ fontSize: '0.8rem', color: '#888', fontFamily: 'monospace' }}>({color.color})</span>
-                                            <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: color.mode === 'dark' ? '#333' : '#ddd', color: color.mode === 'dark' ? '#fff' : '#000', borderRadius: 12 }}>{color.mode === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
-                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: '#aaa', cursor: 'pointer', marginLeft: 8 }}>
+                                            <div style={{ width: 22, height: 22, borderRadius: '50%', background: color.color, border: '1px solid #d1d5db', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}></div>
+                                            <span style={{ fontSize: '0.9rem', color: '#111827', fontWeight: 600 }}>{color.colorName}</span>
+                                            <span style={{ fontSize: '0.8rem', color: '#6b7280', fontFamily: 'monospace' }}>({color.color})</span>
+                                            <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: color.mode === 'dark' ? '#1f2937' : '#f3f4f6', color: color.mode === 'dark' ? '#ffffff' : '#374151', borderRadius: 12, fontWeight: 600 }}>{color.mode === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: '#4b5563', cursor: 'pointer', marginLeft: 8 }}>
                                                 <input 
                                                     type="checkbox" 
                                                     checked={color.available !== false} 
@@ -934,18 +934,18 @@ function MfgProducts() {
                                                         const isChecked = e.target.checked;
                                                         setColors(prev => prev.map(x => x.id === color.id ? { ...x, available: isChecked } : x));
                                                     }} 
-                                                    style={{ width: 12, height: 12, accentColor: '#C5A059', cursor: 'pointer' }}
+                                                    style={{ width: 13, height: 13, accentColor: '#C5A059', cursor: 'pointer' }}
                                                 />
                                                 Available
                                             </label>
                                         </div>
                                         {!editProductId && (
-                                            <button onClick={() => handleRemoveColor(color.id)} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '0.85rem' }}>Remove</button>
+                                            <button onClick={() => handleRemoveColor(color.id)} style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Remove</button>
                                         )}
                                     </div>
-                                    <div style={{ display: 'flex', gap: 20, fontSize: '0.75rem', color: '#aaa', borderTop: '1px solid #333', paddingTop: 8 }}>
-                                        <div><strong style={{color:'#ccc'}}>Front:</strong> {color.frontFile ? color.frontFile.name : (color.frontPreview ? 'Uploaded' : 'None')}</div>
-                                        <div><strong style={{color:'#ccc'}}>Back:</strong> {color.backFile ? color.backFile.name : (color.backPreview ? 'Uploaded' : 'None')}</div>
+                                    <div style={{ display: 'flex', gap: 20, fontSize: '0.75rem', color: '#6b7280', borderTop: '1px solid #f3f4f6', paddingTop: 8 }}>
+                                        <div><strong style={{color:'#374151'}}>Front:</strong> {color.frontFile ? color.frontFile.name : (color.frontPreview ? 'Uploaded' : 'None')}</div>
+                                        <div><strong style={{color:'#374151'}}>Back:</strong> {color.backFile ? color.backFile.name : (color.backPreview ? 'Uploaded' : 'None')}</div>
                                     </div>
                                 </div>
                             ))}
@@ -954,8 +954,8 @@ function MfgProducts() {
 
                     {/* Printing Methods Manager — selection only (no manual add/edit/remove) */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-                        <div style={{ borderBottom: '1px solid #333', paddingBottom: 8 }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>Printing Styles &amp; Placements</label>
+                        <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Printing Styles &amp; Placements</label>
                         </div>
 
                         {dbPrintStyles.length > 0 ? (
@@ -974,19 +974,19 @@ function MfgProducts() {
                                     const someSelected = enabledCats > 0 && enabledCats < totalCats;
 
                                     return (
-                                        <div key={ps.id} style={{ background: '#1c1c1c', border: `1px solid ${enabledCats > 0 ? 'var(--gold)' : '#333'}`, borderRadius: 6, overflow: 'hidden', transition: 'border-color 0.2s' }}>
+                                        <div key={ps.id} style={{ background: '#ffffff', border: `1px solid ${enabledCats > 0 ? '#C5A059' : '#e5e7eb'}`, borderRadius: 10, overflow: 'hidden', transition: 'border-color 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.02)' }}>
                                             {/* Style header — select all */}
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', cursor: 'pointer', background: enabledCats > 0 ? 'rgba(197,160,89,0.07)' : 'transparent' }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', cursor: 'pointer', background: enabledCats > 0 ? 'rgba(197,160,89,0.08)' : '#fafafa' }}>
                                                 <input
                                                     type="checkbox"
                                                     checked={allSelected}
                                                     ref={el => { if (el) el.indeterminate = someSelected; }}
                                                     onChange={e => handleToggleDbPrintStyle(ps.id, e.target.checked)}
-                                                    style={{ accentColor: 'var(--gold)', width: 15, height: 15, cursor: 'pointer' }}
+                                                    style={{ accentColor: 'var(--gold, #C5A059)', width: 16, height: 16, cursor: 'pointer' }}
                                                 />
                                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>{ps.name}</span>
-                                                    <span style={{ fontSize: '0.7rem', color: '#888' }}>
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111827' }}>{ps.name}</span>
+                                                    <span style={{ fontSize: '0.72rem', color: '#6b7280' }}>
                                                         {ps.category?.toUpperCase()} • {enabledCats}/{totalCats} selected
                                                     </span>
                                                 </div>
@@ -994,7 +994,7 @@ function MfgProducts() {
 
                                             {/* Individual category checkboxes */}
                                             {totalCats > 0 && (
-                                                <div style={{ borderTop: '1px solid #2a2a2a', display: 'flex', flexDirection: 'column', gap: 0 }}>
+                                                <div style={{ borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: 0 }}>
                                                     {(ps.placementCategories || []).map((pc, i) => {
                                                         const isCatEnabled = isPmCatActive(pc);
                                                         const optCount = Object.keys(pc.placements || {}).length;
@@ -1003,19 +1003,19 @@ function MfgProducts() {
                                                                 display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
                                                                 cursor: 'pointer',
                                                                 background: isCatEnabled ? 'rgba(197,160,89,0.04)' : 'transparent',
-                                                                borderTop: i > 0 ? '1px solid #222' : 'none',
+                                                                borderTop: i > 0 ? '1px solid #f3f4f6' : 'none',
                                                                 transition: 'background 0.15s'
                                                             }}>
                                                                 <input
                                                                     type="checkbox"
                                                                     checked={isCatEnabled}
                                                                     onChange={e => handleTogglePrintCategory(ps.id, pc, e.target.checked)}
-                                                                    style={{ accentColor: 'var(--gold)', width: 14, height: 14, cursor: 'pointer' }}
+                                                                    style={{ accentColor: 'var(--gold, #C5A059)', width: 14, height: 14, cursor: 'pointer' }}
                                                                 />
-                                                                <span style={{ fontSize: '0.85rem', color: isCatEnabled ? 'white' : '#aaa', fontWeight: isCatEnabled ? 600 : 400, textTransform: 'capitalize', flex: 1 }}>
+                                                                <span style={{ fontSize: '0.85rem', color: isCatEnabled ? '#111827' : '#6b7280', fontWeight: isCatEnabled ? 600 : 400, textTransform: 'capitalize', flex: 1 }}>
                                                                     {pc.category}
                                                                 </span>
-                                                                <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: '#252525', color: '#777', borderRadius: 10 }}>
+                                                                <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: '#f3f4f6', color: '#4b5563', borderRadius: 10, fontWeight: 500 }}>
                                                                     {optCount} placement{optCount !== 1 ? 's' : ''}
                                                                 </span>
                                                             </label>
@@ -1028,7 +1028,7 @@ function MfgProducts() {
                                 })}
                             </div>
                         ) : (
-                            <p style={{ fontSize: '0.8rem', color: '#777', fontStyle: 'italic' }}>
+                            <p style={{ fontSize: '0.8rem', color: '#6b7280', fontStyle: 'italic' }}>
                                 No saved print styles found. Please create print styles first from the Print Styles section.
                             </p>
                         )}
@@ -1036,15 +1036,15 @@ function MfgProducts() {
 
                     {/* Size Chart */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid #333', paddingBottom: 8 }}>Size Chart {editProductId && '(Locked)'}</label>
-                        <div style={{ padding: 15, background: '#2c2c2c', border: '1px solid #444', borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.85rem', color: sizeChartFile || sizeChartPreview ? 'white' : '#888' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>Size Chart {editProductId && '(Locked)'}</label>
+                        <div style={{ padding: 15, background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.85rem', color: sizeChartFile || sizeChartPreview ? '#111827' : '#6b7280' }}>
                                 {sizeChartFile ? sizeChartFile.name : (sizeChartPreview ? 'Size Chart Uploaded' : 'No file uploaded')}
                             </span>
                             <button 
                                 disabled={!!editProductId}
                                 onClick={() => document.getElementById('sizeChartUpload').click()}
-                                style={{ padding: '6px 14px', background: 'transparent', border: '1px solid var(--gold)', color: 'var(--gold)', borderRadius: 4, cursor: editProductId ? 'not-allowed' : 'pointer', opacity: editProductId ? 0.5 : 1 }}>
+                                style={{ padding: '6px 14px', background: '#ffffff', border: '1px solid #C5A059', color: '#8c6b2d', borderRadius: 6, cursor: editProductId ? 'not-allowed' : 'pointer', opacity: editProductId ? 0.5 : 1, fontWeight: 600, fontSize: '0.8rem' }}>
                                 Choose File
                             </button>
                             <input id="sizeChartUpload" type="file" style={{ display: 'none' }} accept="image/*,.pdf" onChange={e => {
@@ -1057,12 +1057,12 @@ function MfgProducts() {
 
                     {/* Select & Manage Sizes */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <div style={{ borderBottom: '1px solid #333', paddingBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
                                     Sizes Configuration *
                                 </label>
-                                <span style={{ fontSize: '0.7rem', color: '#888' }}>
+                                <span style={{ fontSize: '0.72rem', color: '#6b7280' }}>
                                     Once added, sizes cannot be deleted — only set to Available or Unavailable status.
                                 </span>
                             </div>
@@ -1087,10 +1087,10 @@ function MfgProducts() {
                                 style={{
                                     flex: 1,
                                     padding: '10px 14px',
-                                    background: '#2c2c2c',
-                                    border: '1px solid #555',
-                                    color: 'white',
-                                    borderRadius: 4,
+                                    background: '#ffffff',
+                                    border: '1px solid #d1d5db',
+                                    color: '#111827',
+                                    borderRadius: 8,
                                     fontSize: '0.85rem',
                                     outline: 'none'
                                 }}
@@ -1107,12 +1107,12 @@ function MfgProducts() {
                                 }}
                                 style={{
                                     padding: '10px 18px',
-                                    background: 'var(--gold)',
-                                    color: 'black',
+                                    background: '#111114',
+                                    color: '#ffffff',
                                     border: 'none',
-                                    borderRadius: 4,
-                                    fontWeight: 700,
-                                    fontSize: '0.8rem',
+                                    borderRadius: 8,
+                                    fontWeight: 600,
+                                    fontSize: '0.82rem',
                                     cursor: 'pointer',
                                     whiteSpace: 'nowrap'
                                 }}
@@ -1123,7 +1123,7 @@ function MfgProducts() {
 
                         {/* Preset Standard Sizes */}
                         <div>
-                            <span style={{ fontSize: '0.72rem', color: '#888', display: 'block', marginBottom: 6 }}>
+                            <span style={{ fontSize: '0.72rem', color: '#6b7280', display: 'block', marginBottom: 6 }}>
                                 Quick Add Presets:
                             </span>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -1145,21 +1145,21 @@ function MfgProducts() {
                                             }}
                                             style={{
                                                 padding: '6px 14px',
-                                                borderRadius: 4,
+                                                borderRadius: 6,
                                                 fontSize: '0.78rem',
                                                 fontWeight: 700,
                                                 cursor: 'pointer',
                                                 transition: 'all 0.15s',
                                                 background: isAdded
-                                                    ? (isAvailable ? 'rgba(40,167,69,0.2)' : 'rgba(255,193,7,0.2)')
-                                                    : '#252525',
+                                                    ? (isAvailable ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)')
+                                                    : '#f3f4f6',
                                                 color: isAdded
-                                                    ? (isAvailable ? '#28a745' : '#ffc107')
-                                                    : '#aaa',
+                                                    ? (isAvailable ? '#059669' : '#d97706')
+                                                    : '#4b5563',
                                                 border: `1px solid ${
                                                     isAdded
-                                                        ? (isAvailable ? 'rgba(40,167,69,0.5)' : 'rgba(255,193,7,0.5)')
-                                                        : '#444'
+                                                        ? (isAvailable ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)')
+                                                        : '#e5e7eb'
                                                 }`
                                             }}
                                             title={isAdded ? `Click to set ${stdSize} ${isAvailable ? 'Unavailable' : 'Available'}` : `Click to add ${stdSize}`}
@@ -1173,12 +1173,12 @@ function MfgProducts() {
 
                         {/* Active Product Sizes List */}
                         <div style={{ marginTop: 6 }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ccc', display: 'block', marginBottom: 8 }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', display: 'block', marginBottom: 8 }}>
                                 Configured Sizes ({sizesList.length}):
                             </span>
 
                             {sizesList.length === 0 ? (
-                                <div style={{ padding: '16px', background: '#222', border: '1px dashed #444', borderRadius: 4, textAlign: 'center', color: '#777', fontSize: '0.8rem' }}>
+                                <div style={{ padding: '16px', background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: 8, textAlign: 'center', color: '#6b7280', fontSize: '0.8rem' }}>
                                     No sizes added yet. Select a preset above or type a custom size.
                                 </div>
                             ) : (
@@ -1191,15 +1191,16 @@ function MfgProducts() {
                                                 style={{
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    justify: 'space-between',
+                                                    justifyContent: 'space-between',
                                                     padding: '10px 14px',
-                                                    background: isAvail ? '#222' : '#1a1a1a',
-                                                    border: `1px solid ${isAvail ? 'rgba(40,167,69,0.3)' : 'rgba(255,193,7,0.3)'}`,
-                                                    borderRadius: 4
+                                                    background: '#ffffff',
+                                                    border: `1px solid ${isAvail ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
+                                                    borderRadius: 8,
+                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
                                                 }}
                                             >
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111827' }}>
                                                         {item.size}
                                                     </span>
                                                     <span style={{
@@ -1207,9 +1208,9 @@ function MfgProducts() {
                                                         padding: '2px 8px',
                                                         borderRadius: 10,
                                                         fontWeight: 700,
-                                                        background: isAvail ? 'rgba(40,167,69,0.2)' : 'rgba(255,193,7,0.2)',
-                                                        color: isAvail ? '#28a745' : '#ffc107',
-                                                        border: `1px solid ${isAvail ? 'rgba(40,167,69,0.4)' : 'rgba(255,193,7,0.4)'}`
+                                                        background: isAvail ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+                                                        color: isAvail ? '#059669' : '#d97706',
+                                                        border: `1px solid ${isAvail ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`
                                                     }}>
                                                         {isAvail ? 'AVAILABLE' : 'UNAVAILABLE'}
                                                     </span>
@@ -1221,10 +1222,10 @@ function MfgProducts() {
                                                         onClick={() => handleToggleSizeAvailability(idx)}
                                                         style={{
                                                             padding: '5px 12px',
-                                                            background: isAvail ? 'rgba(255,193,7,0.15)' : 'rgba(40,167,69,0.15)',
-                                                            color: isAvail ? '#ffc107' : '#28a745',
-                                                            border: `1px solid ${isAvail ? 'rgba(255,193,7,0.4)' : 'rgba(40,167,69,0.4)'}`,
-                                                            borderRadius: 4,
+                                                            background: isAvail ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)',
+                                                            color: isAvail ? '#d97706' : '#059669',
+                                                            border: `1px solid ${isAvail ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)'}`,
+                                                            borderRadius: 6,
                                                             fontSize: '0.72rem',
                                                             fontWeight: 700,
                                                             cursor: 'pointer',
@@ -1233,7 +1234,7 @@ function MfgProducts() {
                                                     >
                                                         {isAvail ? 'Set Unavailable' : 'Set Available'}
                                                     </button>
-                                                    <span style={{ fontSize: '0.68rem', color: '#555', fontStyle: 'italic' }}>
+                                                    <span style={{ fontSize: '0.68rem', color: '#9ca3af', fontStyle: 'italic' }}>
                                                         (Cannot be deleted)
                                                     </span>
                                                 </div>
@@ -1246,17 +1247,17 @@ function MfgProducts() {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, borderTop: '1px solid #444', paddingTop: 20, marginTop: 10 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, borderTop: '1px solid #e5e7eb', paddingTop: 20, marginTop: 10 }}>
                         <button 
                             onClick={handleSubmit} 
                             disabled={isSaving}
-                            style={{ padding: '15px', background: 'var(--gold)', color: 'black', border: 'none', borderRadius: 4, fontWeight: 'bold', fontSize: '1rem', cursor: isSaving ? 'not-allowed' : 'pointer' }}>
+                            style={{ padding: '14px', background: '#111114', color: '#ffffff', border: 'none', borderRadius: 24, fontWeight: 700, fontSize: '0.95rem', cursor: isSaving ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                             {isSaving ? 'Saving...' : 'Save Product'}
                         </button>
                         <button 
                             onClick={() => setIsCreating(false)} 
                             disabled={isSaving}
-                            style={{ padding: '12px', background: 'transparent', color: '#ccc', border: '1px solid #555', borderRadius: 4, fontWeight: 'bold', fontSize: '0.9rem', cursor: isSaving ? 'not-allowed' : 'pointer' }}>
+                            style={{ padding: '12px', background: '#ffffff', color: '#4b5563', border: '1px solid #d1d5db', borderRadius: 24, fontWeight: 600, fontSize: '0.9rem', cursor: isSaving ? 'not-allowed' : 'pointer' }}>
                             Cancel / Reset
                         </button>
                     </div>
@@ -1265,15 +1266,15 @@ function MfgProducts() {
 
                 {/* ── Print Method Modal (multi-category) ── */}
                 {isPmModalOpen && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                        <div style={{ background: '#1c1c1c', padding: 25, borderRadius: 8, width: 540, maxHeight: '88vh', overflowY: 'auto', border: '1px solid #444', color: 'white' }}>
-                            <h3 style={{ margin: '0 0 20px 0', color: 'white' }}>{pmEditId ? 'Edit' : 'Add'} Printing Method</h3>
+                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                        <div style={{ background: '#ffffff', padding: 28, borderRadius: 14, width: 560, maxHeight: '88vh', overflowY: 'auto', border: '1px solid #e5e7eb', color: '#111827', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+                            <h3 style={{ margin: '0 0 20px 0', color: '#111827', fontSize: '1.2rem', fontWeight: 700 }}>{pmEditId ? 'Edit' : 'Add'} Printing Method</h3>
 
                             {/* Print Type */}
                             <div style={{ marginBottom: 16 }}>
-                                <label style={{ display: 'block', marginBottom: 6, fontSize: '0.85rem', color: '#ccc' }}>Print Type</label>
+                                <label style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>Print Type</label>
                                 <select value={pmType} onChange={handlePmTypeChange}
-                                    style={{ width: '100%', padding: '10px', background: '#2c2c2c', border: '1px solid #555', color: 'white', borderRadius: 4, outline: 'none' }}>
+                                    style={{ width: '100%', padding: '10px 12px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none' }}>
                                     <option value="" disabled>Select Print Type</option>
                                     <option value="dtf">DTF (Direct to Film)</option>
                                     <option value="dtg">DTG (Direct to Garment)</option>
@@ -1284,7 +1285,7 @@ function MfgProducts() {
                             {/* Saved Print Style Loader */}
                             {pmType && (
                                 <div style={{ marginBottom: 16 }}>
-                                    <label style={{ display: 'block', marginBottom: 6, fontSize: '0.85rem', color: '#ccc' }}>Load from Saved Print Style (optional)</label>
+                                    <label style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>Load from Saved Print Style (optional)</label>
                                     <select 
                                         onChange={e => {
                                             const styleId = e.target.value;
@@ -1314,7 +1315,7 @@ function MfgProducts() {
                                             }
                                         }}
                                         defaultValue=""
-                                        style={{ width: '100%', padding: '10px', background: '#2c2c2c', border: '1px solid #555', color: 'white', borderRadius: 4, outline: 'none' }}>
+                                        style={{ width: '100%', padding: '10px 12px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none' }}>
                                         <option value="">-- Select a saved style to auto-fill --</option>
                                         {dbPrintStyles.filter(ps => {
                                             const t = ps.category?.toLowerCase();
@@ -1340,7 +1341,7 @@ function MfgProducts() {
                                                 id="mfgNewCatInput"
                                                 list="mfgDbCategories"
                                                 placeholder="Category (e.g. Tshirt Front)"
-                                                style={{ flex: 1, padding: '10px', background: '#2c2c2c', border: '1px solid #555', color: 'white', borderRadius: 4, outline: 'none' }}
+                                                style={{ flex: 1, padding: '10px 12px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 8, outline: 'none' }}
                                                 onKeyDown={e => {
                                                     if (e.key === 'Enter') {
                                                         e.preventDefault();
@@ -1387,13 +1388,13 @@ function MfgProducts() {
                                                         }
                                                     }
                                                 }}
-                                                style={{ padding: '10px 18px', background: 'white', color: 'black', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }}>
+                                                style={{ padding: '10px 18px', background: '#111114', color: '#ffffff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
                                                 + Add
                                             </button>
                                         </div>
                                     </div>
                                     {Object.keys(pmCategories).length > 0 && (
-                                        <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#666' }}>
+                                        <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#6b7280' }}>
                                             {Object.keys(pmCategories).length} categor{Object.keys(pmCategories).length === 1 ? 'y' : 'ies'} added
                                         </p>
                                     )}
@@ -1402,8 +1403,8 @@ function MfgProducts() {
 
                             {/* Added categories with their options */}
                             {Object.keys(pmCategories).length > 0 && (
-                                <div style={{ borderTop: '1px solid #333', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                    <label style={{ fontSize: '0.82rem', color: '#aaa', marginBottom: 4 }}>Select Configuration Options</label>
+                                <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151', marginBottom: 4 }}>Select Configuration Options</label>
 
                                     {Object.keys(pmCategories).map(catKey => {
                                         const catOpts = pmCategories[catKey];
@@ -1411,16 +1412,16 @@ function MfgProducts() {
                                         const catConfigured = Object.values(catOpts).filter(o => isOptionValid(o, pmType)).length;
 
                                         return (
-                                            <div key={catKey} style={{ border: `1px solid ${isCatOpen ? 'var(--gold, #c5a030)' : '#3a3a3a'}`, borderRadius: 6, overflow: 'hidden', transition: 'border-color 0.2s' }}>
+                                            <div key={catKey} style={{ border: `1px solid ${isCatOpen ? 'var(--gold, #C5A059)' : '#e5e7eb'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
                                                 {/* Category header */}
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: isCatOpen ? 'rgba(197,160,48,0.07)' : '#252525', cursor: 'pointer' }}
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: isCatOpen ? 'rgba(197,160,89,0.08)' : '#f9fafb', cursor: 'pointer' }}
                                                     onClick={() => { setPmExpandedCat(isCatOpen ? '' : catKey); setPmExpandedRow(null); }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                        <span style={{ fontWeight: 700, fontSize: '0.88rem', color: isCatOpen ? '#c5a030' : 'white', textTransform: 'capitalize' }}>
+                                                        <span style={{ fontWeight: 700, fontSize: '0.88rem', color: isCatOpen ? '#8c6b2d' : '#111827', textTransform: 'capitalize' }}>
                                                             {catKey.replace(/\b\w/g, l => l.toUpperCase())}
                                                         </span>
                                                         {catConfigured > 0 && (
-                                                            <span style={{ fontSize: '0.65rem', padding: '1px 7px', background: 'rgba(40,167,69,0.2)', color: '#28a745', borderRadius: 10, fontWeight: 700 }}>
+                                                            <span style={{ fontSize: '0.65rem', padding: '1px 7px', background: 'rgba(16,185,129,0.1)', color: '#059669', borderRadius: 10, fontWeight: 700 }}>
                                                                 {catConfigured}/{Object.keys(catOpts).length}
                                                             </span>
                                                         )}
@@ -1431,20 +1432,20 @@ function MfgProducts() {
                                                             title={`Remove ${catKey}`}>
                                                             <i className="fas fa-times" />
                                                         </button>
-                                                        <i className={`fas fa-chevron-${isCatOpen ? 'up' : 'down'}`} style={{ color: '#888', fontSize: '0.7rem' }} />
+                                                        <i className={`fas fa-chevron-${isCatOpen ? 'up' : 'down'}`} style={{ color: '#6b7280', fontSize: '0.7rem' }} />
                                                     </div>
                                                 </div>
 
                                                 {/* Option rows */}
                                                 {isCatOpen && (
-                                                    <div style={{ padding: '10px 12px', background: '#181818', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                    <div style={{ padding: '12px 14px', background: '#fafafa', display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid #e5e7eb' }}>
                                                         {/* Add custom option row creator */}
-                                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, borderBottom: '1px solid #333', paddingBottom: 10 }}>
+                                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, borderBottom: '1px solid #e5e7eb', paddingBottom: 10 }}>
                                                             <input
                                                                 type="text"
                                                                 id={`newOptInput_${catKey.replace(/\s+/g, '_')}`}
                                                                 placeholder="Add position (e.g. Left Sleeve, Collar)"
-                                                                style={{ flex: 1, padding: '8px 10px', background: '#2c2c2c', border: '1px solid #555', color: 'white', borderRadius: 4, outline: 'none', fontSize: '0.78rem' }}
+                                                                style={{ flex: 1, padding: '8px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6, outline: 'none', fontSize: '0.78rem' }}
                                                                 onKeyDown={e => {
                                                                     if (e.key === 'Enter') {
                                                                         e.preventDefault();
@@ -1478,7 +1479,7 @@ function MfgProducts() {
                                                                         el.value = '';
                                                                     }
                                                                 }}
-                                                                style={{ padding: '8px 14px', background: 'white', color: 'black', border: 'none', borderRadius: 4, fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}>
+                                                                style={{ padding: '8px 14px', background: '#111114', color: '#ffffff', border: 'none', borderRadius: 6, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}>
                                                                 + Add Position
                                                             </button>
                                                         </div>
@@ -1488,14 +1489,14 @@ function MfgProducts() {
                                                             const isValid = isOptionValid(opt, pmType);
                                                             const isRowExpanded = pmExpandedRow === `${catKey}_${index}`;
                                                             return (
-                                                                <div key={optName} style={{ background: '#222', border: `1px solid ${isValid ? 'rgba(40,167,69,0.4)' : '#333'}`, borderRadius: 5, padding: 10 }}>
+                                                                <div key={optName} style={{ background: '#ffffff', border: `1px solid ${isValid ? 'rgba(16,185,129,0.4)' : '#e5e7eb'}`, borderRadius: 6, padding: 10 }}>
                                                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                                         onClick={() => setPmExpandedRow(isRowExpanded ? null : `${catKey}_${index}`)}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, textTransform: 'capitalize', fontSize: '0.88rem' }}>
-                                                                            <div style={{ width: 16, height: 16, border: `2px solid ${isValid ? '#28a745' : '#555'}`, borderRadius: '50%', background: isValid ? '#28a745' : 'transparent', flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                                                            <div style={{ width: 16, height: 16, border: `2px solid ${isValid ? '#059669' : '#d1d5db'}`, borderRadius: '50%', background: isValid ? '#059669' : 'transparent', flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                                                                 {isValid && <div style={{ width: 4, height: 7, border: 'solid white', borderWidth: '0 2px 2px 0', transform: 'rotate(45deg)', marginBottom: 2 }} />}
                                                                             </div>
-                                                                            <span>{optName}</span>
+                                                                            <span style={{ color: '#111827', fontWeight: 600 }}>{optName}</span>
                                                                         </div>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={e => e.stopPropagation()}>
                                                                             <button
@@ -1513,56 +1514,56 @@ function MfgProducts() {
                                                                                         });
                                                                                     }
                                                                                 }}
-                                                                                style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '0.75rem', padding: '2px' }}
+                                                                                style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '0.75rem', padding: '2px' }}
                                                                                 title={`Remove ${optName}`}
                                                                             >
                                                                                 <i className="fas fa-trash-alt" />
                                                                             </button>
                                                                             <button onClick={() => setPmExpandedRow(isRowExpanded ? null : `${catKey}_${index}`)}
-                                                                                style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                                                                                <i className={`fas fa-chevron-${isRowExpanded ? 'up' : 'down'}`} style={{ color: '#666', fontSize: '0.65rem', transition: 'transform 0.2s' }} />
+                                                                                style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                                                                                <i className={`fas fa-chevron-${isRowExpanded ? 'up' : 'down'}`} style={{ color: '#6b7280', fontSize: '0.65rem', transition: 'transform 0.2s' }} />
                                                                             </button>
                                                                         </div>
                                                                     </div>
 
                                                                     {isRowExpanded && (
-                                                                        <div style={{ marginTop: 10, padding: 12, background: '#1a1a1a', borderRadius: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                                        <div style={{ marginTop: 10, padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 10 }}>
                                                                             {/* Preview box */}
-                                                                            <div style={{ border: '1px dashed #555', padding: 10, textAlign: 'center', fontSize: '12px', color: '#777', background: '#222', borderRadius: 4 }}>
+                                                                            <div style={{ border: '1px dashed #d1d5db', padding: 10, textAlign: 'center', fontSize: '12px', color: '#6b7280', background: '#ffffff', borderRadius: 4 }}>
                                                                                 {opt.imagePreview
                                                                                     ? <img src={opt.imagePreview} alt="preview" style={{ maxHeight: 60, objectFit: 'contain' }} />
                                                                                     : 'print position boundary'}
                                                                             </div>
                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                                <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#bbb', flexShrink: 0 }}>Reference Image:</label>
+                                                                                <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#4b5563', fontWeight: 600, flexShrink: 0 }}>Reference Image:</label>
                                                                                 <input type="file" onChange={e => {
                                                                                     if (e.target.files[0]) {
                                                                                         updatePmOption(catKey, optName, 'imageFile', e.target.files[0]);
                                                                                         updatePmOption(catKey, optName, 'imagePreview', URL.createObjectURL(e.target.files[0]));
                                                                                     }
-                                                                                }} style={{ flex: 1, fontSize: '12px', color: '#aaa' }} />
+                                                                                }} style={{ flex: 1, fontSize: '12px', color: '#4b5563' }} />
                                                                             </div>
                                                                             {pmType === 'dtg' ? (
                                                                                 <>
                                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                                        <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#bbb', flexShrink: 0 }}>Dark Garment (₹):</label>
+                                                                                        <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#4b5563', fontWeight: 600, flexShrink: 0 }}>Dark Garment (₹):</label>
                                                                                         <input type="number" min="0" value={opt.darkPrice}
                                                                                             onChange={e => updatePmOption(catKey, optName, 'darkPrice', e.target.value)}
-                                                                                            style={{ flex: 1, padding: '6px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                                                                            style={{ flex: 1, padding: '6px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6 }} />
                                                                                     </div>
                                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                                        <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#bbb', flexShrink: 0 }}>Light Garment (₹):</label>
+                                                                                        <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#4b5563', fontWeight: 600, flexShrink: 0 }}>Light Garment (₹):</label>
                                                                                         <input type="number" min="0" value={opt.lightPrice}
                                                                                             onChange={e => updatePmOption(catKey, optName, 'lightPrice', e.target.value)}
-                                                                                            style={{ flex: 1, padding: '6px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                                                                            style={{ flex: 1, padding: '6px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6 }} />
                                                                                     </div>
                                                                                 </>
                                                                             ) : (
                                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                                    <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#bbb', flexShrink: 0 }}>Set Price (₹):</label>
+                                                                                    <label style={{ width: 120, margin: 0, fontSize: '12px', color: '#4b5563', fontWeight: 600, flexShrink: 0 }}>Set Price (₹):</label>
                                                                                     <input type="number" min="0" value={opt.price}
                                                                                         onChange={e => updatePmOption(catKey, optName, 'price', e.target.value)}
-                                                                                        style={{ flex: 1, padding: '6px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: 4 }} />
+                                                                                        style={{ flex: 1, padding: '6px 10px', background: '#ffffff', border: '1px solid #d1d5db', color: '#111827', borderRadius: 6 }} />
                                                                                 </div>
                                                                             )}
                                                                         </div>
@@ -1578,9 +1579,9 @@ function MfgProducts() {
                                 </div>
                             )}
 
-                            <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-                                <button onClick={closePmModal} style={{ background: '#333', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}>Cancel</button>
-                                <button onClick={savePrintMethod} style={{ background: '#28a745', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }}>Save Method</button>
+                            <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 10, borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
+                                <button onClick={closePmModal} style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', padding: '10px 20px', borderRadius: 20, cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+                                <button onClick={savePrintMethod} style={{ background: '#111114', color: '#ffffff', border: 'none', padding: '10px 24px', borderRadius: 20, cursor: 'pointer', fontWeight: 700 }}>Save Method</button>
                             </div>
                         </div>
                     </div>
@@ -1598,79 +1599,69 @@ function MfgProducts() {
             <h1 className="adm-page__title">PRODUCTS CATALOGUE</h1>
             <p className="adm-page__subtitle">Manage base products, colors, front/back images, and printing costs</p>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <button className="adm-settings__btn" style={{ marginTop: 0 }} onClick={handleCreateClick}>
-                        <i className="fas fa-plus" style={{ marginRight: 6 }}></i> Add Base Product
+                    <button className="adm-settings__btn" style={{ marginTop: 0, padding: '10px 20px', borderRadius: 20, display: 'inline-flex', alignItems: 'center', gap: 8 }} onClick={handleCreateClick}>
+                        <i className="fas fa-plus"></i> Add Base Product
                     </button>
                 </div>
 
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div className="adm-search-wrap" style={{ minWidth: 280 }}>
+                    <i className="fas fa-search adm-search-icon"></i>
                     <input
                         type="text"
                         placeholder="Search base products..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{
-                            padding: '10px 35px 10px 15px',
-                            background: '#1c1c1c',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '4px',
-                            color: 'white',
-                            fontFamily: "'Montserrat', sans-serif",
-                            fontSize: '0.82rem',
-                            width: '280px',
-                            outline: 'none',
-                            transition: 'border-color 0.2s'
-                        }}
+                        className="adm-search-input"
                     />
-                    <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
                 </div>
             </div>
 
             {loading ? (
-                <div style={{ color: '#ccc', textAlign: 'center', padding: '40px 0' }}>Loading products...</div>
+                <div style={{ color: '#6b7280', textAlign: 'center', padding: '60px 0', fontSize: '0.95rem' }}>Loading products...</div>
             ) : filteredProducts.length === 0 ? (
-                <div style={{ color: '#888', textAlign: 'center', padding: '60px 0', background: '#181818', borderRadius: 8, border: '1px solid #333' }}>
-                    <i className="fas fa-box-open" style={{ fontSize: '3rem', marginBottom: 15, opacity: 0.5 }}></i>
-                    <p>No base products found.</p>
+                <div style={{ color: '#6b7280', textAlign: 'center', padding: '60px 0', background: '#ffffff', borderRadius: 14, border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                    <i className="fas fa-box-open" style={{ fontSize: '3rem', marginBottom: 15, opacity: 0.4, color: '#9ca3af' }}></i>
+                    <p style={{ margin: 0, fontWeight: 500 }}>No base products found.</p>
                 </div>
             ) : (
                 <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
                     {filteredProducts.map(p => {
                         const availableStorefront = isProductAvailable(p);
                         return (
-                            <div key={p.id} className="adm-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                                <div style={{ height: 200, background: '#111', position: 'relative' }}>
+                            <div key={p.id} className="adm-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid #e5e7eb', borderRadius: 14 }}>
+                                <div style={{ height: 200, background: '#f8fafc', position: 'relative', borderBottom: '1px solid #f1f5f9' }}>
                                     {p.cover_image || (p.colors && p.colors[0]?.frontImage) ? (
                                         <img src={p.cover_image || p.colors[0].frontImage} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
                                             <i className="fas fa-image" style={{ fontSize: '3rem' }}></i>
                                         </div>
                                     )}
                                     <div style={{
                                         position: 'absolute', top: 12, right: 12,
-                                        background: availableStorefront ? 'rgba(40, 167, 69, 0.9)' : 'rgba(220, 53, 69, 0.9)',
-                                        color: 'white', padding: '4px 10px', borderRadius: 12, fontSize: '0.7rem', fontWeight: 'bold'
+                                        background: availableStorefront ? 'rgba(16, 185, 129, 0.95)' : 'rgba(239, 68, 68, 0.95)',
+                                        color: 'white', padding: '4px 10px', borderRadius: 12, fontSize: '0.7rem', fontWeight: 700,
+                                        letterSpacing: '0.5px'
                                     }}>
                                         {availableStorefront ? 'Available' : 'Unavailable'}
                                     </div>
                                     <div style={{
                                         position: 'absolute', top: 12, left: 12,
-                                        background: 'rgba(0,0,0,0.7)',
-                                        color: 'var(--gold)', padding: '4px 10px', borderRadius: 4, fontSize: '0.7rem', fontWeight: 'bold',
-                                        textTransform: 'uppercase', letterSpacing: '1px'
+                                        background: 'rgba(17, 17, 20, 0.85)',
+                                        color: 'var(--gold, #C5A059)', padding: '4px 10px', borderRadius: 6, fontSize: '0.7rem', fontWeight: 700,
+                                        textTransform: 'uppercase', letterSpacing: '0.5px'
                                     }}>
                                         {p.category}
                                     </div>
                                 </div>
                                 <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                    <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', color: 'black' }}>{p.title}</h3>
+                                    <h3 style={{ margin: '0 0 10px 0', fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>{p.title}</h3>
                                     
-                                    <div style={{ display: 'flex', gap: 15, marginBottom: 15, fontSize: '0.8rem', color: '#aaa' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                            <i className="fas fa-tag"></i> ₹{p.cost}
+                                    <div style={{ display: 'flex', gap: 15, marginBottom: 15, fontSize: '0.8rem', color: '#6b7280' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, color: '#111827' }}>
+                                            <i className="fas fa-tag" style={{ color: '#C5A059' }}></i> ₹{p.cost}
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, textTransform: 'capitalize' }}>
                                             <i className="fas fa-venus-mars"></i> {p.gender}
@@ -1684,40 +1675,41 @@ function MfgProducts() {
                                                 const isAvail = c.available !== false;
                                                 return (
                                                     <div key={i} title={`${c.colorName} ${isAvail ? '' : '(Unavailable)'}`} style={{
-                                                        width: 16, height: 16, borderRadius: '50%', background: c.color, 
-                                                        border: isAvail ? '1px solid #555' : '1px dashed #ff4d4d',
+                                                        width: 18, height: 18, borderRadius: '50%', background: c.color, 
+                                                        border: isAvail ? '1px solid #d1d5db' : '1px dashed #ef4444',
                                                         position: 'relative',
+                                                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                                                         opacity: isAvail ? 1 : 0.4
                                                     }}>
                                                         {!isAvail && (
                                                             <div style={{
-                                                                position: 'absolute', top: 1, left: 6, width: 2, height: 12, background: '#ff4d4d', transform: 'rotate(45deg)'
+                                                                position: 'absolute', top: 2, left: 7, width: 2, height: 12, background: '#ef4444', transform: 'rotate(45deg)'
                                                             }} />
                                                         )}
                                                     </div>
                                                 );
                                             })
                                         ) : (
-                                            <span style={{ fontSize: '0.75rem', color: '#666' }}>No colors</span>
+                                            <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>No colors</span>
                                         )}
                                     </div>
 
                                     {/* Print Styles Preview */}
                                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 'auto' }}>
                                         {(p.printing_styles || p.printingStyles || []).map((ps, i) => (
-                                            <span key={i} style={{ fontSize: '0.7rem', background: '#333', color: '#ccc', padding: '2px 8px', borderRadius: 4 }}>
+                                            <span key={i} style={{ fontSize: '0.7rem', background: '#f3f4f6', color: '#4b5563', border: '1px solid #e5e7eb', padding: '3px 8px', borderRadius: 6, fontWeight: 500 }}>
                                                 {ps.style} ({ps.placements?.length || 0})
                                             </span>
                                         ))}
                                     </div>
                                 </div>
                                 
-                                <div style={{ display: 'flex', borderTop: '1px solid #333' }}>
-                                    <button onClick={() => handleEditClick(p)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#000000', cursor: 'pointer', borderRight: '1px solid #333', transition: 'background 0.2s' }} onMouseOver={e => e.target.style.background = 'rgba(255,255,255,0.05)'} onMouseOut={e => e.target.style.background = 'transparent'}>
-                                        <i className="fas fa-edit"></i> Edit
+                                <div style={{ display: 'flex', borderTop: '1px solid #e5e7eb' }}>
+                                    <button onClick={() => handleEditClick(p)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#111827', fontWeight: 600, cursor: 'pointer', borderRight: '1px solid #e5e7eb', transition: 'background 0.2s', fontSize: '0.85rem' }} onMouseOver={e => e.target.style.background = '#f9fafb'} onMouseOut={e => e.target.style.background = 'transparent'}>
+                                        <i className="fas fa-edit" style={{ marginRight: 6 }}></i> Edit
                                     </button>
-                                    <button onClick={() => setPendingDeleteProduct(p.id)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#dc3545', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.target.style.background = 'rgba(220,53,69,0.1)'} onMouseOut={e => e.target.style.background = 'transparent'}>
-                                        <i className="fas fa-trash"></i> Delete
+                                    <button onClick={() => setPendingDeleteProduct(p.id)} style={{ flex: 1, padding: '12px', background: 'transparent', border: 'none', color: '#dc3545', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', fontSize: '0.85rem' }} onMouseOver={e => e.target.style.background = '#fef2f2'} onMouseOut={e => e.target.style.background = 'transparent'}>
+                                        <i className="fas fa-trash" style={{ marginRight: 6 }}></i> Delete
                                     </button>
                                 </div>
                             </div>
@@ -1727,17 +1719,17 @@ function MfgProducts() {
             )}
 
             {pendingDeleteProduct && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h3>Delete Product</h3>
+                <div className="modal-overlay" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
+                    <div className="modal-content" style={{ background: '#ffffff', borderRadius: 14, border: '1px solid #e5e7eb', color: '#111827', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+                        <div className="modal-header" style={{ borderBottom: '1px solid #e5e7eb', padding: '16px 20px' }}>
+                            <h3 style={{ margin: 0, color: '#111827', fontSize: '1.1rem', fontWeight: 700 }}>Delete Product</h3>
                         </div>
-                        <div className="modal-body">
+                        <div className="modal-body" style={{ padding: '20px', color: '#4b5563', fontSize: '0.9rem' }}>
                             Are you sure you want to permanently delete this product?
                         </div>
-                        <div className="modal-footer">
-                            <button className="adm-settings__btn" style={{ background: '#3a3a3c', marginTop: 0 }} onClick={() => setPendingDeleteProduct(null)}>Cancel</button>
-                            <button className="adm-settings__btn" style={{ background: '#dc3545', color: '#fff', marginTop: 0 }} onClick={executeDelete}>Delete</button>
+                        <div className="modal-footer" style={{ borderTop: '1px solid #e5e7eb', padding: '14px 20px', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                            <button className="adm-settings__btn" style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', marginTop: 0, borderRadius: 20, padding: '8px 18px' }} onClick={() => setPendingDeleteProduct(null)}>Cancel</button>
+                            <button className="adm-settings__btn" style={{ background: '#dc3545', color: '#fff', marginTop: 0, borderRadius: 20, padding: '8px 20px' }} onClick={executeDelete}>Delete</button>
                         </div>
                     </div>
                 </div>
