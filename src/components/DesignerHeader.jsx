@@ -46,15 +46,52 @@ function DesignerHeader() {
     return (
         <header className="dsn-header">
             <div className="dsn-header__inner">
-                <div className="dsn-header__left" onClick={() => navigate('/designer')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontFamily: "'Cinzel', 'Cormorant Garamond', serif", fontSize: '1.05rem', letterSpacing: '2px', fontWeight: '700', color: 'var(--gold, #C5A059)' }}>
-                            <img src="/dp-logo.png" alt="ASAT Designer Paradise" style={{ width: '30px', height: '30px', marginRight: '8px', marginBottom: '5px' }} />
-                        </span>
+                <div className="dsn-header__left" onClick={() => navigate('/designer')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+                        <img 
+                            src="/logo.png" 
+                            alt="ASAT Designer Paradise" 
+                            style={{ 
+                                height: '24px', 
+                                width: 'auto', 
+                                objectFit: 'contain', 
+                                display: 'block' 
+                            }} 
+                        />
                         {designerName && (
-                            <span style={{color: 'rgba(0, 0, 0, 0.7)', fontFamily: "'Montserrat', sans-serif", fontSize: '0.72rem', letterSpacing: '1px', textTransform: 'uppercase' , marginRight: '10px'}}>
-                                {designerName}
-                            </span>
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '6px', 
+                                marginTop: '4px',
+                                lineHeight: 1 
+                            }}>
+                                <span style={{
+                                    color: 'var(--gold, #C5A059)',
+                                    fontFamily: "'Montserrat', sans-serif",
+                                    fontSize: '0.62rem',
+                                    fontWeight: '700',
+                                    letterSpacing: '1.5px',
+                                    textTransform: 'uppercase'
+                                }}>
+                                    Designer
+                                </span>
+                                <span style={{ color: '#bbb', fontSize: '0.55rem' }}>•</span>
+                                <span style={{
+                                    color: '#222222',
+                                    fontFamily: "'Montserrat', sans-serif",
+                                    fontSize: '0.7rem',
+                                    fontWeight: '600',
+                                    letterSpacing: '0.8px',
+                                    textTransform: 'uppercase',
+                                    maxWidth: '220px',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                }}>
+                                    {designerName}
+                                </span>
+                            </div>
                         )}
                     </div>
                 </div>
