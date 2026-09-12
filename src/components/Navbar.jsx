@@ -545,7 +545,7 @@ function Navbar() {
                     {/* LEFT: Logo + Nav Links */}
                     <div className="blu-header__left">
                         <Link to="/" className="blu-header__brand-logo" aria-label="ASAT Home">
-                            <img src="/logo.png" alt="AS SIMPLE AS THAT" />
+                            <img src="/logo.png" alt="ASAT Designer Paradise" />
                         </Link>
                         <div className="blu-header__nav-links">
                             <Link to="/products?sort=newest" className="blu-header__nav-link">
@@ -763,7 +763,7 @@ function Navbar() {
                     <nav className="blu-drawer" aria-label="Site navigation">
                         <div className="blu-drawer__top">
                             <span className="blu-drawer__logo-text">
-                                <img src="/logo.png" alt="AS SIMPLE AS THAT" style={{ height: '30px', objectFit: 'contain' }} />
+                                <img src="/logo.png" alt="ASAT Designer Paradise" style={{ height: '30px', objectFit: 'contain' }} />
                             </span>
                             <button
                                 style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}

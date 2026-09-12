@@ -233,7 +233,7 @@ function MasterLogin() {
             <div className="auth-image-side">
                 <div className="auth-image-side__content">
                     <div className="auth-image-side__icon"><i className="fas fa-shield-alt"></i></div>
-                    <h1 className="auth-brand-name">As Simple as That</h1>
+                    <h1 className="auth-brand-name">ASAT Designer Paradise</h1>
                     <p className="auth-brand-tagline">**A Designer Paradise**</p>
                     <div className="auth-brand-role">Master Admin</div>
                 </div>

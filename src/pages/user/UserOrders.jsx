@@ -629,9 +629,11 @@ function UserOrders() {
                                                                 import('../../utils/invoiceGenerator').then(module => {
                                                                     module.generateInvoice({
                                                                         ...o,
-                                                                        orderId: o.order_id || o.id.slice(0, 10).toUpperCase(),
+                                                                        orderId: o.order_id || (typeof o.id === 'string' ? o.id.slice(0, 10).toUpperCase() : o.id),
                                                                         createdAt: o.created_at,
-                                                                        customerName: o.customer_name,
+                                                                        customerName: o.customer_name || user?.name || user?.email?.split('@')[0],
+                                                                        email: o.email || user?.email,
+                                                                        phone: o.phone || o.contact,
                                                                         totalAmount: o.total_amount
                                                                     });
                                                                 }).catch(err => {

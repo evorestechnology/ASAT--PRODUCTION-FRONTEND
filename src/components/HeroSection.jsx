@@ -49,7 +49,7 @@ function HeroSection() {
                 ))}
 
                 <div className="hero-content">
-                    <h1>As Simple as That</h1>
+                    <h1>ASAT Designer Paradise</h1>
                     <p className="hero-subtitle">"**A Designer Paradise**"</p>
                     <button className="cta-gold" onClick={() => navigate('/products')}>
                         EXPLORE COLLECTION

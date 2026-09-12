@@ -438,7 +438,7 @@ function MasterHeader() {
 
                 <div className="mst-topbar__brand" onClick={() => navigate('/master')}>
                     <div className="mst-brand__title">
-                        AS SIMPLE AS <span>THAT</span>
+                        ASAT Designer Paradise
                     </div>
                     <div className="mst-brand__tagline">
                         ★ Master Administration Portal ★

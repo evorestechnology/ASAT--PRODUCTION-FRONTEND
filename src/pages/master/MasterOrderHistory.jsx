@@ -20,12 +20,16 @@ function MasterOrderHistory() {
             const data = await apiFetch('/api/orders');
 
             const list = (data || []).map(o => ({
+                ...o,
                 id: o.id,
-                orderId: o.order_id,
+                orderId: o.order_id || o.id,
                 userId: o.user_id,
                 customerName: o.customer_name,
+                userEmail: o.users?.email || o.email,
                 items: o.items,
                 totalAmount: Number(o.total_amount || 0),
+                shippingAmount: o.shipping_amount !== undefined ? Number(o.shipping_amount) : undefined,
+                taxAmount: o.tax_amount !== undefined ? Number(o.tax_amount) : undefined,
                 designerEarnings: Number(o.designer_earnings || 0),
                 mfgEarnings: Number(o.mfg_earnings || 0),
                 platformEarnings: Number(o.platform_earnings || 0),
@@ -435,11 +439,13 @@ function MasterOrderHistory() {
                                                         import('../../utils/invoiceGenerator').then(module => {
                                                             module.generateInvoice({
                                                                 ...o,
-                                                                orderId: o.orderId || o.id,
+                                                                orderId: o.orderId || o.order_id || o.id,
                                                                 createdAt: o.createdAt || o.created_at,
-                                                                customerName: o.userId || o.user,
+                                                                customerName: o.customerName || o.customer_name || (o.userEmail ? o.userEmail.split('@')[0] : 'Valued Customer'),
+                                                                email: o.userEmail || o.email,
+                                                                phone: o.phone || o.contact,
                                                                 address: o.address || o.shippingAddress,
-                                                                totalAmount: o.totalAmount || o.revenue
+                                                                totalAmount: o.totalAmount || o.total_amount || o.revenue
                                                             });
                                                         }).catch(err => {
                                                             console.error("Failed to load invoice generator:", err);

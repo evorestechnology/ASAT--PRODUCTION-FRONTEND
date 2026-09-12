@@ -394,9 +394,11 @@ function UserTracking() {
                                                         import('../../utils/invoiceGenerator').then(module => {
                                                             module.generateInvoice({
                                                                 ...order,
-                                                                orderId: order.order_id || order.id?.slice(0, 10).toUpperCase(),
+                                                                orderId: order.order_id || (typeof order.id === 'string' ? order.id.slice(0, 10).toUpperCase() : order.id),
                                                                 createdAt: order.created_at,
-                                                                customerName: order.customer_name,
+                                                                customerName: order.customer_name || 'Valued Customer',
+                                                                email: order.email || order.users?.email,
+                                                                phone: order.phone || order.contact,
                                                                 totalAmount: order.total_amount
                                                             });
                                                         }).catch(err => {

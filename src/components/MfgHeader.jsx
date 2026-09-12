@@ -25,7 +25,7 @@ function MfgHeader() {
             <div className="adm-header__top">
                 <span className="adm-header__role">Manufacturer</span>
                 <div className="adm-header__brand" onClick={() => navigate('/mfg')}>
-                    <div className="adm-header__logo">As Simple as That</div>
+                    <div className="adm-header__logo">ASAT Designer Paradise</div>
                     <div className="adm-header__tagline">**A Designer Paradise**</div>
                 </div>
                 <div className="adm-header__actions">

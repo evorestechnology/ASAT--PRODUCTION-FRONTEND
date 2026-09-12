@@ -7,7 +7,7 @@ const TermsModal = ({ isOpen, onClose }) => {
         {
             title: "1. Order Cancellation Policy",
             content: [
-                "All products available on As Simple as That are manufactured, customized, printed, embroidered, or sourced specifically for customer orders.",
+                "All products available on ASAT Designer Paradise are manufactured, customized, printed, embroidered, or sourced specifically for customer orders.",
                 "Once an order has been successfully placed and payment has been confirmed, the order enters processing immediately.",
                 "Therefore:",
                 "• Order cancellations are not permitted after successful order placement.",
@@ -18,7 +18,7 @@ const TermsModal = ({ isOpen, onClose }) => {
         {
             title: "2. Return Policy",
             content: [
-                "As Simple as That follows a strict No Return Policy.",
+                "ASAT Designer Paradise follows a strict No Return Policy.",
                 "Products shall not be accepted for return on the basis of:",
                 "• Change of mind.",
                 "• Incorrect size selected by the customer.",
@@ -49,7 +49,7 @@ const TermsModal = ({ isOpen, onClose }) => {
         {
             title: "4. Damaged or Incorrect Products",
             content: [
-                "If a customer receives a damaged product, a defective product, or an incorrect product, the customer must notify As Simple as That customer support within 1-2 hours of delivery.",
+                "If a customer receives a damaged product, a defective product, or an incorrect product, the customer must notify ASAT Designer Paradise customer support within 1-2 hours of delivery.",
                 "The complaint must include:",
                 "• Order number.",
                 "• Clear photographs of the product.",
@@ -101,7 +101,7 @@ const TermsModal = ({ isOpen, onClose }) => {
                 
                 <div style={{ fontFamily: 'Montserrat, sans-serif', color: 'var(--dark)' }}>
                     <p style={{ marginBottom: '20px', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                        By accessing and using <strong>As Simple as That</strong>, you agree to be bound by the following terms, conditions, and policies. Please read them carefully before making any purchase.
+                        By accessing and using <strong>ASAT Designer Paradise</strong>, you agree to be bound by the following terms, conditions, and policies. Please read them carefully before making any purchase.
                     </p>
 
                     {sections.map((section, idx) => (

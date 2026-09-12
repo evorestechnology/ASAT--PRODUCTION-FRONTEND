@@ -288,14 +288,14 @@ function UserTerms() {
                         CUSTOMER TERMS &amp; CONDITIONS
                     </h1>
                     <p style={{ fontFamily: 'Montserrat, sans-serif', color: '#666', fontSize: '0.9rem' }}>
-                        As Simple as That — Terms of Service, Shopping &amp; Store Policies
+                        ASAT Designer Paradise — Terms of Service, Shopping &amp; Store Policies
                     </p>
                 </div>
 
                 <div style={{ fontFamily: 'Montserrat, sans-serif', color: '#2d3748', lineHeight: '1.7' }}>
                     <div style={{ background: 'rgba(197,160,89,0.08)', borderLeft: '4px solid var(--gold, #C5A059)', padding: '16px 20px', borderRadius: '0 8px 8px 0', marginBottom: '40px' }}>
                         <p style={{ margin: 0, fontSize: '0.92rem', color: '#4a5568' }}>
-                            Welcome to <strong>As Simple as That</strong>. By placing an order, browsing our website, or participating in our wallet/referral programs, you agree to be bound by the terms, policies, and conditions outlined below.
+                            Welcome to <strong>ASAT Designer Paradise</strong>. By placing an order, browsing our website, or participating in our wallet/referral programs, you agree to be bound by the terms, policies, and conditions outlined below.
                         </p>
                     </div>
 

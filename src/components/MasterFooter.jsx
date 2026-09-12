@@ -5,7 +5,7 @@ function MasterFooter() {
         <footer style={{ marginTop: 'auto' }}>
             <div className="footer-content" style={{ display: 'flex', justifyContent: 'space-between', padding: '40px 5%', background: 'var(--dark)', color: 'white' }}>
                 <div className="footer-info">
-                    <h4>As Simple as That</h4>
+                    <h4>ASAT Designer Paradise</h4>
                     <p>Global Headquarters, Tech Park</p>
                     <p>Contact: +1 000 999 888 | master@simpleasthat.com</p>
                 </div>
