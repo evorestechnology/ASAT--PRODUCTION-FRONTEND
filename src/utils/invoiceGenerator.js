@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { LOGO_BASE64 } from './logoData.js';
 
 /**
  * Format currency to Indian Rupees (Rs. X,XX,XXX.XX)
@@ -268,86 +269,69 @@ export const generateInvoice = (order) => {
     doc.rect(0, 0, pageWidth, 4, 'F');
 
     // --- HEADER SECTION ---
-    let startY = 15;
-
-    // Brand Left
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(30, 34, 41);
-    doc.text("ASAT", 14, startY);
-
-    doc.setFontSize(7.5);
-    doc.setTextColor(197, 160, 89);
-    doc.text("DESIGNER PARADISE", 14, startY + 4.5);
+    // 1. Brand Logo Left (same as website)
+    try {
+        doc.addImage(LOGO_BASE64, 'PNG', 14, 8, 48, 48 / 3.622);
+    } catch {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(20);
+        doc.setTextColor(30, 34, 41);
+        doc.text("ASAT", 14, 15);
+        doc.setFontSize(7.5);
+        doc.setTextColor(197, 160, 89);
+        doc.text("DESIGNER PARADISE", 14, 19.5);
+    }
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
-    doc.setTextColor(60, 65, 75);
-    doc.text("Evores Technology LLP", 14, startY + 10);
+    doc.setTextColor(50, 55, 65);
+    doc.text("Evores Technology LLP", 14, 25.5);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 105, 115);
-    doc.text("GSTIN: 37AAMFE8739J1ZQ  |  State: Andhra Pradesh (37)", 14, startY + 14.5);
-    doc.text("Email: support@asat.shop  |  Web: www.asat.shop", 14, startY + 18.5);
+    doc.text("GSTIN: 37AAMFE8739J1ZQ  |  State: Andhra Pradesh (37)", 14, 29.5);
+    doc.text("Email: contact@assimpleasthat.shop  |  Web: designerparadise.shop", 14, 33.5);
 
     // Right Header: TAX INVOICE
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(197, 160, 89);
-    doc.text("TAX INVOICE", pageWidth - 14, startY, { align: "right" });
+    doc.text("TAX INVOICE", pageWidth - 14, 14, { align: "right" });
 
     doc.setFont("helvetica", "italic");
     doc.setFontSize(7.5);
     doc.setTextColor(120, 125, 135);
-    doc.text("ORIGINAL FOR RECIPIENT", pageWidth - 14, startY + 4.5, { align: "right" });
-
-    // Status Pill Badge
-    let statusColor = [40, 167, 69]; // Default green for paid/completed
-    if (rawStatus === 'CANCELLED') statusColor = [220, 53, 69];
-    else if (rawStatus === 'PENDING') statusColor = [230, 140, 20];
-    else if (rawStatus === 'SHIPPED' || rawStatus === 'MANUFACTURING') statusColor = [0, 123, 255];
-
-    const badgeText = rawStatus;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    const badgeWidth = doc.getTextWidth(badgeText) + 8;
-    const badgeX = pageWidth - 14 - badgeWidth;
-    const badgeY = startY + 7.5;
-
-    doc.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-    doc.roundedRect(badgeX, badgeY, badgeWidth, 5.5, 1.5, 1.5, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text(badgeText, badgeX + (badgeWidth / 2), badgeY + 4, { align: "center" });
+    doc.text("ORIGINAL FOR RECIPIENT", pageWidth - 14, 18.5, { align: "right" });
 
     // Invoice Meta Right-aligned
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(40, 44, 52);
-    doc.text(`Invoice No: #${orderId}`, pageWidth - 14, startY + 17.5, { align: "right" });
+    doc.text(`Invoice No: #${orderId}`, pageWidth - 14, 25.5, { align: "right" });
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(7.8);
     doc.setTextColor(90, 95, 105);
-    doc.text(`Invoice Date: ${orderDate}`, pageWidth - 14, startY + 22, { align: "right" });
+    doc.text(`Invoice Date: ${orderDate}`, pageWidth - 14, 29.5, { align: "right" });
     if (paymentId) {
-        const displayPid = paymentId.length > 20 ? `${paymentId.slice(0, 20)}...` : paymentId;
-        doc.text(`Payment Ref: ${displayPid}`, pageWidth - 14, startY + 26, { align: "right" });
+        const displayPid = paymentId.length > 22 ? `${paymentId.slice(0, 22)}...` : paymentId;
+        doc.text(`Payment Ref: ${displayPid}`, pageWidth - 14, 33.5, { align: "right" });
     }
 
     // Divider Rule
-    const dividerY = startY + 30;
+    const dividerY = 37.5;
     doc.setDrawColor(225, 228, 235);
     doc.setLineWidth(0.3);
     doc.line(14, dividerY, pageWidth - 14, dividerY);
 
-    // --- BILL TO / SHIP TO & ORDER DETAILS CARDS ---
+    // --- CUSTOMER DETAILS & ORDER DETAILS CARDS ---
     const cardY = dividerY + 4;
     const cardWidth = (pageWidth - 28 - 6) / 2; // Two columns with 6mm gap
     const leftX = 14;
     const rightX = 14 + cardWidth + 6;
 
-    // Card 1: Bill To
+    // Card 1: Customer Details
     doc.setFillColor(250, 251, 253);
     doc.setDrawColor(230, 233, 240);
     doc.roundedRect(leftX, cardY, cardWidth, 34, 1.5, 1.5, 'FD');
@@ -355,7 +339,7 @@ export const generateInvoice = (order) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(197, 160, 89);
-    doc.text("BILL TO / SHIP TO", leftX + 4, cardY + 5.5);
+    doc.text("CUSTOMER DETAILS", leftX + 4, cardY + 5.5);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
@@ -378,7 +362,7 @@ export const generateInvoice = (order) => {
     const addrLines = doc.splitTextToSize(address, cardWidth - 8);
     doc.text(addrLines.slice(0, 2), leftX + 4, contactY);
 
-    // Card 2: Order Metadata
+    // Card 2: Order Metadata (without Tracking ID)
     doc.setFillColor(250, 251, 253);
     doc.roundedRect(rightX, cardY, cardWidth, 34, 1.5, 1.5, 'FD');
 
@@ -391,24 +375,21 @@ export const generateInvoice = (order) => {
     doc.setFontSize(8);
     doc.setTextColor(70, 75, 85);
 
-    doc.text("Order Reference:", rightX + 4, cardY + 10.5);
+    doc.text("Order Reference:", rightX + 4, cardY + 11.5);
     doc.setFont("helvetica", "bold");
-    doc.text(String(orderId), rightX + 32, cardY + 10.5);
+    doc.text(String(orderId), rightX + 32, cardY + 11.5);
 
     doc.setFont("helvetica", "normal");
-    doc.text("Order Date:", rightX + 4, cardY + 15);
-    doc.text(orderDate, rightX + 32, cardY + 15);
+    doc.text("Order Date:", rightX + 4, cardY + 17.5);
+    doc.text(orderDate, rightX + 32, cardY + 17.5);
 
-    doc.text("Place of Supply:", rightX + 4, cardY + 19.5);
+    doc.text("Place of Supply:", rightX + 4, cardY + 23.5);
     doc.setFont("helvetica", "bold");
-    doc.text(gstInfo.placeOfSupply, rightX + 32, cardY + 19.5);
+    doc.text(gstInfo.placeOfSupply, rightX + 32, cardY + 23.5);
 
     doc.setFont("helvetica", "normal");
-    doc.text("Tracking ID:", rightX + 4, cardY + 24);
-    doc.text(trackingId || 'Standard Dispatch', rightX + 32, cardY + 24);
-
-    doc.text("Payment Mode:", rightX + 4, cardY + 28.5);
-    doc.text(paymentId ? 'Prepaid / Online' : 'Online', rightX + 32, cardY + 28.5);
+    doc.text("Payment Mode:", rightX + 4, cardY + 29.5);
+    doc.text(paymentId ? 'Prepaid / Online' : 'Online', rightX + 32, cardY + 29.5);
 
     // --- ITEMS TABLE ---
     const tableBody = items.map((item, idx) => {
@@ -570,7 +551,7 @@ export const generateInvoice = (order) => {
 
     // --- LEFT COLUMN: AMOUNT IN WORDS, GST STATUTORY BOX & DECLARATIONS ---
     // Strictly confine width so text NEVER overflows or touches summaryX!
-    const notesWidth = summaryX - 14 - 6;
+    const notesWidth = 92; // 14mm to 106mm, leaving 10mm gap before summaryX (116mm)
     let curY = finalY;
 
     // 1. Amount in Words
@@ -586,7 +567,7 @@ export const generateInvoice = (order) => {
     const wordsLines = doc.splitTextToSize(words, notesWidth);
     doc.text(wordsLines, 14, curY + 8);
 
-    curY += 10 + (wordsLines.length * 3.8);
+    curY += 9 + (wordsLines.length * 3.8);
 
     // 2. GST Statutory & Compliance Details Card
     const gstBoxHeight = 25;
@@ -609,13 +590,13 @@ export const generateInvoice = (order) => {
 
     curY += gstBoxHeight + 5;
 
-    // 3. Terms & Tax Declarations (With splitTextToSize on EVERY line)
+    // 3. Terms & Tax Declarations (With splitTextToSize on EVERY line, no overlap)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
     doc.setTextColor(100, 105, 115);
     doc.text("Terms & Tax Declarations:", 14, curY);
 
-    curY += 3.5;
+    curY += 3.8;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.8);
     doc.setTextColor(120, 125, 135);
@@ -624,13 +605,13 @@ export const generateInvoice = (order) => {
         "• All prices are inclusive of GST and applicable duties from our end.",
         "• For international shipments, destination import duties & taxes (if levied) are the responsibility of the recipient.",
         "• Return/exchange request window is 36 hours from confirmed delivery.",
-        "• For queries, warranty, or customer assistance: support@asat.shop"
+        "• For queries, warranty, or customer assistance: contact@assimpleasthat.shop"
     ];
 
     notes.forEach(nt => {
         const wrapped = doc.splitTextToSize(nt, notesWidth);
         doc.text(wrapped, 14, curY);
-        curY += (wrapped.length * 3.2);
+        curY += (wrapped.length * 3.4);
     });
 
     // --- FOOTER ON ALL PAGES ---
@@ -638,19 +619,18 @@ export const generateInvoice = (order) => {
     for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
 
-        // Signatory on final page
+        // Signatory on final page (Removed Authorized Signatory and Digital Stamp line)
         if (i === totalPages) {
-            const sigY = pageHeight - 24;
+            const sigY = pageHeight - 22;
             doc.setFont("helvetica", "bold");
             doc.setFontSize(8);
             doc.setTextColor(50, 55, 65);
-            doc.text("For Evores Technology LLP", pageWidth - 14, sigY - 7, { align: "right" });
+            doc.text("For Evores Technology LLP", pageWidth - 14, sigY - 2, { align: "right" });
 
             doc.setFont("helvetica", "italic");
-            doc.setFontSize(7.5);
+            doc.setFontSize(7.2);
             doc.setTextColor(120, 125, 135);
-            doc.text("Authorized Signatory (Digital Stamp)", pageWidth - 14, sigY - 3, { align: "right" });
-            doc.text("Computer-generated invoice. No physical signature required.", pageWidth - 14, sigY + 1, { align: "right" });
+            doc.text("Computer-generated invoice. No physical signature required.", pageWidth - 14, sigY + 2, { align: "right" });
         }
 
         doc.setDrawColor(220, 224, 230);
@@ -660,7 +640,7 @@ export const generateInvoice = (order) => {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(130, 135, 145);
-        doc.text("Evores Technology LLP  •  Brand: ASAT Designer Paradise  •  www.asat.shop", 14, pageHeight - 9);
+        doc.text("Evores Technology LLP  •  Brand: ASAT Designer Paradise  •  designerparadise.shop", 14, pageHeight - 9);
         doc.text(`Page ${i} of ${totalPages}`, pageWidth - 14, pageHeight - 9, { align: "right" });
     }
 

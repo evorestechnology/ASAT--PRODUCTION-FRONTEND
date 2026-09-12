@@ -1685,7 +1685,7 @@ function DesignerUpload() {
                                 }}
                                 style={{
                                     padding: '8px 16px', background: designTags.length >= 5 ? '#ccc' : 'var(--gold)',
-                                    color: '#000', border: 'none', borderRadius: 4, fontWeight: 700, cursor: designTags.length >= 5 ? 'not-allowed' : 'pointer'
+                                    color: '#ffffff', border: 'none', borderRadius: 4, fontWeight: 700, cursor: designTags.length >= 5 ? 'not-allowed' : 'pointer'
                                 }}
                             >
                                 Add
