@@ -613,7 +613,7 @@ export const generateInvoice = (order) => {
     const notes = [
         "• All prices are subject to applicable GST and statutory duties as detailed above.",
         "• For international shipments, destination import duties & taxes (if levied) are the responsibility of the recipient.",
-        "• Return/exchange request window is 36 hours from confirmed delivery.",
+        "• Return/exchange request window is 36 hours from confirmed delivery time.",
         "• For queries, warranty, or customer assistance: contact@assimpleasthat.shop"
     ];
 
