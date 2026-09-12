@@ -1144,69 +1144,71 @@
 
 /* ── Calculator Card ── */
 .fin-calc {
-    background: linear-gradient(160deg, #0f1117 0%, #1a1a2e 100%);
-    border-radius: 16px;
+    background: #ffffff;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-    border: 1px solid rgba(197,160,89,0.3);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
 }
 .fin-calc__header {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 20px 22px;
-    border-bottom: 1px solid rgba(197,160,89,0.25);
+    padding: 20px 24px;
+    border-bottom: 1px solid #f3f4f6;
+    background: #ffffff;
 }
-.fin-calc__icon { font-size: 1.8rem; }
+.fin-calc__icon { font-size: 1.6rem; }
 .fin-calc__header h2 {
     font-family: 'Cinzel', serif;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: var(--admin-gold);
+    color: #111827;
     margin: 0 0 3px;
+    letter-spacing: 0.8px;
 }
 .fin-calc__header p {
     font-size: 0.75rem;
-    color: #888;
+    color: #6b7280;
     margin: 0;
 }
-.fin-calc__body { padding: 20px 22px; }
+.fin-calc__body { padding: 22px 24px; }
 
 .fin-calc .fin-input {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.12);
-    color: #f0f0f0;
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #111827;
 }
 .fin-calc .fin-input:focus {
-    border-color: var(--admin-gold);
-    background: rgba(255,255,255,0.1);
-    box-shadow: 0 0 0 3px rgba(197,160,89,0.2);
+    border-color: #111114;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(17,17,20,0.08);
 }
-.fin-calc .fin-field__label { color: #aaa; }
-.fin-calc .fin-field__hint { color: #666; }
+.fin-calc .fin-field__label { color: #374151; font-weight: 600; }
+.fin-calc .fin-field__hint { color: #9ca3af; }
 
 .fin-calc__group {
     margin-bottom: 20px;
-    padding: 14px;
-    background: rgba(255,255,255,0.04);
+    padding: 16px;
+    background: #f9fafb;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid #e5e7eb;
 }
 .fin-calc__group-label {
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--admin-gold);
+    letter-spacing: 0.8px;
+    color: #111827;
     margin-bottom: 12px;
 }
 
 /* Results */
 .fin-calc__results {
-    background: rgba(197,160,89,0.06);
-    border: 1px solid rgba(197,160,89,0.2);
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: 16px;
+    padding: 18px;
     margin-top: 8px;
 }
 .fin-calc__results-title {
@@ -1214,46 +1216,48 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: var(--admin-gold);
+    color: #111827;
     margin-bottom: 12px;
 }
-.fin-calc__result-rows { display: flex; flex-direction: column; gap: 6px; }
+.fin-calc__result-rows { display: flex; flex-direction: column; gap: 8px; }
 .fin-calc__result-row {
     display: flex;
     justify-content: space-between;
-    font-size: 0.8rem;
-    color: #ccc;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.82rem;
+    color: #4b5563;
+    padding: 5px 0;
+    border-bottom: 1px solid #f3f4f6;
 }
 .fin-calc__result-row--subtotal {
-    color: #fff;
-    font-weight: 600;
-    border-bottom: 1px solid rgba(197,160,89,0.3);
+    color: #111827;
+    font-weight: 700;
+    border-bottom: 1.5px solid #e5e7eb;
+    padding-top: 6px;
 }
-.fin-calc__highlight { color: var(--admin-gold); font-weight: 700; }
+.fin-calc__highlight { color: #C5A059; font-weight: 700; }
 
 .fin-calc__grand-total {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 14px;
-    padding: 14px 16px;
-    background: linear-gradient(135deg, rgba(197,160,89,0.15), rgba(197,160,89,0.08));
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: #111114;
     border-radius: 10px;
-    border: 1px solid rgba(197,160,89,0.4);
+    border: 1px solid #111114;
     font-family: 'Cinzel', serif;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: var(--admin-gold);
+    color: #C5A059;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .fin-calc__per-piece-final {
     text-align: center;
-    margin-top: 10px;
-    font-size: 0.78rem;
-    color: #888;
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: #6b7280;
 }
-.fin-calc__per-piece-final strong { color: #ccc; }
+.fin-calc__per-piece-final strong { color: #111827; }
 
 /* ── Markup Card ── */
 .fin-markup-card {

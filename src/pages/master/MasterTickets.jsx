@@ -361,46 +361,53 @@ function MasterTickets() {
                         position: 'fixed',
                         top: 0,
                         right: 0,
-                        width: '460px',
+                        width: '480px',
                         maxWidth: '90%',
                         height: '100%',
-                        background: 'rgba(18, 18, 18, 0.96)',
-                        borderLeft: '1px solid var(--gold)',
-                        boxShadow: '-10px 0 45px rgba(0, 0, 0, 0.6)',
+                        background: '#ffffff',
+                        borderLeft: '1px solid #e5e7eb',
+                        boxShadow: '-10px 0 45px rgba(0, 0, 0, 0.12)',
                         zIndex: 2000,
                         display: 'flex',
                         flexDirection: 'column',
                         fontFamily: "'Montserrat', sans-serif",
-                        color: 'white'
+                        color: '#111827'
                     }}>
                         {/* Header */}
                         <div style={{
-                            padding: '24px 20px',
-                            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                            padding: '22px 24px',
+                            borderBottom: '1px solid #f3f4f6',
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            background: '#ffffff'
                         }}>
                             <div>
-                                <h3 style={{ fontFamily: "'Cinzel', serif", margin: 0, color: 'var(--gold)', fontSize: '1.1rem', letterSpacing: 1 }}>
+                                <h3 style={{ fontFamily: "'Cinzel', serif", margin: 0, color: '#111827', fontSize: '1.1rem', fontWeight: 700, letterSpacing: '1px' }}>
                                     SUPPORT CHAT
                                 </h3>
-                                <div style={{ fontSize: '0.75rem', color: '#aaa', marginTop: 4 }}>
-                                    Ticket ID: {selectedTicket.id} | User: @{selectedTicket.username || selectedTicket.userId}
+                                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 4 }}>
+                                    Ticket ID: <span style={{ fontWeight: 600, color: '#111827' }}>#{selectedTicket.id}</span> • User: <span style={{ fontWeight: 600, color: '#111827' }}>@{selectedTicket.username || selectedTicket.userId}</span>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setSelectedTicket(null)}
                                 style={{
-                                    background: 'transparent',
+                                    background: '#f3f4f6',
                                     border: 'none',
-                                    color: '#aaa',
-                                    fontSize: '1.2rem',
+                                    borderRadius: '50%',
+                                    width: 34,
+                                    height: 34,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#6b7280',
+                                    fontSize: '1rem',
                                     cursor: 'pointer',
-                                    transition: 'color 0.2s'
+                                    transition: 'all 0.2s'
                                 }}
-                                onMouseEnter={(e) => e.target.style.color = 'var(--gold)'}
-                                onMouseLeave={(e) => e.target.style.color = '#aaa'}
+                                onMouseEnter={(e) => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#dc2626'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.color = '#6b7280'; }}
                             >
                                 <i className="fas fa-times"></i>
                             </button>
@@ -408,35 +415,43 @@ function MasterTickets() {
 
                         {/* Ticket Subject Box */}
                         <div style={{
-                            padding: '12px 20px',
-                            background: 'rgba(255, 255, 255, 0.03)',
-                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                            fontSize: '0.8rem',
-                            color: '#ccc'
+                            padding: '14px 24px',
+                            background: '#f9fafb',
+                            borderBottom: '1px solid #e5e7eb',
+                            fontSize: '0.82rem',
+                            color: '#374151'
                         }}>
-                            <strong>Subject:</strong> {selectedTicket.subject || selectedTicket.issue || selectedTicket.text || '—'}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                                <span><strong style={{ color: '#111827' }}>Subject:</strong> {selectedTicket.subject || selectedTicket.issue || selectedTicket.text || '—'}</span>
+                                <span className={`adm-badge adm-badge--${getStatusType(selectedTicket.status)}`}>
+                                    {selectedTicket.status || 'open'}
+                                </span>
+                            </div>
                             {selectedTicket.orderId && (
-                                <div style={{ marginTop: 8, padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <div><strong>Associated Order:</strong> {selectedTicket.orderId}</div>
+                                <div style={{ marginTop: 10, padding: '12px', background: '#ffffff', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid #e5e7eb' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ fontWeight: 600, color: '#111827' }}>Associated Order:</span>
+                                        <span style={{ fontFamily: 'monospace', color: '#6b7280' }}>#{selectedTicket.orderId}</span>
+                                    </div>
                                     {loadingOrder ? (
-                                        <div style={{ fontSize: '0.75rem', color: '#888' }}>Loading order details...</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Loading order details...</div>
                                     ) : selectedOrder ? (
-                                        <div style={{ fontSize: '0.75rem', color: '#bbb', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                            <div>Status: <span style={{ textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 600 }}>{selectedOrder.status}</span></div>
-                                            <div>Total: {selectedOrder.total_amount ? `$${selectedOrder.total_amount}` : '—'}</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#4b5563', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <div>Status: <span style={{ textTransform: 'uppercase', color: '#111827', fontWeight: 700 }}>{selectedOrder.status}</span></div>
+                                            <div>Total: <span style={{ fontWeight: 700, color: '#111827' }}>{selectedOrder.total_amount ? `₹${selectedOrder.total_amount}` : '—'}</span></div>
                                             {selectedOrder.items && (
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px' }}>
                                                     <strong>Items:</strong>
                                                     {selectedOrder.items.map((item, idx) => (
-                                                        <div key={idx} style={{ paddingLeft: '8px', color: '#999' }}>
-                                                            - {item.name} (Qty: {item.qty || 1}, Size: {item.size})
+                                                        <div key={idx} style={{ paddingLeft: '8px', color: '#6b7280' }}>
+                                                            • {item.name} (Qty: {item.qty || 1}, Size: {item.size})
                                                         </div>
                                                     ))}
                                                 </div>
                                             )}
                                         </div>
                                     ) : (
-                                        <div style={{ fontSize: '0.75rem', color: '#d32f2f' }}>Failed to load order details.</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#dc2626' }}>Failed to load order details.</div>
                                     )}
                                     
                                     {/* Evidence Previews */}
@@ -444,21 +459,21 @@ function MasterTickets() {
                                         const evidence = parseEvidence(selectedTicket.text || selectedTicket.description || '');
                                         if (evidence.length > 0) {
                                             return (
-                                                <div style={{ marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px' }}>
-                                                    <strong>Uploaded Evidence:</strong>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '5px' }}>
+                                                <div style={{ marginTop: '8px', borderTop: '1px solid #f3f4f6', paddingTop: '8px' }}>
+                                                    <strong style={{ color: '#111827', fontSize: '0.75rem' }}>Uploaded Evidence:</strong>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                                                         {evidence.map((ev, idx) => {
                                                             const isImage = ev.url.match(/\.(jpeg|jpg|gif|png)/i) || ev.label === 'Product Image';
                                                             const isVideo = ev.url.match(/\.(mp4|webm|ogg|mov)/i) || ev.label === 'Unboxing Video';
                                                             return (
-                                                                <div key={idx} style={{ background: 'rgba(0,0,0,0.2)', padding: '6px', borderRadius: '4px' }}>
-                                                                    <div style={{ fontSize: '0.72rem', color: 'var(--gold)', marginBottom: '4px' }}>{ev.label}</div>
+                                                                <div key={idx} style={{ background: '#f9fafb', padding: '8px', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
+                                                                    <div style={{ fontSize: '0.72rem', color: '#C5A059', fontWeight: 600, marginBottom: '4px' }}>{ev.label}</div>
                                                                     {isImage ? (
-                                                                        <img src={ev.url} alt="Evidence" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                                                        <img src={ev.url} alt="Evidence" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '4px', border: '1px solid #e5e7eb' }} />
                                                                     ) : isVideo ? (
                                                                         <video src={ev.url} controls style={{ width: '100%', maxHeight: '180px', borderRadius: '4px', background: '#000' }} />
                                                                     ) : (
-                                                                        <a href={ev.url} target="_blank" rel="noopener noreferrer" style={{ color: '#4fc3f7', textDecoration: 'underline', fontSize: '0.75rem' }}>
+                                                                        <a href={ev.url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', textDecoration: 'underline', fontSize: '0.75rem' }}>
                                                                             View File
                                                                         </a>
                                                                     )}
@@ -478,21 +493,21 @@ function MasterTickets() {
                         {/* Message Stream */}
                         <div style={{
                             flex: 1,
-                            padding: '20px',
+                            padding: '20px 24px',
                             overflowY: 'auto',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '12px',
-                            background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 100%)'
+                            gap: '14px',
+                            background: '#f8fafc'
                         }}>
                             {messages.length === 0 ? (
                                 <div style={{
                                     textAlign: 'center',
-                                    color: '#777',
+                                    color: '#9ca3af',
                                     margin: 'auto',
                                     fontSize: '0.85rem'
                                 }}>
-                                    <i className="fas fa-comments" style={{ fontSize: '2rem', marginBottom: 12, color: '#333', display: 'block' }}></i>
+                                    <i className="fas fa-comments" style={{ fontSize: '2.2rem', marginBottom: 12, color: '#d1d5db', display: 'block' }}></i>
                                     No messages yet. Send a reply below to initiate the chat.
                                 </div>
                             ) : (
@@ -503,24 +518,44 @@ function MasterTickets() {
                                             key={msg.id || i}
                                             style={{
                                                 alignSelf: isAdmin ? 'flex-end' : 'flex-start',
-                                                background: isAdmin ? 'var(--gold)' : 'rgba(255, 255, 255, 0.08)',
-                                                color: isAdmin ? '#000' : '#fff',
-                                                borderRadius: isAdmin ? '12px 12px 0 12px' : '12px 12px 12px 0',
-                                                padding: '10px 14px',
-                                                maxWidth: '80%',
-                                                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                                                fontSize: '0.85rem',
-                                                lineHeight: '1.4'
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: isAdmin ? 'flex-end' : 'flex-start',
+                                                maxWidth: '82%'
                                             }}
                                         >
-                                            <div style={{ fontWeight: isAdmin ? 600 : 500 }}>{msg.text}</div>
                                             <div style={{
-                                                fontSize: '0.65rem',
-                                                textAlign: 'right',
-                                                marginTop: 4,
-                                                color: isAdmin ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.4)'
+                                                fontSize: '0.68rem',
+                                                fontWeight: 700,
+                                                letterSpacing: '0.5px',
+                                                textTransform: 'uppercase',
+                                                marginBottom: 3,
+                                                color: isAdmin ? '#92661d' : '#6b7280'
                                             }}>
-                                                {formatDate(msg.createdAt)}
+                                                {isAdmin ? '✦ Admin Support' : `@${selectedTicket.username || selectedTicket.userId || 'User'}`}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    background: isAdmin ? '#111114' : '#ffffff',
+                                                    color: isAdmin ? '#ffffff' : '#111827',
+                                                    border: isAdmin ? 'none' : '1px solid #e5e7eb',
+                                                    borderRadius: isAdmin ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                                                    padding: '11px 16px',
+                                                    boxShadow: isAdmin ? '0 2px 8px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.04)',
+                                                    fontSize: '0.85rem',
+                                                    lineHeight: '1.45',
+                                                    wordBreak: 'break-word'
+                                                }}
+                                            >
+                                                <div>{msg.text}</div>
+                                                <div style={{
+                                                    fontSize: '0.65rem',
+                                                    textAlign: 'right',
+                                                    marginTop: 5,
+                                                    color: isAdmin ? 'rgba(255,255,255,0.6)' : '#9ca3af'
+                                                }}>
+                                                    {formatDate(msg.createdAt)}
+                                                </div>
                                             </div>
                                         </div>
                                     );
@@ -531,47 +566,52 @@ function MasterTickets() {
 
                         {/* Input Footer */}
                         <form onSubmit={handleSendReply} style={{
-                            padding: '20px',
-                            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                            background: 'rgba(10, 10, 10, 0.8)',
+                            padding: '18px 24px',
+                            borderTop: '1px solid #e5e7eb',
+                            background: '#ffffff',
                             display: 'flex',
-                            gap: '10px'
+                            gap: '12px',
+                            alignItems: 'center'
                         }}>
                             <input
                                 type="text"
-                                placeholder="Type your support message..."
+                                placeholder="Type your support response..."
                                 value={replyText}
                                 onChange={e => setReplyText(e.target.value)}
                                 style={{
                                     flex: 1,
-                                    padding: '12px 16px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                                    borderRadius: '4px',
-                                    color: 'white',
+                                    padding: '11px 16px',
+                                    background: '#f9fafb',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '24px',
+                                    color: '#111827',
                                     outline: 'none',
-                                    fontSize: '0.9rem',
+                                    fontSize: '0.85rem',
                                     fontFamily: "'Montserrat', sans-serif",
-                                    transition: 'border-color 0.2s'
+                                    transition: 'border-color 0.2s, box-shadow 0.2s'
                                 }}
-                                onFocus={(e) => e.target.style.borderColor = 'var(--gold)'}
-                                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)'}
+                                onFocus={(e) => { e.target.style.borderColor = '#111114'; e.target.style.boxShadow = '0 0 0 3px rgba(17,17,20,0.06)'; }}
+                                onBlur={(e) => { e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = 'none'; }}
                             />
                             <button
                                 type="submit"
                                 style={{
-                                    padding: '0 24px',
-                                    background: 'var(--gold)',
-                                    color: 'black',
+                                    padding: '10px 24px',
+                                    background: '#111114',
+                                    color: '#ffffff',
                                     border: 'none',
-                                    borderRadius: '4px',
-                                    fontWeight: 'bold',
+                                    borderRadius: '24px',
+                                    fontWeight: 600,
                                     cursor: 'pointer',
                                     fontFamily: "'Montserrat', sans-serif",
+                                    fontSize: '0.8rem',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: 6
+                                    gap: 6,
+                                    letterSpacing: '0.5px',
+                                    boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                                    transition: 'all 0.2s'
                                 }}
                             >
                                 <i className="fas fa-paper-plane"></i> Send

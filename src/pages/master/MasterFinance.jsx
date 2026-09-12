@@ -16,9 +16,9 @@ function Toast({ toasts }) {
       {toasts.map(t => (
         <div key={t.id} style={{
           padding: '12px 20px', borderRadius: 10, fontWeight: 600, fontSize: 13,
-          background: t.type === 'success' ? 'linear-gradient(135deg,#1a6b3a,#22863a)' : 'linear-gradient(135deg,#7f1d1d,#991b1b)',
-          color: '#fff', boxShadow: '0 4px 20px rgba(0,0,0,0.4)', minWidth: 240,
-          borderLeft: `4px solid ${t.type === 'success' ? '#4ade80' : '#f87171'}`
+          background: t.type === 'success' ? '#111114' : '#7f1d1d',
+          color: '#fff', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', minWidth: 240,
+          borderLeft: `4px solid ${t.type === 'success' ? '#10b981' : '#ef4444'}`
         }}>
           {t.type === 'success' ? '✅ ' : '❌ '}{t.msg}
         </div>
@@ -233,9 +233,9 @@ export default function MasterFinance() {
   // ────────────────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', flexDirection: 'column', gap: 16, color: '#C5A059' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', flexDirection: 'column', gap: 16, color: '#111827' }}>
         <div className="adm-spinner" />
-        <p>Loading Finance Settings…</p>
+        <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>Loading Finance Settings…</p>
       </div>
     );
   }
@@ -542,14 +542,14 @@ export default function MasterFinance() {
               {/* Markup explain */}
               {calcResult.rawCost > 0 && (
                 <div style={{
-                  marginTop: 14, padding: '12px 14px',
-                  background: 'rgba(197,160,89,0.08)', borderRadius: 10,
-                  border: '1px solid rgba(197,160,89,0.2)', fontSize: '0.78rem', color: '#bbb',
+                  marginTop: 16, padding: '14px 16px',
+                  background: '#fdfbf7', borderRadius: 10,
+                  border: '1px solid rgba(197,160,89,0.3)', fontSize: '0.8rem', color: '#4b5563',
                   lineHeight: 1.6
                 }}>
-                  <strong style={{ color: '#C5A059' }}>Markup breakdown:</strong><br />
+                  <strong style={{ color: '#92661d' }}>Markup breakdown:</strong><br />
                   Raw cost {fmt(calcResult.rawCost)} is {(100 - calcResult.pct).toFixed(1)}% of selling price {fmt(calcResult.pricePerPiece)}.<br />
-                  ASAT earns {fmt(calcResult.markupPerPiece)} per piece ({calcResult.pct}% markup).
+                  ASAT earns <strong style={{ color: '#111827' }}>{fmt(calcResult.markupPerPiece)}</strong> per piece ({calcResult.pct}% markup).
                 </div>
               )}
             </div>
