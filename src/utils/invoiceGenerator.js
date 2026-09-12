@@ -229,7 +229,7 @@ export const generateInvoice = (order) => {
 
     let taxableValue = 0;
     let totalTax = 0;
-    let effectiveRate = defaultTaxRate;
+    let effectiveRate = 0;
 
     if (gstInfo.isIndia) {
         if (rawTax > 0) {
@@ -238,10 +238,11 @@ export const generateInvoice = (order) => {
             if (taxableValue <= 0) taxableValue = Math.max(0, itemsSubtotal - discount);
             effectiveRate = Math.round((totalTax / (taxableValue || 1)) * 100) || defaultTaxRate;
         } else {
-            // Price is inclusive of GST
-            taxableValue = Math.round(((itemsSubtotal - discount) / (1 + defaultTaxRate / 100)) * 100) / 100;
-            totalTax = Math.round(((itemsSubtotal - discount) - taxableValue) * 100) / 100;
-            effectiveRate = defaultTaxRate;
+            // 0% GST historically / no tax charged
+            taxableValue = Math.max(0, grandTotal - shipping);
+            if (taxableValue <= 0) taxableValue = Math.max(0, itemsSubtotal - discount);
+            totalTax = 0;
+            effectiveRate = 0;
         }
     } else {
         taxableValue = Math.max(0, itemsSubtotal - discount);
@@ -252,7 +253,7 @@ export const generateInvoice = (order) => {
     let cgstRate = 0, sgstRate = 0, igstRate = 0;
     let cgstAmount = 0, sgstAmount = 0, igstAmount = 0;
 
-    if (gstInfo.isIndia) {
+    if (gstInfo.isIndia && totalTax > 0) {
         if (gstInfo.isAp) {
             cgstRate = effectiveRate / 2;
             sgstRate = effectiveRate / 2;
@@ -470,7 +471,7 @@ export const generateInvoice = (order) => {
     let sY = finalY;
 
     // Compute dynamic height for the summary card
-    const taxLineCount = gstInfo.isIndia ? (gstInfo.isAp ? 2 : 1) : 1;
+    const taxLineCount = gstInfo.isIndia ? (totalTax > 0 ? (gstInfo.isAp ? 2 : 1) : 1) : 1;
     const summaryLineCount = 4 + (discount > 0 ? 1 : 0) + taxLineCount;
     const summaryCardHeight = 14 + (summaryLineCount * 5.2);
 
@@ -502,24 +503,32 @@ export const generateInvoice = (order) => {
 
     // Detailed GST Lines in summary box
     if (gstInfo.isIndia) {
-        if (gstInfo.isAp) {
-            lineY += 5;
-            doc.setTextColor(90, 95, 105);
-            doc.text(`CGST (${cgstRate}%):`, summaryX + 4, lineY);
-            doc.setTextColor(30, 34, 41);
-            doc.text(formatCurrency(cgstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
+        if (totalTax > 0) {
+            if (gstInfo.isAp) {
+                lineY += 5;
+                doc.setTextColor(90, 95, 105);
+                doc.text(`CGST (${cgstRate}%):`, summaryX + 4, lineY);
+                doc.setTextColor(30, 34, 41);
+                doc.text(formatCurrency(cgstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
 
-            lineY += 5;
-            doc.setTextColor(90, 95, 105);
-            doc.text(`SGST (${sgstRate}%):`, summaryX + 4, lineY);
-            doc.setTextColor(30, 34, 41);
-            doc.text(formatCurrency(sgstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
+                lineY += 5;
+                doc.setTextColor(90, 95, 105);
+                doc.text(`SGST (${sgstRate}%):`, summaryX + 4, lineY);
+                doc.setTextColor(30, 34, 41);
+                doc.text(formatCurrency(sgstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
+            } else {
+                lineY += 5;
+                doc.setTextColor(90, 95, 105);
+                doc.text(`IGST (${igstRate}%):`, summaryX + 4, lineY);
+                doc.setTextColor(30, 34, 41);
+                doc.text(formatCurrency(igstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
+            }
         } else {
             lineY += 5;
             doc.setTextColor(90, 95, 105);
-            doc.text(`IGST (${igstRate}%):`, summaryX + 4, lineY);
+            doc.text("GST (0%):", summaryX + 4, lineY);
             doc.setTextColor(30, 34, 41);
-            doc.text(formatCurrency(igstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
+            doc.text("Rs. 0.00", summaryX + summaryWidth - 4, lineY, { align: "right" });
         }
     } else {
         lineY += 5;
@@ -602,7 +611,7 @@ export const generateInvoice = (order) => {
     doc.setTextColor(120, 125, 135);
 
     const notes = [
-        "• All prices are inclusive of GST and applicable duties from our end.",
+        "• All prices are subject to applicable GST and statutory duties as detailed above.",
         "• For international shipments, destination import duties & taxes (if levied) are the responsibility of the recipient.",
         "• Return/exchange request window is 36 hours from confirmed delivery.",
         "• For queries, warranty, or customer assistance: contact@assimpleasthat.shop"

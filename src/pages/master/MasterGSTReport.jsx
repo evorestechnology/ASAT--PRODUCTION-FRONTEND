@@ -59,8 +59,10 @@ function computeGstBreakdown(order) {
             taxableValue = Math.max(0, grandTotal - shipping - totalTax);
             if (taxableValue <= 0) taxableValue = itemsSubtotal;
         } else {
-            taxableValue = Math.round((itemsSubtotal / (1 + defaultTaxRate / 100)) * 100) / 100;
-            totalTax = Math.round((itemsSubtotal - taxableValue) * 100) / 100;
+            // 0% GST historically / no tax was charged
+            taxableValue = Math.max(0, grandTotal - shipping);
+            if (taxableValue <= 0) taxableValue = itemsSubtotal;
+            totalTax = 0;
         }
     } else {
         taxableValue = itemsSubtotal;
@@ -71,13 +73,17 @@ function computeGstBreakdown(order) {
     let cgst = 0, sgst = 0, igst = 0, supplyType = "Export";
 
     if (isIndia) {
-        if (isAp) {
-            cgst = Math.round((totalTax / 2) * 100) / 100;
-            sgst = Math.round((totalTax - cgst) * 100) / 100;
-            supplyType = "Intra-State (AP)";
+        if (totalTax > 0) {
+            if (isAp) {
+                cgst = Math.round((totalTax / 2) * 100) / 100;
+                sgst = Math.round((totalTax - cgst) * 100) / 100;
+                supplyType = "Intra-State (AP)";
+            } else {
+                igst = totalTax;
+                supplyType = "Inter-State";
+            }
         } else {
-            igst = totalTax;
-            supplyType = "Inter-State";
+            supplyType = isAp ? "Intra-State (AP)" : "Inter-State";
         }
     }
 
