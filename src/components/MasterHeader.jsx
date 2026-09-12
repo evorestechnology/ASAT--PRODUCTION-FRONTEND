@@ -447,14 +447,17 @@ function MasterHeader() {
                 }
                 .mst-nav__section-label {
                     font-family: 'Montserrat', sans-serif;
-                    font-size: 0.47rem;
+                    font-size: 0.52rem;
                     font-weight: 700;
                     letter-spacing: 1.2px;
                     text-transform: uppercase;
-                    color: rgba(197, 160, 89, 0.45);
+                    color: rgba(197, 160, 89, 0.75);
+                    background: rgba(197, 160, 89, 0.08);
+                    border: 1px solid rgba(197, 160, 89, 0.15);
                     white-space: nowrap;
-                    padding: 1px 4px 2px;
-                    margin-bottom: 2px;
+                    padding: 2px 7px;
+                    border-radius: 3px;
+                    margin-bottom: 3px;
                 }
                 .mst-nav__group {
                     display: flex;

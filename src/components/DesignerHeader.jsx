@@ -34,8 +34,8 @@ function DesignerHeader() {
     }, []);
 
     const navLinks = [
-        { to: '/designer', label: 'Dashboard', icon: 'fas fa-th-large', end: true },
-        { to: '/designer/orders', label: 'Orders', icon: 'fas fa-shopping-bag' },
+        { to: '/designer', label: 'Dashboard', icon: 'fas fa-chart-pie', end: true },
+        { to: '/designer/orders', label: 'Orders', icon: 'fas fa-receipt' },
         { to: '/designer/earnings', label: 'Earnings', icon: 'fas fa-coins' },
         { to: '/designer/designs', label: 'Designs', icon: 'fas fa-palette' },
         { to: '/designer/base-products', label: 'Base Products', icon: 'fas fa-tshirt' },
@@ -43,80 +43,85 @@ function DesignerHeader() {
         { to: '/designer/ranking', label: 'Ranking', icon: 'fas fa-trophy' },
     ];
 
+    const initial = designerName ? designerName.charAt(0).toUpperCase() : 'D';
+
     return (
         <header className="dsn-header">
             <div className="dsn-header__inner">
-                <div className="dsn-header__left" onClick={() => navigate('/designer')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
-                        <img 
-                            src="/logo.png" 
-                            alt="ASAT Designer Paradise" 
-                            style={{ 
-                                height: '24px', 
-                                width: 'auto', 
-                                objectFit: 'contain', 
-                                display: 'block' 
-                            }} 
-                        />
-                        {designerName && (
-                            <div style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '6px', 
-                                marginTop: '4px',
-                                lineHeight: 1 
-                            }}>
-                                <span style={{
-                                    color: 'var(--gold, #C5A059)',
-                                    fontFamily: "'Montserrat', sans-serif",
-                                    fontSize: '0.62rem',
-                                    fontWeight: '700',
-                                    letterSpacing: '1.5px',
-                                    textTransform: 'uppercase'
-                                }}>
-                                    Designer
-                                </span>
-                                <span style={{ color: '#bbb', fontSize: '0.55rem' }}>•</span>
-                                <span style={{
-                                    color: '#222222',
-                                    fontFamily: "'Montserrat', sans-serif",
-                                    fontSize: '0.7rem',
-                                    fontWeight: '600',
-                                    letterSpacing: '0.8px',
-                                    textTransform: 'uppercase',
-                                    maxWidth: '220px',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
-                                }}>
-                                    {designerName}
-                                </span>
-                            </div>
-                        )}
-                    </div>
+                {/* Brand & Designer Identity */}
+                <div className="dsn-header__left" onClick={() => navigate('/designer')} title="ASAT Designer Paradise">
+                    <img 
+                        src="/logo.png" 
+                        alt="ASAT Designer Paradise" 
+                        className="dsn-header__logo-img"
+                    />
+                    {designerName && (
+                        <div className="dsn-header__identity-badge">
+                            <span className="dsn-header__identity-tag">DESIGNER</span>
+                            <span className="dsn-header__identity-name" title={designerName}>
+                                {designerName}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
+                {/* Capsule Nav */}
                 <nav className={`dsn-header__nav ${mobileOpen ? 'dsn-header__nav--open' : ''}`}>
-                    {navLinks.map(l => (
-                        <NavLink key={l.to} to={l.to} end={l.end}
-                            className={({ isActive }) => `dsn-header__link ${isActive ? 'dsn-header__link--active' : ''}`}
-                            onClick={() => setMobileOpen(false)}>
-                            <span>{l.label}</span>
-                        </NavLink>
-                    ))}
+                    <div className="dsn-header__nav-capsule">
+                        {navLinks.map(l => (
+                            <NavLink 
+                                key={l.to} 
+                                to={l.to} 
+                                end={l.end}
+                                className={({ isActive }) => `dsn-header__link ${isActive ? 'dsn-header__link--active' : ''}`}
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                <i className={`${l.icon} dsn-header__nav-icon`}></i>
+                                <span>{l.label}</span>
+                            </NavLink>
+                        ))}
+                    </div>
                 </nav>
 
+                {/* Right Profile Pill */}
                 <div className="dsn-header__right">
                     <div className="dsn-header__profile" ref={profileRef}>
-                        <button className="dsn-header__avatar" onClick={() => setProfileOpen(p => !p)}>
-                            <i className="far fa-user-circle"></i>
+                        <button 
+                            className={`dsn-header__profile-pill ${profileOpen ? 'dsn-header__profile-pill--active' : ''}`} 
+                            onClick={() => setProfileOpen(p => !p)}
+                            title="Account Menu"
+                        >
+                            <div className="dsn-header__avatar-badge">
+                                {initial}
+                            </div>
+                            <span className="dsn-header__profile-name">
+                                {designerName ? designerName.split(' ')[0] : 'Account'}
+                            </span>
+                            <i className={`fas fa-chevron-down dsn-header__profile-caret ${profileOpen ? 'dsn-header__profile-caret--open' : ''}`}></i>
                         </button>
+
                         {profileOpen && (
                             <div className="dsn-header__dropdown">
-                                <Link to="/designer/profile" onClick={() => setProfileOpen(false)}><i className="fas fa-id-badge"></i> Profile</Link>
-                                <Link to="/designer/analytics" onClick={() => setProfileOpen(false)}><i className="fas fa-chart-line"></i> Analytics</Link>
-                                <Link to="/designer/support" onClick={() => setProfileOpen(false)}><i className="fas fa-headset"></i> Support</Link>
-                                <Link to="/designer/terms" onClick={() => setProfileOpen(false)}><i className="fas fa-file-signature"></i> Terms</Link>
+                                <div className="dsn-header__dropdown-user">
+                                    <div className="dsn-header__dropdown-avatar">{initial}</div>
+                                    <div className="dsn-header__dropdown-meta">
+                                        <div className="dsn-header__dropdown-name">{designerName || 'Designer'}</div>
+                                        <div className="dsn-header__dropdown-email">{user?.email || profile?.email || ''}</div>
+                                    </div>
+                                </div>
+                                <div className="dsn-header__divider"></div>
+                                <Link to="/designer/profile" onClick={() => setProfileOpen(false)}>
+                                    <i className="fas fa-id-badge"></i> Profile &amp; Settings
+                                </Link>
+                                <Link to="/designer/analytics" onClick={() => setProfileOpen(false)}>
+                                    <i className="fas fa-chart-line"></i> Analytics
+                                </Link>
+                                <Link to="/designer/support" onClick={() => setProfileOpen(false)}>
+                                    <i className="fas fa-headset"></i> Support Desk
+                                </Link>
+                                <Link to="/designer/terms" onClick={() => setProfileOpen(false)}>
+                                    <i className="fas fa-file-signature"></i> Guidelines &amp; Terms
+                                </Link>
                                 <div className="dsn-header__divider"></div>
                                 <button className="dsn-header__logout" onClick={async () => {
                                     setProfileOpen(false);
@@ -132,7 +137,12 @@ function DesignerHeader() {
                             </div>
                         )}
                     </div>
-                    <button className="dsn-header__hamburger" onClick={() => setMobileOpen(p => !p)}>
+
+                    <button 
+                        className="dsn-header__hamburger" 
+                        onClick={() => setMobileOpen(p => !p)}
+                        aria-label="Toggle Navigation"
+                    >
                         <i className={mobileOpen ? 'fas fa-times' : 'fas fa-bars'}></i>
                     </button>
                 </div>
