@@ -296,7 +296,7 @@ function MfgOrders() {
             const activeOrders = (data || []).map(o => {
                 return {
                     id: o.id,
-                    orderId: o.order_id || o.id.slice(0, 10).toUpperCase(),
+                    orderId: o.order_id || o.id,
                     createdAt: o.created_at,
                     items: o.items || [],
                     address: o.address,
@@ -569,7 +569,7 @@ function MfgOrders() {
                         ) : (
                             filteredOrders.map(o => (
                                 <tr key={o.id}>
-                                    <td style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{o.id.substring(0, 8)}...</td>
+                                    <td style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{o.orderId || o.order_id || o.id}</td>
                                     <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{formatOrderDate(o)}</td>
                                     <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
                                         {(() => {

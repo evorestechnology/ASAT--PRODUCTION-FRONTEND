@@ -360,7 +360,7 @@ function DesignerEarnings() {
                                             <tr key={s.id || idx}>
                                                 <td>
                                                     <div style={{ fontSize: '0.78rem', display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                                        <span style={{ fontWeight: 700, color: 'var(--dark, #121212)' }}>Order #{String(s.orderId).slice(0, 14)}</span>
+                                                        <span style={{ fontWeight: 700, color: 'var(--dark, #121212)' }}>Order #{String(s.orderId || s.id)}</span>
                                                         <span style={{ fontSize: '0.72rem', color: '#666' }}>
                                                             Ordered: {s.date ? new Date(s.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                                                         </span>

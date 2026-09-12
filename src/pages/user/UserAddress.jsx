@@ -75,10 +75,11 @@ const styles = `
     .modal-header h3 { font-family: 'Cinzel', serif; margin: 0; letter-spacing: 1px; }
     .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; }
     .modal-close:hover { color: #000; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .form-group { display: flex; flex-direction: column; }
+    .form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 15px; width: 100%; box-sizing: border-box; }
+    .form-group { display: flex; flex-direction: column; min-width: 0; }
     .form-group label { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: bold; margin-bottom: 6px; }
     .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; box-sizing: border-box; }
+    .form-group select { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
     .form-group input:focus, .form-group select:focus { border-color: var(--gold); outline: none; }
     .full-width { grid-column: span 2; }
 

@@ -256,6 +256,105 @@ const styles = `
         font-size: 0.95rem;
     }
 
+    .query-order-info {
+        background: linear-gradient(135deg, rgba(197, 160, 89, 0.08) 0%, rgba(0, 0, 0, 0.02) 100%);
+        border: 1px solid rgba(197, 160, 89, 0.25);
+        border-radius: 8px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .query-order-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.82rem;
+    }
+    .query-order-label {
+        color: #666;
+        font-weight: 500;
+    }
+    .query-order-val {
+        color: var(--dark, #121212);
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    .field-select {
+        width: 100%;
+        padding: 12px 14px;
+        background: #ffffff;
+        border: 1.5px solid rgba(0, 0, 0, 0.12);
+        border-radius: 8px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        color: var(--dark, #121212);
+        outline: none;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+    .field-select:focus {
+        border-color: var(--gold, #c5a059);
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+    }
+    .field-textarea {
+        width: 100%;
+        min-height: 110px;
+        padding: 12px 14px;
+        background: #ffffff;
+        border: 1.5px solid rgba(0, 0, 0, 0.12);
+        border-radius: 8px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        color: var(--dark, #121212);
+        resize: vertical;
+        outline: none;
+        transition: all 0.25s ease;
+        box-sizing: border-box;
+        line-height: 1.5;
+    }
+    .field-textarea:focus {
+        border-color: var(--gold, #c5a059);
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+    }
+    .field-textarea::placeholder {
+        color: #999;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .submit-btn {
+        width: 100%;
+        background: var(--dark, #121212);
+        color: #ffffff;
+        border: 1px solid var(--dark, #121212);
+        padding: 14px 20px;
+        border-radius: 8px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .submit-btn:hover:not(:disabled) {
+        background: var(--gold, #c5a059);
+        border-color: var(--gold, #c5a059);
+        box-shadow: 0 6px 18px rgba(197, 160, 89, 0.3);
+        transform: translateY(-1px);
+    }
+    .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
     /* ── Table mobile: horizontal scroll wrapper ── */
     .orders-table-wrap {
         width: 100%;
@@ -451,7 +550,7 @@ function UserOrders() {
             await apiFetch('/api/tickets', {
                 method: 'POST',
                 body: JSON.stringify({
-                    subject: `${queryCategory} - Order #${orderIdForPath.slice(0, 10).toUpperCase()}`,
+                    subject: `${queryCategory} - Order #${orderIdForPath}`,
                     category: queryCategory,
                     order_id: orderIdForPath,
                     description: finalDescription
@@ -568,7 +667,7 @@ function UserOrders() {
                                         {filteredOrders.map(o => (
                                             <tr key={o.id}>
                                                 <td style={{ fontWeight: '600', color: 'var(--dark)' }}>
-                                                    {o.order_id || o.id.slice(0, 10).toUpperCase()}
+                                                    {o.order_id || o.id}
                                                 </td>
                                                 <td>{formatDate(o.created_at)}</td>
                                                 <td>
@@ -604,7 +703,7 @@ function UserOrders() {
                                                 <td>
                                                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                                         <button className="track-btn" onClick={() => navigate(`/tracking?id=${o.order_id || o.id}`)}>
-                                                            Track
+                                                             Track
                                                         </button>
                                                         <button 
                                                             className="track-btn" 
@@ -629,7 +728,7 @@ function UserOrders() {
                                                                 import('../../utils/invoiceGenerator').then(module => {
                                                                     module.generateInvoice({
                                                                         ...o,
-                                                                        orderId: o.order_id || (typeof o.id === 'string' ? o.id.slice(0, 10).toUpperCase() : o.id),
+                                                                        orderId: o.order_id || o.id,
                                                                         createdAt: o.created_at,
                                                                         customerName: o.customer_name || user?.name || user?.email?.split('@')[0],
                                                                         email: o.email || user?.email,
@@ -692,9 +791,23 @@ function UserOrders() {
                         </div>
                         
                         <form onSubmit={handleUploadQuery} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <div style={{ fontSize: '0.82rem', color: '#666', background: 'rgba(0,0,0,0.02)', padding: '10px', borderRadius: '6px' }}>
-                                <strong>Order ID:</strong> {queryOrder.order_id || queryOrder.id} <br />
-                                <strong>Date:</strong> {formatDate(queryOrder.created_at)}
+                            <div className="query-order-info">
+                                <div className="query-order-info-row">
+                                    <span className="query-order-label">Order Reference</span>
+                                    <span className="query-order-val">#{queryOrder.order_id || queryOrder.id}</span>
+                                </div>
+                                <div className="query-order-info-row">
+                                    <span className="query-order-label">Order Placed</span>
+                                    <span className="query-order-val">{formatDate(queryOrder.created_at)}</span>
+                                </div>
+                                {queryOrder.status && (
+                                    <div className="query-order-info-row">
+                                        <span className="query-order-label">Current Status</span>
+                                        <span className="query-order-val" style={{ textTransform: 'uppercase', color: 'var(--gold, #c5a059)', fontWeight: 700 }}>
+                                            {queryOrder.status}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="field-group">

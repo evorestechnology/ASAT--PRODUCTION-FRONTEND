@@ -312,7 +312,7 @@ function UserTracking() {
                                     <div key={order.id} className="glass-card tracking-card" style={{ marginTop: 0 }}>
                                         <div className="tracking-header">
                                             <h3 className="tracking-title">ORDER TRACKING</h3>
-                                            <p className="order-id-label" style={{ textAlign: 'center', marginBottom: '20px', fontWeight: 'bold' }}>{order.order_id || order.id?.slice(0, 10).toUpperCase()}</p>
+                                            <p className="order-id-label" style={{ textAlign: 'center', marginBottom: '20px', fontWeight: 'bold' }}>{order.order_id || order.id}</p>
                                         </div>
                                         
                                         {order.status === 'cancelled' && (
@@ -394,7 +394,7 @@ function UserTracking() {
                                                         import('../../utils/invoiceGenerator').then(module => {
                                                             module.generateInvoice({
                                                                 ...order,
-                                                                orderId: order.order_id || (typeof order.id === 'string' ? order.id.slice(0, 10).toUpperCase() : order.id),
+                                                                orderId: order.order_id || order.id,
                                                                 createdAt: order.created_at,
                                                                 customerName: order.customer_name || 'Valued Customer',
                                                                 email: order.email || order.users?.email,

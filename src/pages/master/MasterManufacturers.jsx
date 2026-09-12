@@ -794,7 +794,7 @@ function MasterManufacturers() {
                                             {selectedMfgDetails.orders.map(o => (
                                                 <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                                     <div>
-                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Order #{o.order_id || o.id.substring(0,8).toUpperCase()}</div>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Order #{o.order_id || o.id}</div>
                                                         <div style={{ fontSize: '0.7rem', color: '#888' }}>{formatDate(o)}</div>
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

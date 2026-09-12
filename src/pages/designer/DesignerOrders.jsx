@@ -43,7 +43,7 @@ function DesignerOrders() {
 
                 return {
                     id: o.id,
-                    orderId: o.order_id || o.id.slice(0, 10).toUpperCase(),
+                    orderId: o.order_id || o.id,
                     date: dateVal,
                     dateStr: o.created_at ? o.created_at.split('T')[0] : '',
                     product: productLabel,

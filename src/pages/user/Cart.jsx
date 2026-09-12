@@ -524,9 +524,11 @@ const styles = `
         max-width: 550px;
         border-radius: 12px;
         padding: 35px;
+        box-sizing: border-box;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         animation: slideUp 0.3s ease-out;
         color: var(--dark);
+        overflow-x: hidden;
     }
 
     .addr-modal h3 {
@@ -545,12 +547,17 @@ const styles = `
         display: flex;
         flex-direction: column;
         gap: 16px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .addr-field {
         display: flex;
         flex-direction: column;
         gap: 6px;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .addr-field label {
@@ -563,6 +570,9 @@ const styles = `
     }
 
     .addr-input {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
         padding: 12px 14px;
         border: 1px solid #ddd;
         border-radius: 4px;
@@ -572,14 +582,22 @@ const styles = `
         transition: border-color 0.3s;
     }
 
+    select.addr-input {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
     .addr-input:focus {
         border-color: var(--gold);
     }
 
     .addr-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 16px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .addr-actions {
@@ -1486,7 +1504,7 @@ function Cart() {
             
             {showAddressEditModal && (
                 <div className="addr-backdrop" onClick={() => setShowAddressEditModal(false)}>
-                    <div className="addr-modal" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+                    <div className="addr-modal" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto', overflowX: 'hidden' }}>
                         <h3>{editingAddress ? '✏️ Edit Shipping Address' : '➕ Add Shipping Address'}</h3>
                         <form onSubmit={handleAddOrEditAddressSubmit} className="addr-form">
                             <div className="addr-row">

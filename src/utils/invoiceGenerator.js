@@ -201,7 +201,7 @@ export const generateInvoice = (order) => {
     doc.setFontSize(8);
     doc.setTextColor(100, 105, 115);
     doc.text("GSTIN: 37AAMFE8739J1ZQ  |  State: Andhra Pradesh (37)", 14, startY + 14.5);
-    doc.text("Email: support@asat.shop  |  Web: www.asat.shop", 14, startY + 18.5);
+    doc.text("Email: contact@assimpleasthat.shop  |  Web: www.designerparadise.shop/", 14, startY + 18.5);
 
     // Right Header: TAX INVOICE
     doc.setFont("helvetica", "bold");
