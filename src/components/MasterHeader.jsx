@@ -32,6 +32,7 @@ const navSections = [
             { to: '/master/wallet', label: 'Master Wallet', icon: 'fas fa-wallet' },
             { to: '/master/withdrawals', label: 'Withdrawals', icon: 'fas fa-hand-holding-usd' },
             { to: '/master/finance', label: 'Finance & Analytics', icon: 'fas fa-calculator' },
+            { to: '/master/gst-report', label: 'GST Report', icon: 'fas fa-file-invoice' },
         ]
     },
     {
