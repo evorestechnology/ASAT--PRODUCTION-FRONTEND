@@ -401,7 +401,7 @@ function UserTracking() {
                                                             });
                                                         }).catch(err => {
                                                             console.error("Failed to load invoice generator:", err);
-                                                            alert("Failed to generate invoice.");
+                                                            window.alert("Failed to generate invoice.");
                                                         });
                                                     }}
                                                 >

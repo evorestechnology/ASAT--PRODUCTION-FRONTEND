@@ -839,7 +839,7 @@ function DesignerRegister() {
         setErrors(prev => ({ ...prev, avatar: null }));
         setAvatarFile(file);
         
-        const reader = new FileReader();
+        const reader = new window.FileReader();
         reader.onloadend = () => {
             setAvatarPreview(reader.result);
         };

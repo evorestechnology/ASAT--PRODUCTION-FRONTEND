@@ -405,7 +405,7 @@ function MasterSettings() {
             fetchAdmins();
         } catch (err) {
             console.error('Failed to delete admin:', err);
-            alert('Failed to delete admin');
+            window.alert('Failed to delete admin');
         }
     };
 

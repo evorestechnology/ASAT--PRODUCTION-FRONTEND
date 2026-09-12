@@ -332,11 +332,11 @@ export default function MasterDesignReview() {
                     <div className="mdr-card">
                         <div className="mdr-card__title">Design & Designer</div>
                         {[
-                            ['Design ID', <span style={{ fontFamily:'monospace', fontSize:'0.75rem', color:'#64748b' }}>{design.id}</span>],
+                            ['Design ID', <span key="k-id" style={{ fontFamily:'monospace', fontSize:'0.75rem', color:'#64748b' }}>{design.id}</span>],
                             ['Title', design.title || '—'],
                             ['Designer', `@${design.designer_username || design.designerUsername || '—'}`],
-                            ['Base Product ID', <span style={{ fontFamily:'monospace', fontSize:'0.75rem', color:'#64748b' }}>{design.base_product_id || '—'}</span>],
-                            ['Gender', <span style={{ textTransform:'capitalize' }}>{design.gender || '—'}</span>],
+                            ['Base Product ID', <span key="k-bpid" style={{ fontFamily:'monospace', fontSize:'0.75rem', color:'#64748b' }}>{design.base_product_id || '—'}</span>],
+                            ['Gender', <span key="k-gender" style={{ textTransform:'capitalize' }}>{design.gender || '—'}</span>],
                             ['Sizes', Array.isArray(design.sizes) && design.sizes.length ? design.sizes.join(', ') : '—'],
                             ['Submitted', design.created_at ? new Date(design.created_at).toLocaleString('en-IN') : '—'],
                         ].map(([k, v]) => (

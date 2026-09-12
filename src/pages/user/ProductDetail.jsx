@@ -1208,7 +1208,7 @@ function ProductDetail() {
         
         if (type === 'copy') {
             try {
-                await navigator.clipboard.writeText(shareUrl);
+                await window.navigator.clipboard.writeText(shareUrl);
                 showToast('Link copied to clipboard!', 'success');
             } catch (err) {
                 showToast('Failed to copy link.', 'error');
@@ -1646,7 +1646,7 @@ function ProductDetail() {
                                 dbProduct.sizes = rawSizes.map(sz => {
                                     const sizeName = typeof sz === 'object' && sz !== null ? sz.size : sz;
                                     const isDesignAvail = typeof sz === 'object' && sz !== null ? (sz.available !== false) : true;
-                                    const isBaseAvail = baseSizeMap.hasOwnProperty(sizeName) ? baseSizeMap[sizeName] : true;
+                                    const isBaseAvail = Object.prototype.hasOwnProperty.call(baseSizeMap, sizeName) ? baseSizeMap[sizeName] : true;
                                     return {
                                         size: sizeName,
                                         available: isDesignAvail && isBaseAvail

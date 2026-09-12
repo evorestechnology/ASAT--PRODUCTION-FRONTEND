@@ -319,7 +319,53 @@ function UserOrders() {
     };
 
     useEffect(() => {
-        fetchOrders();
+        const handleCashfreeReturn = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const returnOrderId = urlParams.get('order_id');
+            if (!returnOrderId) {
+                fetchOrders();
+                return;
+            }
+
+            // Clean the query param from URL so page refreshes don't re-trigger
+            window.history.replaceState({}, '', window.location.pathname);
+
+            // Check if there is a pending order stored before redirect
+            const rawPending = localStorage.getItem('asat_pending_order');
+            if (rawPending) {
+                try {
+                    const pending = JSON.parse(rawPending);
+                    const verifyRes = await apiFetch('/api/payment/verify', {
+                        method: 'POST',
+                        body: JSON.stringify({ orderId: returnOrderId })
+                    });
+
+                    if (verifyRes && verifyRes.verified) {
+                        await apiFetch('/api/orders', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                ...pending.orderData,
+                                order_id: returnOrderId,
+                                payment_id: returnOrderId,
+                                payment_status: 'PAID'
+                            })
+                        });
+
+                        localStorage.removeItem('asat_pending_order');
+                        localStorage.removeItem('asat_cart');
+                        window.dispatchEvent(new Event('cart_updated'));
+                        showToast('Payment successful! Your order has been placed.', 'success');
+                    } else {
+                        showToast('Payment verification pending. Please check back shortly.', 'info');
+                    }
+                } catch (err) {
+                    console.error('Error confirming redirected order:', err);
+                }
+            }
+            fetchOrders();
+        };
+
+        handleCashfreeReturn();
     }, []);
     
     // Support query states
@@ -567,9 +613,9 @@ function UserOrders() {
                                                                 const trackUrl = `${window.location.origin}/tracking?id=${o.order_id || o.id}`;
                                                                 const message = `Check out my order ${o.order_id || ''} on ASAT! Status: ${o.status || 'pending'}. Track delivery here: ${trackUrl}`;
                                                                 
-                                                                navigator.clipboard.writeText(message)
-                                                                    .then(() => showToast('Order tracking link copied to clipboard!', 'success'))
-                                                                    .catch(err => console.error('Failed to copy tracking link:', err));
+                                                                window.navigator?.clipboard?.writeText(message)
+                                                                    ?.then(() => showToast('Order tracking link copied to clipboard!', 'success'))
+                                                                    ?.catch(err => console.error('Failed to copy tracking link:', err));
                                                                 
                                                                 window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
                                                             }}

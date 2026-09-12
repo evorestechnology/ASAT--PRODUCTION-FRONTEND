@@ -1411,7 +1411,7 @@ function Cart() {
 
                 // Initiate Cashfree Checkout
                 try {
-                    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+                    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator?.userAgent || '') || window.innerWidth < 768;
 
                     if (isMobileDevice) {
                         // Direct full-page redirect for mobile viewports to prevent iframe rendering bugs/400 errors

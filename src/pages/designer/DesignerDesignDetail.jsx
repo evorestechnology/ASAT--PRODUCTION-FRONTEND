@@ -207,6 +207,7 @@ export default function DesignerDesignDetail() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { toasts, showToast } = useToast();
+    const { applyMarkup } = useCurrency();
 
     const [design, setDesign]     = useState(null);
     const [loading, setLoading]    = useState(true);
@@ -237,8 +238,6 @@ export default function DesignerDesignDetail() {
             <div className="ddd-loading">Design not found.</div>
         </div>
     );
-
-    const { applyMarkup } = useCurrency();
 
     const desc = parseDesc(design.description);
     const pricing = desc.pricing || {};
@@ -299,7 +298,7 @@ export default function DesignerDesignDetail() {
                         {[
                             ['Title', design.title || '—'],
                             ['Product', design.collection || 'Garment'],
-                            ['Gender', <span style={{ textTransform: 'capitalize' }}>{design.gender || '—'}</span>],
+                            ['Gender', <span key="ddd-gender" style={{ textTransform: 'capitalize' }}>{design.gender || '—'}</span>],
                             ['Available Sizes', Array.isArray(design.sizes) && design.sizes.length ? design.sizes.join(', ') : '—'],
                             ['Submitted', design.created_at ? new Date(design.created_at).toLocaleString('en-IN') : '—'],
                         ].map(([k, v]) => (

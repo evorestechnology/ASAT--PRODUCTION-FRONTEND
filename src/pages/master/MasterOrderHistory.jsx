@@ -73,11 +73,11 @@ function MasterOrderHistory() {
                 body: JSON.stringify({ action })
             });
 
-            alert(res.message || `Cost adjustment ${action}ed successfully.`);
+            window.alert(res.message || `Cost adjustment ${action}ed successfully.`);
             fetchOrders();
         } catch (err) {
             console.error(`Failed to ${action} cost adjustment:`, err);
-            alert(`Failed to ${action} cost adjustment. Please try again.`);
+            window.alert(`Failed to ${action} cost adjustment. Please try again.`);
         }
     };
 
@@ -177,10 +177,10 @@ function MasterOrderHistory() {
             });
             setTerminateOrder(null);
             fetchOrders();
-            alert(`Order #${terminateOrder.orderId || terminateOrder.id} has been terminated and customer notified.`);
+            window.alert(`Order #${terminateOrder.orderId || terminateOrder.id} has been terminated and customer notified.`);
         } catch (err) {
             console.error('Error terminating order:', err);
-            alert('Failed to terminate order. Please try again.');
+            window.alert('Failed to terminate order. Please try again.');
         } finally {
             setTerminating(false);
         }

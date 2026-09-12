@@ -456,7 +456,7 @@ function MfgProducts() {
                     category: catKey,
                     options: filteredCats[catKey],
                     // Preserve active state: default to true for new categories, preserve for existing ones
-                    active: existingActiveByCategory.hasOwnProperty(catKey) ? existingActiveByCategory[catKey] : true
+                    active: Object.prototype.hasOwnProperty.call(existingActiveByCategory, catKey) ? existingActiveByCategory[catKey] : true
                 }));
                 return [...filtered, ...newEntries];
             });
