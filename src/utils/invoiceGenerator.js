@@ -81,7 +81,61 @@ function numberToWordsINR(amount) {
 }
 
 /**
- * Generate and download a dynamic, accurate PDF Tax Invoice
+ * Detect Indian State and determine GST classification (Intra-State vs Inter-State vs Export)
+ */
+function detectStateAndGst(address, country) {
+    const isIndia = !country || country.trim().toLowerCase() === 'india';
+    if (!isIndia) {
+        return {
+            isIndia: false,
+            placeOfSupply: country || 'International',
+            supplyType: 'Export of Goods (Zero Rated under LUT)',
+            isAp: false,
+            stateName: country || 'International',
+            stateCode: '96'
+        };
+    }
+
+    const addr = (address || '').toLowerCase();
+
+    const states = [
+        { name: 'Andhra Pradesh', code: '37', regex: /\b(andhra|ap|amaravati|visakhapatnam|vizag|vijayawada|guntur|tirupati|kurnool|nellore|kadapa|rajahmundry|kakinada|chittoor|anantapur)\b|5[1-3]\d{4}/i },
+        { name: 'Telangana', code: '36', regex: /\b(telangana|hyderabad|secunderabad|warangal)\b|50\d{4}/i },
+        { name: 'Maharashtra', code: '27', regex: /\b(maharashtra|mumbai|pune|nagpur|thane|nashik)\b|4[0-4]\d{4}/i },
+        { name: 'Karnataka', code: '29', regex: /\b(karnataka|bangalore|bengaluru|mysore|mysuru|hubli)\b|5[6-9]\d{4}/i },
+        { name: 'Tamil Nadu', code: '33', regex: /\b(tamil nadu|tamilnadu|chennai|coimbatore|madurai)\b|6[0-4]\d{4}/i },
+        { name: 'Delhi', code: '07', regex: /\b(delhi|new delhi)\b|11\d{4}/i },
+        { name: 'Uttar Pradesh', code: '09', regex: /\b(uttar pradesh|up|noida|lucknow|kanpur|varanasi|agra)\b|2[0-8]\d{4}/i },
+        { name: 'Gujarat', code: '24', regex: /\b(gujarat|ahmedabad|surat|vadodara|rajkot)\b|3[6-9]\d{4}/i },
+        { name: 'West Bengal', code: '19', regex: /\b(west bengal|wb|kolkata|howrah)\b|7[0-4]\d{4}/i },
+        { name: 'Rajasthan', code: '08', regex: /\b(rajasthan|jaipur|jodhpur|udaipur)\b|3[0-4]\d{4}/i },
+        { name: 'Kerala', code: '32', regex: /\b(kerala|kochi|cochin|trivandrum|thiruvananthapuram)\b|6[7-9]\d{4}/i },
+        { name: 'Madhya Pradesh', code: '23', regex: /\b(madhya pradesh|mp|bhopal|indore)\b|4[5-8]\d{4}/i },
+        { name: 'Haryana', code: '06', regex: /\b(haryana|gurgaon|gurugram|faridabad)\b|1[2-3]\d{4}/i },
+        { name: 'Punjab', code: '03', regex: /\b(punjab|chandigarh|ludhiana|amritsar)\b|1[4-6]\d{4}/i },
+        { name: 'Bihar', code: '10', regex: /\b(bihar|patna)\b|8[0-5]\d{4}/i },
+        { name: 'Odisha', code: '21', regex: /\b(odisha|orissa|bhubaneswar|cuttack)\b|7[5-7]\d{4}/i }
+    ];
+
+    let detectedState = states.find(s => s.regex.test(addr));
+    if (!detectedState) {
+        detectedState = { name: 'Andhra Pradesh', code: '37' }; // Default to Andhra Pradesh if unspecified
+    }
+
+    const isIntraState = detectedState.code === '37';
+
+    return {
+        isIndia: true,
+        isAp: isIntraState,
+        placeOfSupply: `${detectedState.name} (${detectedState.code})`,
+        stateName: detectedState.name,
+        stateCode: detectedState.code,
+        supplyType: isIntraState ? 'Intra-State Supply (CGST + SGST)' : 'Inter-State Supply (IGST)'
+    };
+}
+
+/**
+ * Generate and download an accurate, compliant PDF Tax Invoice
  * @param {Object} order - Full order data object (supports camelCase & snake_case)
  */
 export const generateInvoice = (order) => {
@@ -99,7 +153,7 @@ export const generateInvoice = (order) => {
     const cleanOrderId = String(orderId).replace(/[^a-zA-Z0-9_-]/g, '_');
     const orderDate = formatDate(order.created_at || order.createdAt || order.date);
 
-    // Customer resolution (strictly avoids UUIDs or placeholder defaults)
+    // Customer resolution (strictly avoids raw UUIDs or unformatted fallback)
     const rawCustomerName = order.customer_name || order.customerName || order.name || order.contactName || '';
     const customerName = (rawCustomerName && rawCustomerName.trim() && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/i.test(rawCustomerName))
         ? rawCustomerName.trim()
@@ -137,7 +191,7 @@ export const generateInvoice = (order) => {
     // Accurate shipping & tax resolution without phantom defaults
     const pricingHistory = order.status_history?.[0]?.pricing || {};
 
-    let shipping = null;
+    let shipping = 0;
     if (order.shipping_amount !== undefined && order.shipping_amount !== null && !isNaN(order.shipping_amount)) {
         shipping = Number(order.shipping_amount);
     } else if (order.shippingAmount !== undefined && order.shippingAmount !== null && !isNaN(order.shippingAmount)) {
@@ -146,33 +200,67 @@ export const generateInvoice = (order) => {
         shipping = Number(pricingHistory.shipping_amount);
     }
 
-    let tax = null;
+    let rawTax = 0;
     if (order.tax_amount !== undefined && order.tax_amount !== null && !isNaN(order.tax_amount)) {
-        tax = Number(order.tax_amount);
+        rawTax = Number(order.tax_amount);
     } else if (order.taxAmount !== undefined && order.taxAmount !== null && !isNaN(order.taxAmount)) {
-        tax = Number(order.taxAmount);
+        rawTax = Number(order.taxAmount);
     } else if (pricingHistory.tax_amount !== undefined && !isNaN(pricingHistory.tax_amount)) {
-        tax = Number(pricingHistory.tax_amount);
+        rawTax = Number(pricingHistory.tax_amount);
     }
 
-    // Intelligently infer unstated charges so subtotal + shipping + tax is always mathematically sound
-    if (shipping === null) {
-        const difference = Math.max(0, grandTotal - itemsSubtotal);
-        if (tax !== null) {
-            shipping = Math.max(0, difference - tax);
-        } else {
-            shipping = difference;
-            tax = 0;
-        }
-    }
-    if (tax === null) {
-        tax = Math.max(0, grandTotal - itemsSubtotal - shipping);
+    // Infer unstated shipping if total exceeds subtotal
+    const difference = Math.max(0, grandTotal - itemsSubtotal);
+    if (!shipping && !rawTax && difference > 0) {
+        shipping = difference;
     }
 
     let discount = 0;
-    const computedSum = itemsSubtotal + shipping + tax;
+    const computedSum = itemsSubtotal + shipping + rawTax;
     if (computedSum > grandTotal + 0.01) {
         discount = Math.round((computedSum - grandTotal) * 100) / 100;
+    }
+
+    // --- GST TAX & STATUTORY COMPUTATION ---
+    const gstInfo = detectStateAndGst(address, country);
+    const maxUnitPrice = items.reduce((max, it) => Math.max(max, it.unitPrice), 0);
+    const defaultTaxRate = maxUnitPrice > 2500 ? 18 : 5; // Standard Indian Apparel GST Slabs (5% for <= 2500, 18% for > 2500)
+
+    let taxableValue = 0;
+    let totalTax = 0;
+    let effectiveRate = defaultTaxRate;
+
+    if (gstInfo.isIndia) {
+        if (rawTax > 0) {
+            totalTax = rawTax;
+            taxableValue = Math.max(0, grandTotal - shipping - totalTax);
+            if (taxableValue <= 0) taxableValue = Math.max(0, itemsSubtotal - discount);
+            effectiveRate = Math.round((totalTax / (taxableValue || 1)) * 100) || defaultTaxRate;
+        } else {
+            // Price is inclusive of GST
+            taxableValue = Math.round(((itemsSubtotal - discount) / (1 + defaultTaxRate / 100)) * 100) / 100;
+            totalTax = Math.round(((itemsSubtotal - discount) - taxableValue) * 100) / 100;
+            effectiveRate = defaultTaxRate;
+        }
+    } else {
+        taxableValue = Math.max(0, itemsSubtotal - discount);
+        totalTax = 0;
+        effectiveRate = 0;
+    }
+
+    let cgstRate = 0, sgstRate = 0, igstRate = 0;
+    let cgstAmount = 0, sgstAmount = 0, igstAmount = 0;
+
+    if (gstInfo.isIndia) {
+        if (gstInfo.isAp) {
+            cgstRate = effectiveRate / 2;
+            sgstRate = effectiveRate / 2;
+            cgstAmount = Math.round((totalTax / 2) * 100) / 100;
+            sgstAmount = Math.round((totalTax - cgstAmount) * 100) / 100;
+        } else {
+            igstRate = effectiveRate;
+            igstAmount = totalTax;
+        }
     }
 
     // --- TOP ACCENT BAR ---
@@ -201,7 +289,7 @@ export const generateInvoice = (order) => {
     doc.setFontSize(8);
     doc.setTextColor(100, 105, 115);
     doc.text("GSTIN: 37AAMFE8739J1ZQ  |  State: Andhra Pradesh (37)", 14, startY + 14.5);
-    doc.text("Email: contact@assimpleasthat.shop  |  Web: www.designerparadise.shop/", 14, startY + 18.5);
+    doc.text("Email: support@asat.shop  |  Web: www.asat.shop", 14, startY + 18.5);
 
     // Right Header: TAX INVOICE
     doc.setFont("helvetica", "bold");
@@ -312,8 +400,10 @@ export const generateInvoice = (order) => {
     doc.text(orderDate, rightX + 32, cardY + 15);
 
     doc.text("Place of Supply:", rightX + 4, cardY + 19.5);
-    doc.text(country, rightX + 32, cardY + 19.5);
+    doc.setFont("helvetica", "bold");
+    doc.text(gstInfo.placeOfSupply, rightX + 32, cardY + 19.5);
 
+    doc.setFont("helvetica", "normal");
     doc.text("Tracking ID:", rightX + 4, cardY + 24);
     doc.text(trackingId || 'Standard Dispatch', rightX + 32, cardY + 24);
 
@@ -388,21 +478,26 @@ export const generateInvoice = (order) => {
     let finalY = doc.lastAutoTable.finalY + 5;
 
     // Prevent page overflow for summary box & notes
-    if (finalY + 65 > pageHeight - 25) {
+    if (finalY + 82 > pageHeight - 25) {
         doc.addPage();
         finalY = 20;
     }
 
-    // --- FINANCIALS SUMMARY CARD (Right) ---
-    const summaryWidth = 78;
+    // --- FINANCIALS SUMMARY CARD (Right Column) ---
+    const summaryWidth = 80;
     const summaryX = pageWidth - 14 - summaryWidth;
     let sY = finalY;
 
+    // Compute dynamic height for the summary card
+    const taxLineCount = gstInfo.isIndia ? (gstInfo.isAp ? 2 : 1) : 1;
+    const summaryLineCount = 4 + (discount > 0 ? 1 : 0) + taxLineCount;
+    const summaryCardHeight = 14 + (summaryLineCount * 5.2);
+
     doc.setFillColor(250, 251, 253);
     doc.setDrawColor(225, 228, 235);
-    doc.roundedRect(summaryX, sY, summaryWidth, discount > 0 ? 44 : 38, 1.5, 1.5, 'FD');
+    doc.roundedRect(summaryX, sY, summaryWidth, summaryCardHeight, 1.5, 1.5, 'FD');
 
-    let lineY = sY + 6;
+    let lineY = sY + 5.5;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(90, 95, 105);
@@ -411,31 +506,60 @@ export const generateInvoice = (order) => {
     doc.text(formatCurrency(itemsSubtotal), summaryX + summaryWidth - 4, lineY, { align: "right" });
 
     if (discount > 0) {
-        lineY += 5.5;
+        lineY += 5;
         doc.setTextColor(90, 95, 105);
         doc.text("Promo Discount:", summaryX + 4, lineY);
         doc.setTextColor(40, 167, 69);
         doc.text(`- ${formatCurrency(discount)}`, summaryX + summaryWidth - 4, lineY, { align: "right" });
     }
 
-    lineY += 5.5;
+    lineY += 5;
+    doc.setTextColor(90, 95, 105);
+    doc.text("Net Taxable Value:", summaryX + 4, lineY);
+    doc.setTextColor(30, 34, 41);
+    doc.text(formatCurrency(taxableValue), summaryX + summaryWidth - 4, lineY, { align: "right" });
+
+    // Detailed GST Lines in summary box
+    if (gstInfo.isIndia) {
+        if (gstInfo.isAp) {
+            lineY += 5;
+            doc.setTextColor(90, 95, 105);
+            doc.text(`CGST (${cgstRate}%):`, summaryX + 4, lineY);
+            doc.setTextColor(30, 34, 41);
+            doc.text(formatCurrency(cgstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
+
+            lineY += 5;
+            doc.setTextColor(90, 95, 105);
+            doc.text(`SGST (${sgstRate}%):`, summaryX + 4, lineY);
+            doc.setTextColor(30, 34, 41);
+            doc.text(formatCurrency(sgstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
+        } else {
+            lineY += 5;
+            doc.setTextColor(90, 95, 105);
+            doc.text(`IGST (${igstRate}%):`, summaryX + 4, lineY);
+            doc.setTextColor(30, 34, 41);
+            doc.text(formatCurrency(igstAmount), summaryX + summaryWidth - 4, lineY, { align: "right" });
+        }
+    } else {
+        lineY += 5;
+        doc.setTextColor(90, 95, 105);
+        doc.text("Export GST (0%):", summaryX + 4, lineY);
+        doc.setTextColor(30, 34, 41);
+        doc.text("Rs. 0.00 (LUT)", summaryX + summaryWidth - 4, lineY, { align: "right" });
+    }
+
+    lineY += 5;
     doc.setTextColor(90, 95, 105);
     doc.text("Shipping & Handling:", summaryX + 4, lineY);
     doc.setTextColor(30, 34, 41);
     doc.text(shipping > 0 ? formatCurrency(shipping) : "FREE (Rs. 0.00)", summaryX + summaryWidth - 4, lineY, { align: "right" });
-
-    lineY += 5.5;
-    doc.setTextColor(90, 95, 105);
-    doc.text("Estimated GST / Taxes:", summaryX + 4, lineY);
-    doc.setTextColor(30, 34, 41);
-    doc.text(tax > 0 ? formatCurrency(tax) : "Included in Total", summaryX + summaryWidth - 4, lineY, { align: "right" });
 
     lineY += 4;
     doc.setDrawColor(197, 160, 89);
     doc.setLineWidth(0.4);
     doc.line(summaryX + 4, lineY, summaryX + summaryWidth - 4, lineY);
 
-    lineY += 6;
+    lineY += 5.5;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9.5);
     doc.setTextColor(30, 34, 41);
@@ -444,42 +568,69 @@ export const generateInvoice = (order) => {
     doc.setTextColor(197, 160, 89);
     doc.text(formatCurrency(grandTotal), summaryX + summaryWidth - 4, lineY, { align: "right" });
 
-    // --- LEFT NOTES & AMOUNT IN WORDS ---
-    const notesWidth = summaryX - 14 - 8;
-    let nY = finalY + 4;
+    // --- LEFT COLUMN: AMOUNT IN WORDS, GST STATUTORY BOX & DECLARATIONS ---
+    // Strictly confine width so text NEVER overflows or touches summaryX!
+    const notesWidth = summaryX - 14 - 6;
+    let curY = finalY;
 
+    // 1. Amount in Words
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(60, 65, 75);
-    doc.text("Amount in Words:", 14, nY);
+    doc.text("Amount in Words:", 14, curY + 4);
 
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
     doc.setTextColor(40, 44, 52);
     const words = numberToWordsINR(grandTotal);
     const wordsLines = doc.splitTextToSize(words, notesWidth);
-    doc.text(wordsLines, 14, nY + 4.5);
+    doc.text(wordsLines, 14, curY + 8);
 
-    nY += 6 + (wordsLines.length * 4);
+    curY += 10 + (wordsLines.length * 3.8);
+
+    // 2. GST Statutory & Compliance Details Card
+    const gstBoxHeight = 25;
+    doc.setFillColor(248, 249, 252);
+    doc.setDrawColor(225, 228, 235);
+    doc.roundedRect(14, curY, notesWidth, gstBoxHeight, 1.5, 1.5, 'FD');
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
-    doc.setTextColor(100, 105, 115);
-    doc.text("Terms & Tax Declarations:", 14, nY);
+    doc.setTextColor(197, 160, 89);
+    doc.text("GST STATUTORY & COMPLIANCE DETAILS", 14 + 3.5, curY + 4.5);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
+    doc.setTextColor(70, 75, 85);
+    doc.text("• Supplier GSTIN: 37AAMFE8739J1ZQ | Andhra Pradesh (37)", 14 + 3.5, curY + 9);
+    doc.text(`• Place of Supply: ${gstInfo.placeOfSupply} | HSN Code: 6109`, 14 + 3.5, curY + 13.5);
+    doc.text(`• Supply Nature: ${gstInfo.supplyType}`, 14 + 3.5, curY + 18);
+    doc.text(`• Net Taxable: ${formatCurrency(taxableValue)} | Total Tax: ${formatCurrency(totalTax)}`, 14 + 3.5, curY + 22.5);
+
+    curY += gstBoxHeight + 5;
+
+    // 3. Terms & Tax Declarations (With splitTextToSize on EVERY line)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 105, 115);
+    doc.text("Terms & Tax Declarations:", 14, curY);
+
+    curY += 3.5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.8);
     doc.setTextColor(120, 125, 135);
+
     const notes = [
         "• All prices are inclusive of GST and applicable duties from our end.",
         "• For international shipments, destination import duties & taxes (if levied) are the responsibility of the recipient.",
         "• Return/exchange request window is 36 hours from confirmed delivery.",
         "• For queries, warranty, or customer assistance: support@asat.shop"
     ];
-    let noteY = nY + 3.5;
+
     notes.forEach(nt => {
-        doc.text(nt, 14, noteY);
-        noteY += 3.5;
+        const wrapped = doc.splitTextToSize(nt, notesWidth);
+        doc.text(wrapped, 14, curY);
+        curY += (wrapped.length * 3.2);
     });
 
     // --- FOOTER ON ALL PAGES ---
@@ -516,4 +667,3 @@ export const generateInvoice = (order) => {
     // --- DOWNLOAD / SAVE ---
     doc.save(`Invoice_${cleanOrderId}.pdf`);
 };
-

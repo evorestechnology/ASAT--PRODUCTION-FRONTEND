@@ -1835,7 +1835,7 @@ function Cart() {
                             <div className="cart-summary">
                                 <h3>ORDER SUMMARY</h3>
                                 <div className="cart-summary-row">
-                                    <span>Selling Price</span>
+                                    <span>Item(s) Subtotal <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#888' }}>(excl. GST)</span></span>
                                     <span>{formatPrice(subtotal)}</span>
                                 </div>
                                 {discount > 0 && (
@@ -1845,18 +1845,39 @@ function Cart() {
                                     </div>
                                 )}
 
-                                <div className="cart-summary-row" style={{ color: '#000000', fontWeight: 600 }}>
-                                    <span>{taxLabel} <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#888' }}>(applied at billing)</span></span>
-                                    <span>{selectedAddressId ? (taxRate === 0 ? 'None' : `+ ${formatPrice(taxAmount)}`) : '—'}</span>
+                                {selectedAddressId && (
+                                    <div className="cart-summary-row" style={{ color: '#555', fontSize: '0.82rem' }}>
+                                        <span>Taxable Value</span>
+                                        <span>{formatPrice(taxableAmount)}</span>
+                                    </div>
+                                )}
+
+                                <div className="cart-summary-row" style={{ color: '#b45309', fontWeight: 600 }}>
+                                    <span>
+                                        {taxLabel}
+                                        {selectedAddressId && taxRate > 0 && addrCountry === 'India' && (
+                                            <span style={{ fontSize: '0.68rem', fontWeight: 400, color: '#888', display: 'block' }}>
+                                                CGST {taxRate / 2}% + SGST {taxRate / 2}%
+                                            </span>
+                                        )}
+                                        {!selectedAddressId && (
+                                            <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#888' }}> (based on delivery address)</span>
+                                        )}
+                                    </span>
+                                    <span>
+                                        {selectedAddressId
+                                            ? (taxRate === 0 ? <span style={{ color: '#2e7d32', fontWeight: 600 }}>Exempt / Zero Rated</span> : `+ ${formatPrice(taxAmount)}`)
+                                            : '—'}
+                                    </span>
                                 </div>
                                 <div className="cart-summary-row cart-summary-row--muted">
-                                    <span>Shipping</span>
+                                    <span>Shipping &amp; Handling</span>
                                     <span>{selectedAddressId ? `+ ${formatPrice(priceBreakdown.shippingAmt)}` : '—'}</span>
                                 </div>
 
                                 <div className="cart-finance-note">
                                     <i className="fas fa-info-circle"></i>
-                                    Prices shown include selling markup. GST is calculated based on your delivery address and applied at billing.
+                                    Listed prices are exclusive of GST. GST is calculated based on your delivery address and shown separately above.
                                 </div>
 
                                 <div className="cart-promo">
@@ -1871,7 +1892,7 @@ function Cart() {
                                 </div>
                                 <div className="cart-summary-divider" />
                                 <div className="cart-summary-total">
-                                    <span>{selectedAddressId ? 'Grand Total' : 'Subtotal'}</span>
+                                    <span>{selectedAddressId ? 'Grand Total (incl. GST)' : 'Subtotal (excl. GST)'}</span>
                                     <span>{formatPrice(total)}</span>
                                 </div>
                                 {currency !== 'INR' && (
