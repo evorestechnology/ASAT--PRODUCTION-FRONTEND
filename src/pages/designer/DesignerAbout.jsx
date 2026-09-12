@@ -3,7 +3,7 @@ import BackButton from '../../components/BackButton';
 
 function DesignerAbout() {
     return (
-        <div style={{ maxWidth: '800px', margin: '60px auto', padding: '40px', textAlign: 'center', background: 'white', border: '1px solid #eee' }}>
+        <div style={{ maxWidth: '800px', margin: '40px auto', padding: 'clamp(20px, 5vw, 40px)', width: 'min(800px, calc(100% - 32px))', textAlign: 'center', background: 'white', border: '1px solid #eee', borderRadius: '12px' }}>
             <BackButton />
             <h1 style={{ fontFamily: "'Cinzel', serif" }}>OUR VISION</h1>
             <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '1.1rem', color: '#555', lineHeight: 1.6 }}>

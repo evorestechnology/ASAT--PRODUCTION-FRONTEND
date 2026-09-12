@@ -77,6 +77,8 @@ const styles = `
         display: flex;
         flex-direction: column;
         gap: 5px;
+        flex: 1;
+        min-width: 0;
     }
     .ticket-subj {
         font-family: 'Cormorant Garamond', 'Cinzel', serif;
@@ -91,7 +93,7 @@ const styles = `
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
-        max-width: 300px;
+        max-width: 100%;
     }
     .ticket-date {
         font-size: 0.7rem;
@@ -171,7 +173,7 @@ const styles = `
         justify-content: flex-end;
     }
     .drawer-content {
-        width: 450px;
+        width: min(450px, 100vw);
         max-width: 100%;
         height: 100%;
         background: rgba(255, 255, 255, 0.85);
@@ -185,6 +187,16 @@ const styles = `
     @keyframes slideIn {
         from { transform: translateX(100%); }
         to { transform: translateX(0); }
+    }
+
+    @media (max-width: 480px) {
+        .support-page { padding: 24px 3%; }
+        .glass-card { padding: 18px 14px; }
+        .support-title { font-size: 1.5rem; }
+        .ticket-item { padding: 14px 12px; }
+        .drawer-header { padding: 16px 14px; }
+        .chat-messages { padding: 16px 14px; }
+        .chat-input-area { padding: 14px 10px; }
     }
     .drawer-header {
         padding: 24px;

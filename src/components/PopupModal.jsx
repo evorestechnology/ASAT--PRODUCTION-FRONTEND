@@ -151,6 +151,11 @@ function PopupModal() {
                 .popup-cta-btn:active {
                     transform: scale(0.98);
                 }
+                @media (max-width: 480px) {
+                    .popup-overlay { padding: 14px; }
+                    .popup-modal { padding: 36px 20px 28px; border-radius: 18px; }
+                    .popup-title { font-size: 1.25rem; }
+                }
             `}</style>
             <div className="popup-modal">
                 <button className="popup-close-btn" onClick={closeModal} aria-label="Close popup">&#x2715;</button>

@@ -1644,7 +1644,7 @@ function DesignerUpload() {
                                 </button>
                                 {showTagInfo && (
                                     <div style={{
-                                        position: 'absolute', top: '100%', left: 0, marginTop: 6, width: 260,
+                                        position: 'absolute', top: '100%', left: 0, marginTop: 6, width: 'min(260px, calc(100vw - 48px))',
                                         padding: '10px 12px', background: '#1e293b', color: '#f8fafc',
                                         fontSize: '0.72rem', borderRadius: 6, zIndex: 100, boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
                                         lineHeight: 1.4

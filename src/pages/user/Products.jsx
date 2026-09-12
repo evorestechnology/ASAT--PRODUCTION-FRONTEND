@@ -148,6 +148,7 @@ const extraStyles = `
     box-shadow: 0 12px 36px rgba(0,0,0,0.18);
     border-radius: 12px;
     min-width: 175px;
+    max-width: min(300px, 90vw);
     overflow: hidden;
     padding: 6px;
     display: flex;
@@ -510,6 +511,11 @@ const extraStyles = `
     }
     .blu-card__price {
       font-size: 0.78rem !important;
+    }
+  }
+  @media (max-width: 360px) {
+    .blu-products-grid {
+      gap: 8px;
     }
   }
 `;
@@ -1046,10 +1052,10 @@ function Products() {
       <div className={`products-page ${launched ? 'products-page--launched' : ''}`}>
         {/* ── Sticky Filter Bar ── */}
         <div className="pcol-filter-bar" style={{ background: '#FFFFFF', borderBottom: '1px solid #EBEBEB', padding: '12px 0' }}>
-          <div className="pcol-filter-bar__inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+          <div className="pcol-filter-bar__inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
 
             {/* Filter 1: Category / All Drops */}
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px', alignItems: 'center', maxWidth: '100%' }}>
               {categories.map((cat) => {
                 const isSelected = activeCategory === cat || (cat === 'All Drops' && (activeCategory === 'All' || activeCategory === 'All Drops'));
                 return (

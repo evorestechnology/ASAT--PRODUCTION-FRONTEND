@@ -124,16 +124,30 @@ function DesignerProductDetail() {
 
     return (
         <main className="dsn-upload" style={{ minHeight: 'calc(100vh - 140px)', padding: '40px 5%' }}>
+            <style>{`
+                .dsn-pdetail-grid {
+                    display: grid;
+                    grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.4fr);
+                    gap: 40px;
+                    margin-top: 20px;
+                }
+                @media (max-width: 860px) {
+                    .dsn-pdetail-grid {
+                        grid-template-columns: 1fr;
+                        gap: 24px;
+                    }
+                }
+                @media (max-width: 480px) {
+                    main.dsn-upload {
+                        padding: 20px 4% !important;
+                    }
+                }
+            `}</style>
             <ToastContainer toasts={toasts} />
             <BackButton />
 
             {/* Main Content Layout */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(280px, 1fr) minmax(320px, 1.4fr)',
-                gap: 40,
-                marginTop: 20
-            }}>
+            <div className="dsn-pdetail-grid">
                 {/* Left Column: Cover Image & Size Chart */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                     {/* Cover Photo */}

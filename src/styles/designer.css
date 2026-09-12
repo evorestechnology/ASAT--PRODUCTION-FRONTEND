@@ -1604,6 +1604,35 @@
     font-family: 'Montserrat', sans-serif;
     font-size: 0.85rem;
 }
+.dsn-upload__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+.dsn-upload__nav-spacer {
+    flex: 1;
+}
+.dsn-upload__nav-btn--back {
+    padding: 12px 20px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.dsn-upload__nav-btn--back:hover {
+    border-color: #000;
+    background: rgba(0, 0, 0, 0.04);
+}
 
 /* ── Designer Header & Navigation Redesign ──────────────────── */
 .dsn-header {
@@ -1722,6 +1751,7 @@
     border-radius: 12px;
     box-shadow: 0 16px 48px rgba(0,0,0,0.06);
     min-width: 200px;
+    max-width: calc(100vw - 24px);
     z-index: 100;
     overflow: hidden;
     padding: 6px 0;
@@ -1809,16 +1839,18 @@
     .dsn-header__link--active::after { display: none; }
     .dsn-header__hamburger { display: flex; }
 }
+@media (max-width: 900px) {
+    .dsn-dash__stats { grid-template-columns: repeat(2, 1fr); }
+    .dsn-earnings__cards { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 768px) {
     .dsn-auth__form--grid { grid-template-columns: 1fr; }
     .dsn-auth__submit-row { grid-column: 1; }
-    .dsn-dash__stats { grid-template-columns: 1fr; }
     .dsn-profile__header-card { flex-direction: column; text-align: center; }
     .dsn-profile__meta { justify-content: center; }
     .dsn-profile__grid { grid-template-columns: 1fr; }
     .dsn-profile__group--full { grid-column: 1; }
     .dsn-profile__security-row { flex-direction: column; text-align: center; }
-    .dsn-earnings__cards { grid-template-columns: 1fr; }
     .dsn-orders__detail { flex-direction: column; gap: 10px; }
     .dsn-upload__zone-grid, .dsn-upload__zone-files, .dsn-upload__details-grid { grid-template-columns: 1fr; }
     .dsn-upload__step-label { display: none; }
@@ -1827,10 +1859,33 @@
     .dsn-upload__mockup-row label { text-align: center; }
 }
 @media (max-width: 480px) {
-    .dsn-page-title { font-size: 1.5rem; }
-    .dsn-auth__card { padding: 36px 24px; }
-    .dsn-dash__stat-num { font-size: 1.4rem; }
+    .dsn-dash, .dsn-orders, .dsn-earnings, .dsn-ranking, .dsn-designs, .dsn-upload, .dsn-profile, .dsn-analytics { padding: 20px 14px; }
+    .dsn-dash__stats { grid-template-columns: 1fr; gap: 12px; }
+    .dsn-dash__chart-section { padding: 18px 14px; border-radius: 12px; }
+    .dsn-dash__chart-title { font-size: 0.95rem; }
+    .dsn-dash__toggle-btn { padding: 6px 12px; font-size: 0.65rem; }
+    .dsn-dash__chart-wrap { height: 260px; }
+    .dsn-dash__chart-wrap--pie { height: 230px; }
+    .dsn-earnings__cards { grid-template-columns: 1fr; }
+    .dsn-orders__filter-group { width: 100%; }
+    .dsn-orders__filter-group input, .dsn-orders__filter-group select { width: 100%; min-width: 0; }
+    .dsn-orders__clear { width: 100%; text-align: center; }
+    .dsn-table th, .dsn-table td { padding: 12px 10px; font-size: 0.75rem; }
+    .dsn-page-title { font-size: 1.35rem; }
+    .dsn-auth__card { padding: 24px 16px; }
+    .dsn-dash__stat-num { font-size: 1.3rem; }
     .dsn-designs__grid { grid-template-columns: 1fr; }
+    .dsn-upload__step-dot { width: 30px; height: 30px; font-size: 0.72rem; }
+    .dsn-upload__section { padding: 20px 14px; border-radius: 12px; }
+    .dsn-upload__nav { flex-direction: column; align-items: stretch; }
+    .dsn-upload__nav-btn--back, .dsn-upload__nav .dsn-auth__btn { width: 100%; justify-content: center; }
+    .dsn-profile__header-card { padding: 24px 16px; gap: 16px; }
+    .dsn-profile__form { padding: 20px 14px; border-radius: 12px; }
+    .dsn-profile__pass-btn { width: 100%; justify-content: center; }
+    .chart-box { padding: 18px 14px; height: 320px; }
+    .metric-card { padding: 18px 14px; }
+    .metric-value { font-size: 1.5rem; }
+    .analytics-header h2 { font-size: 1.35rem; }
 }
 
 /* ═══════════════════════════════════════════════════════════════

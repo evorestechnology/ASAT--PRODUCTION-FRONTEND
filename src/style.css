@@ -46,6 +46,11 @@
     box-sizing: border-box;
 }
 
+img, picture, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+}
+
 html {
     min-height: 100vh;
     background: var(--bg);
@@ -56,12 +61,32 @@ html {
 }
 
 body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--fg);
     background: var(--bg);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 #root {
     width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Responsive Table Utility */
+.responsive-table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Manufacturer, Master dashboards — keep doodle bg for their portals */
@@ -74,17 +99,6 @@ body {
     background: var(--bg);
     width: 100%;
     max-width: 100%;
-}
-
-body {
-    margin: 0;
-    font-family: var(--font-body);
-    color: var(--fg);
-    background: var(--bg);
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    width: 100%;
 }
 
 /* ─── Header & Nav ─── */
@@ -587,6 +601,41 @@ header {
 .grid-item span, .product-card span {
     letter-spacing: 2px;
     text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+}
+
+@media (max-width: 1024px) {
+    .scroll-container.equal-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    .product-card, .grid-item {
+        height: 280px;
+        font-size: 1.05rem;
+        padding: 18px;
+    }
+}
+
+@media (max-width: 600px) {
+    .scroll-container.equal-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .product-card, .grid-item {
+        height: 190px;
+        font-size: 0.85rem;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .scroll-container.equal-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .product-card, .grid-item {
+        height: 160px;
+        font-size: 0.82rem;
+    }
 }
 
 

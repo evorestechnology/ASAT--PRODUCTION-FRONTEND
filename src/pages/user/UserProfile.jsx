@@ -212,7 +212,7 @@ function UserProfile() {
         <>
             <style>{styles}</style>
 
-            <main style={{ flex: 1, padding: '10px 0', minHeight: '80vh', background: 'var(--bg, #FAFAF8)' }}>
+            <main style={{ flex: 1, padding: '10px 16px', minHeight: '80vh', background: 'var(--bg, #FAFAF8)', boxSizing: 'border-box' }}>
                 <div className="container">
                     <h2 style={{ fontFamily: "'Cormorant Garamond', 'Cinzel', serif", textAlign: 'center', marginBottom: '30px' }}>ACCOUNT SETTINGS</h2>
                 
@@ -233,13 +233,13 @@ function UserProfile() {
                     </div>
                     <div className="form-group full-width">
                         <label>Contact Number</label>
-                        <div style={{ display: 'flex', gap: '15px' }}>
+                        <div style={{ display: 'flex', gap: '10px' }}>
                             <input 
                                 type="text" 
                                 placeholder="+91" 
                                 value={countryCode} 
                                 onChange={(e) => setCountryCode(e.target.value)} 
-                                style={{ width: '100px' }} 
+                                style={{ width: 'clamp(65px, 22%, 90px)' }} 
                                 required
                             />
                             <input 
@@ -247,7 +247,7 @@ function UserProfile() {
                                 placeholder="Enter mobile number" 
                                 value={mobileNumber} 
                                 onChange={(e) => setMobileNumber(e.target.value)} 
-                                style={{ flex: 1 }} 
+                                style={{ flex: 1, minWidth: 0 }} 
                                 required
                             />
                         </div>

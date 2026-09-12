@@ -242,6 +242,22 @@ const styles = `
     .auth-back-home:hover {
         color: var(--gold);
     }
+
+    @media (max-width: 480px) {
+        .auth-form-side {
+            padding: 70px 20px 30px;
+        }
+        .auth-title {
+            font-size: 1.75rem;
+        }
+        .auth-subtitle {
+            margin-bottom: 20px;
+        }
+        .auth-back-home {
+            top: 20px;
+            right: 20px;
+        }
+    }
 `;
 
 function UserRegister() {

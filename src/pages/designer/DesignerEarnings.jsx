@@ -213,44 +213,48 @@ function DesignerEarnings() {
 
                     <div className="dsn-earnings__action-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '24px 0 20px', flexWrap: 'wrap', gap: 12 }}>
                         {/* Subpage / Tab Navigation */}
-                        <div style={{ display: 'flex', gap: 10, background: '#f4f4f5', padding: 4, borderRadius: 8, border: '1px solid #e4e4e7' }}>
+                        <div style={{ display: 'flex', gap: 8, background: '#f4f4f5', padding: 4, borderRadius: 8, border: '1px solid #e4e4e7', flexWrap: 'wrap', width: '100%', maxWidth: '640px' }}>
                             <button
                                 onClick={() => setActiveTab('sales')}
                                 style={{
-                                    padding: '8px 18px',
+                                    flex: '1 1 auto',
+                                    padding: '8px 14px',
                                     borderRadius: 6,
                                     border: 'none',
-                                    fontSize: '0.82rem',
+                                    fontSize: '0.8rem',
                                     fontWeight: 700,
                                     fontFamily: 'Montserrat',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
                                     background: activeTab === 'sales' ? '#fff' : 'transparent',
                                     color: activeTab === 'sales' ? 'var(--gold, #C5A059)' : '#666',
-                                    boxShadow: activeTab === 'sales' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none'
+                                    boxShadow: activeTab === 'sales' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                                    textAlign: 'center'
                                 }}
                             >
                                 <i className="fas fa-box-open" style={{ marginRight: 6 }}></i>
-                                Sold Designs History ({salesHistory.length})
+                                Sold Designs ({salesHistory.length})
                             </button>
                             <button
                                 onClick={() => setActiveTab('withdrawals')}
                                 style={{
-                                    padding: '8px 18px',
+                                    flex: '1 1 auto',
+                                    padding: '8px 14px',
                                     borderRadius: 6,
                                     border: 'none',
-                                    fontSize: '0.82rem',
+                                    fontSize: '0.8rem',
                                     fontWeight: 700,
                                     fontFamily: 'Montserrat',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
                                     background: activeTab === 'withdrawals' ? '#fff' : 'transparent',
                                     color: activeTab === 'withdrawals' ? 'var(--gold, #C5A059)' : '#666',
-                                    boxShadow: activeTab === 'withdrawals' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none'
+                                    boxShadow: activeTab === 'withdrawals' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                                    textAlign: 'center'
                                 }}
                             >
                                 <i className="fas fa-history" style={{ marginRight: 6 }}></i>
-                                Withdrawal History ({withdrawals.length})
+                                Withdrawals ({withdrawals.length})
                             </button>
                         </div>
 

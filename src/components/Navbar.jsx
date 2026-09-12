@@ -238,6 +238,7 @@ function Navbar() {
                     box-shadow: 0 16px 40px rgba(0,0,0,0.12);
                     z-index: 2500;
                     min-width: 240px;
+                    max-width: calc(100vw - 24px);
                     max-height: 280px;
                     overflow-y: auto;
                     border-radius: 14px;
@@ -647,6 +648,7 @@ function Navbar() {
                                         boxShadow: '0 16px 40px rgba(0,0,0,0.12)',
                                         borderRadius: '16px',
                                         width: '240px',
+                                        maxWidth: 'calc(100vw - 24px)',
                                         overflow: 'hidden',
                                     }}
                                 >
@@ -792,11 +794,17 @@ function Navbar() {
                                 Bag {cartCount > 0 && `(${cartCount})`}
                             </Link>
                             <div className="blu-drawer__sep" />
-                            {loggedIn && (
+                            {loggedIn ? (
                                 <>
                                     <Link to="/profile" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>My Profile</Link>
                                     <Link to="/orders" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Orders</Link>
                                     <Link to="/profile" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Reset Password</Link>
+                                    <div className="blu-drawer__sep" />
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Sign In</Link>
+                                    <Link to="/register" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Create Account</Link>
                                     <div className="blu-drawer__sep" />
                                 </>
                             )}

@@ -121,7 +121,7 @@ function DesignerOrders() {
                         placeholder="Search by order ID, product name..." 
                         value={searchTerm} 
                         onChange={e => { setSearchTerm(e.target.value); setPage(1); }} 
-                        style={{ width: '100%', minWidth: '180px' }}
+                        style={{ width: '100%', minWidth: 0 }}
                     />
                 </div>
                 {(dateFrom || dateTo || country !== 'All' || searchTerm) && (

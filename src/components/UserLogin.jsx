@@ -250,16 +250,39 @@ const styles = `
     .fp-step-line.done { background: #2ecc71; }
 
     /* OTP boxes */
-    .fp-otp-row { display: flex; gap: 10px; justify-content: center; margin: 20px 0 8px; }
+    .fp-otp-row { display: flex; gap: clamp(4px, 1.5vw, 10px); justify-content: center; margin: 20px 0 8px; }
     .fp-otp-digit {
-        width: 48px; height: 56px; border: 2px solid #e0e0e0; border-radius: 10px;
-        text-align: center; font-family: 'Courier New', monospace; font-size: 1.6rem; font-weight: 700;
+        width: clamp(34px, 11vw, 48px); height: clamp(44px, 13vw, 56px); border: 2px solid #e0e0e0; border-radius: 10px;
+        text-align: center; font-family: 'Courier New', monospace; font-size: clamp(1.2rem, 4vw, 1.6rem); font-weight: 700;
         color: var(--dark); background: #fafafa; outline: none;
         transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
         caret-color: var(--gold);
+        padding: 0;
     }
     .fp-otp-digit:focus { border-color: var(--gold); background: #fff; box-shadow: 0 0 0 3px rgba(197,160,89,0.18); }
     .fp-otp-digit.filled { border-color: var(--gold); background: rgba(197,160,89,0.06); }
+
+    @media (max-width: 480px) {
+        .auth-form-side {
+            padding: 70px 20px 30px;
+        }
+        .auth-title {
+            font-size: 1.75rem;
+        }
+        .auth-subtitle {
+            margin-bottom: 24px;
+        }
+        .auth-back-home {
+            top: 20px;
+            left: 20px;
+        }
+        .fp-panel {
+            padding: 28px 16px 36px;
+        }
+        .fp-title {
+            font-size: 1.25rem;
+        }
+    }
 
     /* Alerts */
     .fp-alert {

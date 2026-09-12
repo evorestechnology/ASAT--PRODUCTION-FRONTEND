@@ -458,8 +458,8 @@ function UserOrders() {
 
                     {/* Search Bar */}
                     {orders.length > 0 && (
-                        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: 'min(320px, 100%)' }}>
                                 <input
                                     type="text"
                                     placeholder="Search by Order ID, Product Name, Status..."
@@ -473,7 +473,9 @@ function UserOrders() {
                                         color: 'var(--dark)',
                                         fontFamily: "'Montserrat', sans-serif",
                                         fontSize: '0.82rem',
-                                        width: '320px',
+                                        width: '100%',
+                                        maxWidth: '320px',
+                                        boxSizing: 'border-box',
                                         outline: 'none',
                                         transition: 'border-color 0.2s'
                                     }}

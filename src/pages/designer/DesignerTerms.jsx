@@ -379,6 +379,18 @@ const styles = `
         color: #000000;
         background: rgba(0, 0, 0, 0.04);
     }
+    @media (max-width: 600px) {
+        .dt-hero { padding: 70px 16px 36px; }
+        .dt-back { top: 16px; left: 16px; padding: 6px 14px; font-size: 0.7rem; }
+        .dt-body { padding: 36px 16px 60px; }
+        .dt-clause { flex-direction: column; gap: 8px; padding: 14px 14px; }
+        .dt-section-header { gap: 12px; }
+        .dt-section-num { font-size: 1.8rem; min-width: 36px; }
+        .dt-section-title { font-size: 1.15rem; }
+        .dt-nav-item { padding: 12px 14px; font-size: 0.68rem; }
+        .dt-footer-bar { padding: 30px 16px; }
+        .dt-cta-btn { width: 100%; justify-content: center; }
+    }
 `;
 
 function DesignerTerms() {

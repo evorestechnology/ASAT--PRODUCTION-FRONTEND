@@ -87,10 +87,9 @@ const styles = `
         .full-width { grid-column: span 1; }
         .modal-content { padding: 20px; }
     }
-    @media (max-width: 360px) {
+    @media (max-width: 480px) {
         .address-grid { grid-template-columns: 1fr; }
     }
-
 `;
 
 function UserAddress() {
@@ -293,7 +292,7 @@ function UserAddress() {
             <main style={{ flex: 1, padding: '40px 5%', minHeight: '80vh', background: 'var(--bg, #FAFAF8)' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <BackButton />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '12px' }}>
                         <h2 style={{ fontFamily: "'Cormorant Garamond', 'Cinzel', serif", margin: 0 }}>STORED ADDRESSES</h2>
                         <button className="cta-gold" onClick={openAddModal}>+ ADD NEW ADDRESS</button>
                     </div>

@@ -37,6 +37,12 @@ const fpStyles = `
         .fp-overlay { align-items: center; }
         .fp-panel { border-radius: 20px; max-height: 90vh; overflow-y: auto; }
     }
+    @media (max-width: 480px) {
+        .fp-panel { padding: 24px 16px 36px; border-radius: 16px 16px 0 0; }
+        .fp-title { font-size: 1.25rem; }
+        .fp-otp-row { gap: 6px !important; }
+        .fp-otp-digit { width: clamp(34px, 11vw, 44px) !important; height: 48px !important; font-size: 1.25rem !important; border-radius: 8px !important; }
+    }
     .fp-overlay--open .fp-panel { transform: translateY(0); }
     .fp-close-btn {
         position: absolute;

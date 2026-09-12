@@ -728,6 +728,15 @@ const styles = `
             gap: 12px;
         }
     }
+    @media (max-width: 600px) {
+        .addr-row { grid-template-columns: 1fr; gap: 12px; }
+        .addr-actions { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+        .cart-body { padding: 20px 4% 50px; }
+        .cart-summary { padding: 20px 16px; }
+        .cart-checkout-btn { padding: 14px; font-size: 0.78rem; }
+    }
 `;
 
 

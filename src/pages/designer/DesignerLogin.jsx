@@ -211,6 +211,26 @@ const styles = `
     }
     .auth-back-home:hover { color: var(--gold); }
 
+    @media (max-width: 480px) {
+        .auth-form-side {
+            padding: 70px 16px 30px;
+        }
+        .auth-form-container {
+            padding: 24px 18px;
+            border-radius: 12px;
+        }
+        .auth-title {
+            font-size: 1.6rem;
+        }
+        .auth-subtitle {
+            margin-bottom: 24px;
+        }
+        .auth-back-home {
+            top: 20px;
+            left: 20px;
+        }
+    }
+
     /* ─── Login T&C Gate Modal ─── */
     .ltc-overlay {
         position: fixed;

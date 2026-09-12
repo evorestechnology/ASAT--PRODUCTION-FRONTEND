@@ -240,8 +240,8 @@ function DesignerDesigns() {
 
             {/* Search Bar */}
             {designs.length > 0 && (
-                <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'flex-end' }}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: 'min(280px, 100%)' }}>
                         <input
                             type="text"
                             placeholder="Search portfolio..."
@@ -255,7 +255,9 @@ function DesignerDesigns() {
                                 color: 'white',
                                 fontFamily: "'Montserrat', sans-serif",
                                 fontSize: '0.82rem',
-                                width: '280px',
+                                width: '100%',
+                                maxWidth: '280px',
+                                boxSizing: 'border-box',
                                 outline: 'none',
                                 transition: 'border-color 0.2s'
                             }}

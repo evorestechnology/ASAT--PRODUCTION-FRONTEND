@@ -268,12 +268,23 @@ function UserTerms() {
     ];
 
     return (
-        <main style={{ flex: 1, padding: '40px 5%', width: '100%', minHeight: '80vh', background: "var(--bg, #FAFAF8)" }}>
+        <main className="user-terms-main">
+            <style>{`
+                .user-terms-main { flex: 1; padding: 40px 5%; width: 100%; min-height: 80vh; background: var(--bg, #FAFAF8); box-sizing: border-box; }
+                .user-terms-card { padding: 40px; margin-top: 20px; border-radius: 16px; background: rgba(255, 255, 255, 0.95); box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+                .user-terms-title { font-family: 'Cormorant Garamond', 'Cinzel', serif; color: var(--gold, #C5A059); font-size: 2.2rem; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+                @media (max-width: 600px) {
+                    .user-terms-main { padding: 20px 12px; }
+                    .user-terms-card { padding: 20px 14px; border-radius: 12px; }
+                    .user-terms-title { font-size: 1.5rem; }
+                }
+            `}</style>
             <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
                 <BackButton />
-                <div className="glass-card" style={{ padding: '40px', marginTop: '20px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.95)', boxShadow: '0 10px 30px rgba(0,0,0,0.06)' }}>
+                <div className="glass-card user-terms-card">
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <h1 style={{ fontFamily: "'Cormorant Garamond', 'Cinzel', serif", color: 'var(--gold, #C5A059)', fontSize: '2.2rem', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <h1 className="user-terms-title">
                         CUSTOMER TERMS &amp; CONDITIONS
                     </h1>
                     <p style={{ fontFamily: 'Montserrat, sans-serif', color: '#666', fontSize: '0.9rem' }}>

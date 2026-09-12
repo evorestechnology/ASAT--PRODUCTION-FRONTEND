@@ -81,23 +81,23 @@ const TermsModal = ({ isOpen, onClose }) => {
         <div style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', 
             display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            zIndex: 9999, padding: '20px'
+            zIndex: 9999, padding: 'clamp(8px, 3vw, 20px)'
         }}>
             <div style={{
-                background: 'white', padding: '30px', borderRadius: '12px', 
-                width: '100%', maxWidth: '800px', maxHeight: '85vh', 
+                background: 'white', padding: 'clamp(18px, 4vw, 30px)', borderRadius: '12px', 
+                width: '100%', maxWidth: '800px', maxHeight: '88vh', 
                 overflowY: 'auto', position: 'relative',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
             }}>
                 <button onClick={onClose} style={{
-                    position: 'absolute', top: '20px', right: '20px',
-                    background: 'none', border: 'none', fontSize: '1.5rem', 
+                    position: 'absolute', top: '16px', right: '16px',
+                    background: 'none', border: 'none', fontSize: '1.4rem', 
                     cursor: 'pointer', color: '#666'
                 }}>
                     <i className="fas fa-times"></i>
                 </button>
 
-                <h1 style={{ fontFamily: "'Cinzel', serif", color: 'var(--gold)', textAlign: 'center', marginBottom: '30px' }}>TERMS &amp; CONDITIONS</h1>
+                <h1 style={{ fontFamily: "'Cinzel', serif", fontSize: 'clamp(1.2rem, 4vw, 1.7rem)', color: 'var(--gold)', textAlign: 'center', marginBottom: '24px' }}>TERMS &amp; CONDITIONS</h1>
                 
                 <div style={{ fontFamily: 'Montserrat, sans-serif', color: 'var(--dark)' }}>
                     <p style={{ marginBottom: '20px', fontSize: '0.9rem', lineHeight: '1.6' }}>

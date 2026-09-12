@@ -619,6 +619,11 @@ const styles = `
       font-size: 0.78rem;
     }
   }
+  @media (max-width: 360px) {
+    .dpp-grid {
+      gap: 8px;
+    }
+  }
 `;
 
 const SORT_OPTIONS = [

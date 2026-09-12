@@ -212,9 +212,10 @@ const styles = `
             overflow-x: auto !important;
             scroll-snap-type: x mandatory !important;
             gap: 12px !important;
-            padding: 8px 4vw 20px !important;
-            margin: 0 -4% 20px !important;
-            width: 100vw !important;
+            padding: 8px 16px 20px !important;
+            margin: 0 0 20px !important;
+            width: 100% !important;
+            max-width: 100% !important;
             box-sizing: border-box !important;
             height: auto !important;
             max-height: none !important;
@@ -229,7 +230,7 @@ const styles = `
         }
         .pdp-stream-card {
             flex-shrink: 0 !important;
-            width: 80vw !important;
+            width: min(82vw, 360px) !important;
             scroll-snap-align: center !important;
             border-radius: 12px !important;
             overflow: hidden !important;
@@ -463,13 +464,12 @@ const styles = `
         transform: translateY(0);
     }
 
-    /* â”€â”€ Enlarged Image Overlay (Lightbox) â”€â”€ */
+    /* ── Enlarged Image Overlay (Lightbox) ── */
     .pdp-enlarged-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
+        inset: 0;
+        width: 100%;
+        height: 100%;
         background: rgba(12, 12, 12, 0.96);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
@@ -483,7 +483,7 @@ const styles = `
 
     .pdp-enlarged-container {
         position: relative;
-        width: 90%;
+        width: min(92%, 1200px);
         max-width: 1200px;
         height: 85vh;
         display: flex;
@@ -499,10 +499,12 @@ const styles = `
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
         color: white;
         font-family: 'Cormorant Garamond', 'Cinzel', serif;
         letter-spacing: 2px;
-        padding: 0 20px;
+        padding: 0 16px;
         z-index: 10002;
     }
 
@@ -966,10 +968,9 @@ const styles = `
     /* Size Chart Modal Overlay */
     .pdp-sizechart-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
+        inset: 0;
+        width: 100%;
+        height: 100%;
         background: rgba(12, 12, 12, 0.75);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);

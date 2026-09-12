@@ -292,6 +292,18 @@ function DesignerBaseProducts() {
             border-radius: 16px;
             color: #555;
         }
+
+        @media (max-width: 768px) {
+            .dsn-base-page { padding: 24px 4%; }
+            .dsn-base-head { flex-wrap: wrap; gap: 12px; }
+            .dsn-filters-card { padding: 18px 16px; gap: 14px; }
+            .dsn-prod-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        }
+        @media (max-width: 480px) {
+            .dsn-base-title { font-size: 1.4rem; }
+            .dsn-prod-grid { grid-template-columns: 1fr; gap: 16px; }
+            .dsn-prod-img-wrap { height: 200px; }
+        }
     `;
 
     return (

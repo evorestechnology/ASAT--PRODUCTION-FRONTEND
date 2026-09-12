@@ -332,6 +332,13 @@ const styles = `
         .rnk-podium-card--rank3 { order: 3; }
         .rnk-controls { flex-direction: column; align-items: stretch; }
     }
+    @media (max-width: 480px) {
+        .rnk-hero { padding: 40px 4% 30px; }
+        .rnk-hero h1 { font-size: 1.6rem; letter-spacing: 3px; }
+        .rnk-podium-card { padding: 20px 14px; }
+        .rnk-podium-card--rank1 { padding: 26px 16px; }
+        .rnk-table th, .rnk-table td { padding: 12px 14px; font-size: 0.78rem; }
+    }
 `;
 
 function DesignerRankings() {

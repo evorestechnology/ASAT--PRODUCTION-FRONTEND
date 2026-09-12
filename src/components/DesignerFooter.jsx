@@ -192,6 +192,17 @@ function DesignerFooter() {
                         justify-content: center;
                     }
                 }
+                @media (max-width: 380px) {
+                    .blu-footer-card {
+                        padding: 18px 10px 14px;
+                        margin: 12px 6px;
+                    }
+                    .blu-footer-card__copy {
+                        text-align: center;
+                        justify-content: center;
+                        font-size: 8.5px;
+                    }
+                }
             `}</style>
 
             <div className="blu-footer-card">

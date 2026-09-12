@@ -79,6 +79,8 @@ const styles = `
         display: flex;
         flex-direction: column;
         gap: 5px;
+        min-width: 0;
+        flex: 1;
     }
     .ticket-subj {
         font-family: 'Cinzel', serif;
@@ -93,7 +95,7 @@ const styles = `
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
-        max-width: 300px;
+        max-width: 100%;
     }
     .ticket-date {
         font-size: 0.7rem;
@@ -320,6 +322,14 @@ const styles = `
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+    }
+    @media (max-width: 480px) {
+        .support-page { padding: 20px 14px; }
+        .glass-card { padding: 20px 14px; border-radius: 12px; }
+        .support-title { font-size: 1.4rem; }
+        .drawer-content { width: 100vw; }
+        .ticket-item { padding: 14px 12px; }
+        .chat-bubble-wrap { max-width: 88%; }
     }
 `;
 

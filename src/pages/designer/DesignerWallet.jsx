@@ -11,6 +11,11 @@ const styles = `
     .wallet-flex { display: flex; justify-content: space-around; align-items: center; text-align: center; margin-top: 20px; }
     .amount-box h3 { font-family: 'Cinzel', serif; font-size: 0.82rem; letter-spacing: 1.5px; color: #666; font-weight: 600; text-transform: uppercase; }
     .amount { font-size: 2.2rem; font-family: 'Cinzel', serif; color: #000000; margin: 10px 0; font-weight: 700; }
+    @media (max-width: 600px) {
+        .wallet-card { padding: 24px 16px; margin: 20px 14px; border-radius: 12px; }
+        .wallet-flex { flex-direction: column; gap: 24px; }
+        .amount { font-size: 1.7rem; }
+    }
 `;
 
 function DesignerWallet() {

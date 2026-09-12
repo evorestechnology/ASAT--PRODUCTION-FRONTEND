@@ -276,6 +276,46 @@ const styles = `
         margin-top: 4px;
     }
 
+    @media (max-width: 600px) {
+        .auth-row {
+            flex-direction: column;
+            gap: 0;
+        }
+        .auth-phone-row {
+            flex-direction: column;
+            gap: 8px;
+        }
+        .auth-phone-row select {
+            width: 100%;
+        }
+    }
+    @media (max-width: 480px) {
+        .auth-form-side {
+            padding: 70px 16px 30px;
+        }
+        .auth-form-container {
+            padding: 24px 16px;
+            border-radius: 12px;
+        }
+        .auth-title {
+            font-size: 1.6rem;
+        }
+        .auth-subtitle {
+            margin-bottom: 20px;
+        }
+        .auth-back-home {
+            top: 20px;
+            right: 20px;
+        }
+        .ppt-container {
+            padding: 24px 16px;
+            min-height: 440px;
+        }
+        .ppt-logo {
+            font-size: 1.1rem;
+        }
+    }
+
     /* ─── PPT Onboarding Overlay ─── */
     .ppt-overlay {
         position: fixed;

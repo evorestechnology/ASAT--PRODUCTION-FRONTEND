@@ -166,7 +166,7 @@ function DesignerTutorials() {
         }
         .dsn-tut-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
             gap: 30px;
         }
         .dsn-tut-card {
@@ -252,6 +252,12 @@ function DesignerTutorials() {
             border: 1px dashed rgba(0, 0, 0, 0.1);
             border-radius: 16px;
             color: #555;
+        }
+        @media (max-width: 480px) {
+            .dsn-tut-page { padding: 20px 14px; }
+            .dsn-tut-title { font-size: 1.35rem; }
+            .dsn-tut-grid { grid-template-columns: 1fr; gap: 16px; }
+            .dsn-tut-search-wrap { width: 100%; }
         }
     `;
 

@@ -177,6 +177,16 @@ const PAGE_CSS = `
     border-radius: 50%; animation: dddSpin 0.8s linear infinite;
 }
 @keyframes dddSpin { to { transform: rotate(360deg); } }
+
+@media (max-width: 480px) {
+    .ddd-nav { padding: 12px 14px; flex-wrap: wrap; }
+    .ddd-body { padding: 12px 10px 40px; }
+    .ddd-card, .ddd-color-card { padding: 16px 14px; }
+    .ddd-placement-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .ddd-media-pair { width: 100%; justify-content: flex-start; }
+    .ddd-kv { flex-direction: column; gap: 4px; }
+    .ddd-kv__v { text-align: left; }
+}
 `;
 
 /* ── helpers ── */
