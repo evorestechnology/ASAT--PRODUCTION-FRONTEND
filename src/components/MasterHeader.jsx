@@ -285,13 +285,13 @@ function MasterHeader() {
                 }
                 .mst-nav {
                     display: flex;
-                    align-items: center;
+                    align-items: flex-end;
                     gap: 4px;
                     overflow-x: auto;
                     scroll-behavior: smooth;
                     scrollbar-width: none;
                     -ms-overflow-style: none;
-                    padding: 6px 4px;
+                    padding: 4px 4px 6px;
                     flex: 1;
                 }
                 .mst-nav::-webkit-scrollbar {
@@ -426,6 +426,42 @@ function MasterHeader() {
                 @media (min-width: 1025px) {
                     .mst-mobile-overlay { display: none !important; }
                 }
+                 /* ── Nav Section Divider ── */
+                .mst-nav__divider {
+                    display: flex;
+                    align-items: center;
+                    padding: 0 4px;
+                    flex-shrink: 0;
+                    align-self: stretch;
+                }
+                .mst-nav__divider-line {
+                    width: 1px;
+                    height: 100%;
+                    background: rgba(197, 160, 89, 0.2);
+                }
+                .mst-nav__section-group {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    flex-shrink: 0;
+                }
+                .mst-nav__section-label {
+                    font-family: 'Montserrat', sans-serif;
+                    font-size: 0.47rem;
+                    font-weight: 700;
+                    letter-spacing: 1.2px;
+                    text-transform: uppercase;
+                    color: rgba(197, 160, 89, 0.45);
+                    white-space: nowrap;
+                    padding: 1px 4px 2px;
+                    margin-bottom: 2px;
+                }
+                .mst-nav__group {
+                    display: flex;
+                    align-items: center;
+                    gap: 2px;
+                    flex-shrink: 0;
+                }
             `}</style>
 
             {/* ── Top Bar ── */}
@@ -475,23 +511,37 @@ function MasterHeader() {
                 </div>
             </div>
 
-            {/* ── Horizontal Scrollable Navigation Strip (Desktop) ── */}
+            {/* ── Horizontal Grouped Navigation Strip (Desktop) ── */}
             <div className="mst-nav-wrapper">
                 <button className="mst-nav-arrow" onClick={() => scrollNav(-1)} title="Scroll Left">
                     <i className="fas fa-chevron-left"></i>
                 </button>
 
                 <nav className="mst-nav" ref={navRef}>
-                    {allNavLinks.map(l => (
-                        <NavLink
-                            key={l.to}
-                            to={l.to}
-                            end={l.end}
-                            className={({ isActive }) => `mst-nav__link ${isActive ? 'mst-nav__link--active' : ''}`}
-                        >
-                            <i className={l.icon}></i>
-                            <span>{l.label}</span>
-                        </NavLink>
+                    {navSections.map((section, sIdx) => (
+                        <React.Fragment key={section.title}>
+                            {sIdx > 0 && (
+                                <div className="mst-nav__divider">
+                                    <div className="mst-nav__divider-line"></div>
+                                </div>
+                            )}
+                            <div className="mst-nav__section-group">
+                                <div className="mst-nav__section-label">{section.title}</div>
+                                <div className="mst-nav__group">
+                                    {section.links.map(l => (
+                                        <NavLink
+                                            key={l.to}
+                                            to={l.to}
+                                            end={l.end}
+                                            className={({ isActive }) => `mst-nav__link ${isActive ? 'mst-nav__link--active' : ''}`}
+                                        >
+                                            <i className={l.icon}></i>
+                                            <span>{l.label}</span>
+                                        </NavLink>
+                                    ))}
+                                </div>
+                            </div>
+                        </React.Fragment>
                     ))}
                 </nav>
 

@@ -576,30 +576,9 @@ export const generateInvoice = (order) => {
     const wordsLines = doc.splitTextToSize(words, notesWidth);
     doc.text(wordsLines, 14, curY + 8);
 
-    curY += 9 + (wordsLines.length * 3.8);
+    curY += 9 + (wordsLines.length * 3.8) + 4;
 
-    // 2. GST Statutory & Compliance Details Card
-    const gstBoxHeight = 25;
-    doc.setFillColor(248, 249, 252);
-    doc.setDrawColor(225, 228, 235);
-    doc.roundedRect(14, curY, notesWidth, gstBoxHeight, 1.5, 1.5, 'FD');
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(197, 160, 89);
-    doc.text("GST STATUTORY & COMPLIANCE DETAILS", 14 + 3.5, curY + 4.5);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(70, 75, 85);
-    doc.text("• Supplier GSTIN: 37AAMFE8739J1ZQ | Andhra Pradesh (37)", 14 + 3.5, curY + 9);
-    doc.text(`• Place of Supply: ${gstInfo.placeOfSupply} | HSN Code: 6109`, 14 + 3.5, curY + 13.5);
-    doc.text(`• Supply Nature: ${gstInfo.supplyType}`, 14 + 3.5, curY + 18);
-    doc.text(`• Net Taxable: ${formatCurrency(taxableValue)} | Total Tax: ${formatCurrency(totalTax)}`, 14 + 3.5, curY + 22.5);
-
-    curY += gstBoxHeight + 5;
-
-    // 3. Terms & Tax Declarations (With splitTextToSize on EVERY line, no overlap)
+    // 2. Terms & Tax Declarations
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
     doc.setTextColor(100, 105, 115);
