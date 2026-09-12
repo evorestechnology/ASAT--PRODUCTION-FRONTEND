@@ -7,6 +7,9 @@ import { useCurrency } from '../../context/CurrencyContext';
 const styles = `
     /* ═══════ Public Designer Rankings ═══════ */
     .rnk-page {
+        --gold: #C5A059;
+        --gold-light: #E0BA6E;
+        --gold-dark: #A8833A;
         min-height: 90vh;
         background: var(--bg, #FAFAF8);
         padding-bottom: 80px;

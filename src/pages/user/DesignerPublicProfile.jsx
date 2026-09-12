@@ -11,6 +11,9 @@ import { useCurrency, SUPPORTED_CURRENCIES } from '../../context/CurrencyContext
 const styles = `
   /* ── Page Shell ── */
   .dpp-page {
+    --gold: #C5A059;
+    --gold-light: #E0BA6E;
+    --gold-dark: #A8833A;
     min-height: 100vh;
     background: var(--bg, #FAFAF8);
     font-family: 'Montserrat', sans-serif;
@@ -19,7 +22,7 @@ const styles = `
   /* ── Hero Banner ── */
   .dpp-hero {
     position: relative;
-    background: var(--dark);
+    background: #0d0d0f;
     padding: 60px 6% 50px;
     overflow: hidden;
   }
@@ -27,7 +30,7 @@ const styles = `
   .dpp-hero__backdrop {
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at 70% 50%, rgba(197,160,89,0.12) 0%, transparent 65%);
+    background: radial-gradient(ellipse at 70% 50%, rgba(197,160,89,0.15) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -47,9 +50,9 @@ const styles = `
     border-radius: 50%;
     background-size: cover;
     background-position: center;
-    border: 3px solid var(--gold);
+    border: 3px solid #C5A059;
     flex-shrink: 0;
-    box-shadow: 0 0 30px rgba(197,160,89,0.25);
+    box-shadow: 0 0 30px rgba(197,160,89,0.35);
   }
 
   .dpp-hero__info {
@@ -58,24 +61,25 @@ const styles = `
   }
 
   .dpp-hero__label {
-    font-size: 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 700;
     letter-spacing: 4px;
     text-transform: uppercase;
-    color: var(--gold);
+    color: #C5A059;
     margin-bottom: 8px;
   }
 
   .dpp-hero__name {
     font-family: 'Cormorant Garamond', 'Cinzel', serif;
     font-size: clamp(1.6rem, 3vw, 2.5rem);
-    color: #fff;
+    color: #ffffff;
     margin: 0 0 8px;
     letter-spacing: 2px;
   }
 
   .dpp-hero__bio {
-    color: rgba(255,255,255,0.65);
-    font-size: 0.85rem;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.88rem;
     line-height: 1.7;
     max-width: 560px;
     margin: 0 0 16px;
@@ -89,13 +93,16 @@ const styles = `
 
   .dpp-hero__tag {
     background: rgba(197,160,89,0.12);
-    border: 1px solid rgba(197,160,89,0.3);
-    color: var(--gold);
-    padding: 5px 14px;
+    border: 1px solid rgba(197,160,89,0.45);
+    color: #E2C98A;
+    padding: 6px 16px;
     border-radius: 100px;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 600;
     letter-spacing: 1.5px;
     text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
   }
 
   .dpp-social-pill {
@@ -110,7 +117,7 @@ const styles = `
     transition: all 0.25s ease;
     border: 1px solid rgba(197,160,89,0.35);
     background: rgba(197,160,89,0.1);
-    color: var(--gold, #C5A059);
+    color: #C5A059;
     letter-spacing: 0.5px;
   }
   .dpp-social-pill:hover {
@@ -151,29 +158,33 @@ const styles = `
 
   .dpp-hero__stat-num {
     font-family: 'Cormorant Garamond', 'Cinzel', serif;
-    font-size: 1.8rem;
-    color: var(--gold);
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #C5A059;
     line-height: 1;
+    text-shadow: 0 0 15px rgba(197,160,89,0.3);
   }
 
   .dpp-hero__stat-label {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-    margin-top: 4px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 6px;
+    font-weight: 600;
   }
 
   .dpp-hero__back {
     position: absolute;
     top: 24px;
     left: 6%;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.7);
-    padding: 7px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #ffffff;
+    padding: 8px 18px;
     border-radius: 100px;
     font-size: 0.72rem;
+    font-weight: 600;
     letter-spacing: 1.5px;
     cursor: pointer;
     display: flex;
@@ -185,18 +196,19 @@ const styles = `
   }
 
   .dpp-hero__back:hover {
-    border-color: var(--gold);
-    color: var(--gold);
+    border-color: #C5A059;
+    color: #C5A059;
+    background: rgba(197,160,89,0.12);
   }
 
   /* ── Filter Bar ── */
   .dpp-filters {
-    background: #1a1a1a;
-    border-bottom: 1px solid rgba(197,160,89,0.12);
+    background: #111114;
+    border-bottom: 1px solid rgba(197,160,89,0.25);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
   }
 
   .dpp-filters__inner {
@@ -218,7 +230,7 @@ const styles = `
     align-items: center;
     gap: 0;
     padding: 14px 0;
-    border-right: 1px solid rgba(197,160,89,0.12);
+    border-right: 1px solid rgba(197,160,89,0.2);
     padding-right: 24px;
     margin-right: 24px;
     flex-shrink: 0;
@@ -231,10 +243,11 @@ const styles = `
   }
 
   .dpp-filters__label {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
+    font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: rgba(197,160,89,0.6);
+    color: #C5A059;
     margin-right: 12px;
     white-space: nowrap;
     flex-shrink: 0;
@@ -248,11 +261,12 @@ const styles = `
 
   .dpp-pill {
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
     padding: 6px 14px;
     border-radius: 100px;
     font-size: 0.7rem;
+    font-weight: 600;
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -262,32 +276,36 @@ const styles = `
   }
 
   .dpp-pill:hover {
-    border-color: rgba(197,160,89,0.6);
-    color: var(--gold);
+    border-color: #C5A059;
+    color: #C5A059;
   }
 
   .dpp-pill.active {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: #111;
-    font-weight: 600;
+    background: #C5A059;
+    border-color: #C5A059;
+    color: #000000;
+    font-weight: 700;
   }
 
   .dpp-sort-select {
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.75);
-    padding: 7px 12px;
+    border: 1px solid rgba(197,160,89,0.35);
+    color: #ffffff;
+    padding: 8px 14px;
     border-radius: 6px;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
+    font-weight: 600;
     font-family: 'Montserrat', sans-serif;
     cursor: pointer;
-    background: rgba(255,255,255,0.05);
+    background: #1a1a20;
     outline: none;
     letter-spacing: 0.5px;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease;
   }
-  .dpp-sort-select:focus { border-color: var(--gold); }
-  .dpp-sort-select option { background: #1a1a1a; color: #fff; }
+  .dpp-sort-select:focus {
+    border-color: #C5A059;
+    box-shadow: 0 0 8px rgba(197,160,89,0.3);
+  }
+  .dpp-sort-select option { background: #111114; color: #ffffff; }
 
   .dpp-price-inputs {
     display: flex;
@@ -296,22 +314,27 @@ const styles = `
   }
 
   .dpp-price-input {
-    width: 80px;
-    border: 1px solid rgba(255,255,255,0.15);
+    width: 85px;
+    border: 1px solid rgba(197,160,89,0.35);
     border-radius: 6px;
-    padding: 7px 10px;
-    font-size: 0.72rem;
-    font-family: 'Montserrat', sans-serif;
-    color: rgba(255,255,255,0.75);
-    outline: none;
-    transition: border-color 0.2s;
-    background: rgba(255,255,255,0.05);
-  }
-  .dpp-price-input::placeholder { color: rgba(255,255,255,0.25); }
-  .dpp-price-input:focus { border-color: var(--gold); }
-  .dpp-price-sep {
-    color: rgba(255,255,255,0.2);
+    padding: 8px 10px;
     font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    color: #ffffff;
+    outline: none;
+    transition: all 0.2s ease;
+    background: #1a1a20;
+  }
+  .dpp-price-input::placeholder { color: rgba(255,255,255,0.4); }
+  .dpp-price-input:focus {
+    border-color: #C5A059;
+    box-shadow: 0 0 8px rgba(197,160,89,0.3);
+  }
+  .dpp-price-sep {
+    color: #C5A059;
+    font-size: 0.85rem;
+    font-weight: 700;
   }
 
   /* ── Products Grid ── */
