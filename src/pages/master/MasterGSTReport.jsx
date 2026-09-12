@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "../../api";
 import "../../styles/admin.css";
 import BackButton from "../../components/BackButton";
@@ -7,26 +7,90 @@ import { useToast, ToastContainer, TOAST_CSS } from "../../components/useToast";
 const AP_KEYWORDS = [
     "andhra pradesh","ap","visakhapatnam","vizag","vijayawada",
     "guntur","tirupati","kurnool","rajahmundry","nellore",
-    "kakinada","anantapur","kadapa","ongole","eluru","srikakulam"
+    "kakinada","anantapur","kadapa","ongole","eluru","srikakulam","gudivada"
 ];
 
 function isAndhraPradesh(address = "") {
     const lower = address.toLowerCase();
-    return AP_KEYWORDS.some(k => lower.includes(k));
+    return AP_KEYWORDS.some(k => lower.includes(k)) || /5[1-3]\d{4}/.test(address);
 }
 
 function computeGstBreakdown(order) {
-    const taxAmount = Number(order.tax_amount || 0);
-    const country = order.country || "";
+    const pricingHistory = order.status_history?.[0]?.pricing || {};
+    const items = Array.isArray(order.items) ? order.items : [];
+    const itemsSubtotal = items.reduce((sum, it) => sum + ((Number(it.price ?? it.user_price ?? it.unit_price ?? 0)) * (Number(it.qty) || 1)), 0);
+    const grandTotal = Number(order.total_amount ?? order.totalAmount ?? itemsSubtotal);
+
+    let shipping = 0;
+    if (order.shipping_amount !== undefined && order.shipping_amount !== null && !isNaN(order.shipping_amount)) {
+        shipping = Number(order.shipping_amount);
+    } else if (order.shippingAmount !== undefined && order.shippingAmount !== null && !isNaN(order.shippingAmount)) {
+        shipping = Number(order.shippingAmount);
+    } else if (pricingHistory.shipping_amount !== undefined && !isNaN(pricingHistory.shipping_amount)) {
+        shipping = Number(pricingHistory.shipping_amount);
+    }
+
+    let rawTax = 0;
+    if (order.tax_amount !== undefined && order.tax_amount !== null && !isNaN(order.tax_amount)) {
+        rawTax = Number(order.tax_amount);
+    } else if (order.taxAmount !== undefined && order.taxAmount !== null && !isNaN(order.taxAmount)) {
+        rawTax = Number(order.taxAmount);
+    } else if (pricingHistory.tax_amount !== undefined && !isNaN(pricingHistory.tax_amount)) {
+        rawTax = Number(pricingHistory.tax_amount);
+    }
+
+    const difference = Math.max(0, grandTotal - itemsSubtotal);
+    if (!shipping && !rawTax && difference > 0) {
+        shipping = difference;
+    }
+
+    const country = order.country || "India";
     const address = order.address || "";
-    if (country !== "India") {
-        return { cgst: 0, sgst: 0, igst: 0, taxAmount, supplyType: "Export" };
+    const isIndia = !country || country.trim().toLowerCase() === "india";
+    const maxUnitPrice = items.reduce((max, it) => Math.max(max, Number(it.price ?? it.user_price ?? it.unit_price ?? 0)), 0);
+    const defaultTaxRate = maxUnitPrice > 2500 ? 18 : 5;
+
+    let taxableValue = 0;
+    let totalTax = 0;
+
+    if (isIndia) {
+        if (rawTax > 0) {
+            totalTax = rawTax;
+            taxableValue = Math.max(0, grandTotal - shipping - totalTax);
+            if (taxableValue <= 0) taxableValue = itemsSubtotal;
+        } else {
+            taxableValue = Math.round((itemsSubtotal / (1 + defaultTaxRate / 100)) * 100) / 100;
+            totalTax = Math.round((itemsSubtotal - taxableValue) * 100) / 100;
+        }
+    } else {
+        taxableValue = itemsSubtotal;
+        totalTax = 0;
     }
-    if (isAndhraPradesh(address)) {
-        const half = Math.round(taxAmount / 2);
-        return { cgst: half, sgst: taxAmount - half, igst: 0, taxAmount, supplyType: "Intra-State (AP)" };
+
+    const isAp = isAndhraPradesh(address);
+    let cgst = 0, sgst = 0, igst = 0, supplyType = "Export";
+
+    if (isIndia) {
+        if (isAp) {
+            cgst = Math.round((totalTax / 2) * 100) / 100;
+            sgst = Math.round((totalTax - cgst) * 100) / 100;
+            supplyType = "Intra-State (AP)";
+        } else {
+            igst = totalTax;
+            supplyType = "Inter-State";
+        }
     }
-    return { cgst: 0, sgst: 0, igst: taxAmount, taxAmount, supplyType: "Inter-State" };
+
+    return {
+        cgst,
+        sgst,
+        igst,
+        taxAmount: totalTax,
+        shippingAmount: shipping,
+        taxableValue,
+        supplyType,
+        totalAmount: grandTotal
+    };
 }
 
 function fmtDate(iso) {
@@ -73,18 +137,22 @@ export default function MasterGSTReport() {
             const data = await apiFetch("/api/orders");
             const list = (data || []).map(o => {
                 const gst = computeGstBreakdown(o);
-                const taxable = Number(o.total_amount || 0) - Number(o.tax_amount || 0) - Number(o.shipping_amount || 0);
                 return {
                     id: o.id,
                     orderId: o.order_id || o.id,
+                    order_id: o.order_id || o.id,
                     createdAt: o.created_at,
                     customerName: o.customer_name || "—",
+                    customer_name: o.customer_name || "—",
                     country: o.country || "—",
                     address: o.address || "",
-                    totalAmount: Number(o.total_amount || 0),
-                    shippingAmount: Number(o.shipping_amount || 0),
-                    taxAmount: Number(o.tax_amount || 0),
-                    taxableValue: Math.max(0, taxable),
+                    totalAmount: gst.totalAmount,
+                    total_amount: gst.totalAmount,
+                    shippingAmount: gst.shippingAmount,
+                    shipping_amount: gst.shippingAmount,
+                    taxAmount: gst.taxAmount,
+                    tax_amount: gst.taxAmount,
+                    taxableValue: gst.taxableValue,
                     cgst: gst.cgst,
                     sgst: gst.sgst,
                     igst: gst.igst,
@@ -94,6 +162,7 @@ export default function MasterGSTReport() {
                     contact: o.contact,
                     phone: o.phone,
                     statusHistory: o.status_history,
+                    status_history: o.status_history,
                     designerUsername: o.designer_username,
                     designerEarnings: Number(o.designer_earnings || 0),
                     mfgEarnings: Number(o.mfg_earnings || 0),
