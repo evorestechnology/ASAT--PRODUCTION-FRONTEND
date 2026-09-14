@@ -74,6 +74,28 @@ function MfgOrders() {
     const [neckLogoGenItem, setNeckLogoGenItem] = useState(null);
     const neckLogoRef = useRef(null);
     const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
+    const [neckLogoMode, setNeckLogoMode] = useState('dark');
+    const [neckLogoTransparent, setNeckLogoTransparent] = useState(true);
+
+    const isGarmentDark = (item) => {
+        if (!item) return true;
+        const hex = resolveColorHex(item);
+        if (!hex) return true;
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c.split('').map(x => x + x).join('');
+        if (c.length !== 6) return true;
+        const r = parseInt(c.substr(0, 2), 16);
+        const g = parseInt(c.substr(2, 2), 16);
+        const b = parseInt(c.substr(4, 2), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 150;
+    };
+
+    useEffect(() => {
+        if (neckLogoGenItem) {
+            setNeckLogoMode(isGarmentDark(neckLogoGenItem) ? 'dark' : 'white');
+        }
+    }, [neckLogoGenItem]);
 
     const getCompletedDate = (o) => {
         if (!o) return null;
@@ -238,12 +260,15 @@ function MfgOrders() {
         setIsGeneratingLogo(true);
         try {
             const canvas = await html2canvas(neckLogoRef.current, {
-                backgroundColor: null,
+                backgroundColor: neckLogoTransparent ? null : (neckLogoMode === 'dark' ? '#121212' : '#ffffff'),
                 useCORS: true,
                 scale: 3
             });
             const link = document.createElement('a');
-            link.download = `neck-logo-${neckLogoGenItem.designerUsername || 'designer'}-${neckLogoGenItem.name.replace(/\s+/g, '-')}.png`;
+            const garmentSlug = (neckLogoGenItem.name || 'garment').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const colorSlug = (neckLogoGenItem.colorName || neckLogoGenItem.color || neckLogoMode).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const sizeSlug = (neckLogoGenItem.size || 'M').toUpperCase();
+            link.download = `neck-logo-${garmentSlug}-${colorSlug}-${sizeSlug}-${neckLogoMode}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
             showToast("Neck logo downloaded successfully!", "success");
@@ -1271,15 +1296,17 @@ function MfgOrders() {
                     <div style={{
                         background: '#1a1a1a',
                         width: '100%',
-                        maxWidth: 400,
+                        maxWidth: 440,
                         borderRadius: 12,
-                        padding: 30,
+                        padding: '24px 28px',
                         position: 'relative',
                         boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
                         border: '1px solid #333',
                         display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        maxHeight: '90vh',
+                        overflowY: 'auto'
                     }}>
                         <button 
                             onClick={() => setNeckLogoGenItem(null)}
@@ -1297,53 +1324,202 @@ function MfgOrders() {
                             <i className="fas fa-times"></i>
                         </button>
                         
-                        <h2 style={{ fontFamily: "'Montserrat'", fontSize: '1.2rem', fontWeight: 600, color: '#fff', marginBottom: 20, width: '100%', textAlign: 'center' }}>
+                        <h2 style={{ fontFamily: "'Montserrat'", fontSize: '1.15rem', fontWeight: 700, color: '#fff', marginBottom: 4, width: '100%', textAlign: 'center' }}>
                             Generate Neck Logo
                         </h2>
+                        <p style={{ fontSize: '0.78rem', color: '#999', marginBottom: 16, textAlign: 'center' }}>
+                            {neckLogoGenItem.name} • {neckLogoGenItem.colorName || neckLogoGenItem.color || 'Standard'} • Size: {neckLogoGenItem.size || 'M'}
+                        </p>
 
-                        {/* Capture Area */}
-                        <div 
-                            ref={neckLogoRef}
-                            style={{
-                                width: '220px',
-                                padding: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '15px',
-                                background: '#ffffff',
-                                borderRadius: '8px',
-                                border: '1px solid #ddd'
-                            }}
-                        >
-                            <img 
-                                src="/dp-logo.png" 
-                                alt="Designer Paradise Logo" 
+                        {/* Garment Tone Selector */}
+                        <div style={{ display: 'flex', gap: 10, marginBottom: 16, width: '100%', justifyContent: 'center' }}>
+                            <button
+                                type="button"
+                                onClick={() => setNeckLogoMode('dark')}
                                 style={{
-                                    width: '80px',
-                                    height: 'auto',
-                                    display: 'block'
+                                    flex: 1,
+                                    padding: '8px 10px',
+                                    borderRadius: 6,
+                                    border: neckLogoMode === 'dark' ? '2px solid #C5A059' : '1px solid #444',
+                                    background: neckLogoMode === 'dark' ? '#262626' : '#141414',
+                                    color: neckLogoMode === 'dark' ? '#C5A059' : '#888',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 6
                                 }}
-                            />
-                            <div style={{
-                                fontFamily: "'Montserrat', sans-serif",
-                                fontWeight: 600,
-                                fontSize: '12px',
-                                textTransform: 'uppercase',
-                                color: '#000',
-                                letterSpacing: '0.05em',
-                                textAlign: 'center'
-                            }}>
-                                By {designCache[neckLogoGenItem.id]?.designerName || neckLogoGenItem.designerUsername || 'Designer'}
+                            >
+                                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#000', border: '1px solid #666', display: 'inline-block' }} />
+                                Dark Garment (White Print)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setNeckLogoMode('white')}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 10px',
+                                    borderRadius: 6,
+                                    border: neckLogoMode === 'white' ? '2px solid #C5A059' : '1px solid #444',
+                                    background: neckLogoMode === 'white' ? '#262626' : '#141414',
+                                    color: neckLogoMode === 'white' ? '#C5A059' : '#888',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 6
+                                }}
+                            >
+                                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#fff', border: '1px solid #ccc', display: 'inline-block' }} />
+                                Light Garment (Black Print)
+                            </button>
+                        </div>
+
+                        {/* Fabric Mockup Preview Wrapper */}
+                        <div style={{
+                            width: '100%',
+                            padding: 16,
+                            borderRadius: 8,
+                            background: neckLogoMode === 'dark' ? '#121212' : '#f5f5f5',
+                            border: neckLogoMode === 'dark' ? '1px solid #2a2a2a' : '1px solid #e0e0e0',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.15)'
+                        }}>
+                            {/* Capture Area */}
+                            <div 
+                                ref={neckLogoRef}
+                                style={{
+                                    width: '280px',
+                                    padding: '22px 18px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: neckLogoTransparent ? 'transparent' : (neckLogoMode === 'dark' ? '#121212' : '#ffffff'),
+                                    color: neckLogoMode === 'dark' ? '#ffffff' : '#000000',
+                                    fontFamily: "'Montserrat', sans-serif",
+                                    boxSizing: 'border-box'
+                                }}
+                            >
+                                <img 
+                                    src={neckLogoMode === 'dark' ? "/images/NECK_LOGOS/Dark%20Garment.png" : "/images/NECK_LOGOS/White%20Garment.png"} 
+                                    alt="ASAT Designer Paradise" 
+                                    style={{
+                                        width: '200px',
+                                        height: 'auto',
+                                        maxHeight: '55px',
+                                        objectFit: 'contain',
+                                        display: 'block'
+                                    }}
+                                />
+
+                                <div style={{
+                                    fontFamily: "'Montserrat', sans-serif",
+                                    fontWeight: 800,
+                                    fontSize: '12px',
+                                    textTransform: 'uppercase',
+                                    color: neckLogoMode === 'dark' ? '#ffffff' : '#000000',
+                                    letterSpacing: '0.12em',
+                                    textAlign: 'center',
+                                    marginTop: 12,
+                                    lineHeight: 1.3
+                                }}>
+                                    {neckLogoGenItem.name || 'GARMENT'}
+                                </div>
+
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 10,
+                                    marginTop: 8
+                                }}>
+                                    <span style={{
+                                        fontSize: '9.5px',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.08em',
+                                        opacity: 0.85
+                                    }}>
+                                        {neckLogoGenItem.colorName || neckLogoGenItem.color || 'Standard'}
+                                    </span>
+                                    <span style={{
+                                        fontSize: '11px',
+                                        fontWeight: 800,
+                                        padding: '2px 8px',
+                                        border: `1.5px solid ${neckLogoMode === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'}`,
+                                        borderRadius: 4,
+                                        letterSpacing: '0.08em'
+                                    }}>
+                                        {neckLogoGenItem.size || 'M'}
+                                    </span>
+                                </div>
+
+                                <div style={{
+                                    fontFamily: "'Montserrat', sans-serif",
+                                    fontWeight: 600,
+                                    fontSize: '9.5px',
+                                    textTransform: 'uppercase',
+                                    color: neckLogoMode === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+                                    letterSpacing: '0.1em',
+                                    textAlign: 'center',
+                                    marginTop: 8
+                                }}>
+                                    By {designCache[neckLogoGenItem.id]?.designerName || neckLogoGenItem.designerUsername || 'Designer'}
+                                </div>
+
+                                <div style={{
+                                    width: '85%',
+                                    height: '1px',
+                                    background: neckLogoMode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                                    margin: '12px 0 8px 0'
+                                }} />
+
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: 3,
+                                    textAlign: 'center'
+                                }}>
+                                    <span style={{ fontSize: '7.5px', letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>
+                                        100% PREMIUM COTTON
+                                    </span>
+                                    <span style={{ fontSize: '7px', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.6 }}>
+                                        MACHINE WASH COLD • DRY FLAT • DO NOT IRON PRINT
+                                    </span>
+                                    <span style={{ fontSize: '7.5px', letterSpacing: '0.16em', textTransform: 'uppercase', opacity: 0.75, fontWeight: 700, marginTop: 1 }}>
+                                        MADE IN INDIA
+                                    </span>
+                                </div>
                             </div>
+                        </div>
+
+                        {/* Transparency Option */}
+                        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => setNeckLogoTransparent(!neckLogoTransparent)}>
+                            <input 
+                                type="checkbox" 
+                                id="neckLogoTrans" 
+                                checked={neckLogoTransparent} 
+                                onChange={(e) => setNeckLogoTransparent(e.target.checked)}
+                                style={{ cursor: 'pointer', accentColor: '#C5A059' }}
+                            />
+                            <label htmlFor="neckLogoTrans" style={{ fontSize: '0.78rem', color: '#ccc', cursor: 'pointer', userSelect: 'none' }}>
+                                Transparent Background (Print-Ready PNG)
+                            </label>
                         </div>
 
                         <button
                             onClick={handleDownloadNeckLogo}
                             disabled={isGeneratingLogo}
                             style={{
-                                marginTop: 30,
+                                marginTop: 18,
                                 background: 'var(--admin-gold, #C5A059)',
                                 color: '#fff',
                                 border: 'none',
@@ -1364,7 +1540,7 @@ function MfgOrders() {
                             {isGeneratingLogo ? (
                                 <><i className="fas fa-spinner fa-spin"></i> Generating...</>
                             ) : (
-                                <><i className="fas fa-download"></i> Download PNG</>
+                                <><i className="fas fa-download"></i> Download Print PNG</>
                             )}
                         </button>
                     </div>

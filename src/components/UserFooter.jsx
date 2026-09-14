@@ -249,17 +249,17 @@ function UserFooter() {
 
                     {/* Column 4: Side-by-Side Logos */}
                     <div className="blu-footer-card__brand-showcase">
-                        {/* <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="Designer Paradise">
+                        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="Designer Paradise">
                             <img 
                                 src="/logo.png" 
                                 alt="ASAT DESIGNER PARADISE" 
                                 className="blu-footer-card__dp-logo"
                                 style={{ height: '36px', width: 'auto', objectFit: 'contain' }} 
                             />
-                        </Link> */}
+                        </Link>
                         <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="ASAT">
                             <img 
-                                src="/dp-logo.png" 
+                                src="/images/banner_images/ASAT.png" 
                                 alt="ASAT Logo" 
                                 className="blu-footer-card__ast-logo"
                                 style={{ height: '48px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} 

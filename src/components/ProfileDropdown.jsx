@@ -145,6 +145,10 @@ function ProfileDropdown({ onClose }) {
                 <i className="fas fa-box-open" /> Order History
             </Link>
 
+            <Link to="/cart" className="blu-profile-menu__item" onClick={onClose}>
+                <i className="fas fa-shopping-bag" /> My Cart
+            </Link>
+
             <Link to="/wishlist" className="blu-profile-menu__item" onClick={onClose}>
                 <i className="far fa-heart" /> My Wishlist
             </Link>
