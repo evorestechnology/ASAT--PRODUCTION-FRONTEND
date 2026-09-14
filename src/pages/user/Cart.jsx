@@ -848,7 +848,27 @@ function Cart() {
         setCart(stored);
     }, []);
 
-    // Load finance settings
+    const [publicPromos, setPublicPromos] = useState([]);
+
+    // ══ Data Fetching ══
+    
+    // Fetch Public Promos
+    useEffect(() => {
+        if (!user) return;
+        const fetchPromos = async () => {
+            try {
+                const data = await apiFetch('/api/promos/public');
+                if (Array.isArray(data)) {
+                    setPublicPromos(data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch public promos:', err);
+            }
+        };
+        fetchPromos();
+    }, [user]);
+
+    // Fetch Global Configs
     useEffect(() => {
         apiFetch('/api/settings')
             .then(data => setFinanceRules(data))
@@ -1178,8 +1198,9 @@ function Cart() {
 
     const { subtotal, discount, afterDiscount, packingTotal, operatingTotal, taxableAmount, taxRate, taxLabel, taxAmount, shippingAmt, shippingLabel, total } = priceBreakdown;
 
-    const applyPromo = async () => {
-        const trimmed = (promo || '').trim().toUpperCase();
+    const applyPromo = async (overrideCode) => {
+        const targetCode = typeof overrideCode === 'string' ? overrideCode : promo;
+        const trimmed = (targetCode || '').trim().toUpperCase();
         if (!trimmed) {
             showToast('Please enter a promo code', 'error');
             return;
@@ -1981,6 +2002,43 @@ function Cart() {
                                         </button>
                                     )}
                                 </div>
+                                {!appliedPromo && publicPromos.length > 0 && (
+                                    <div style={{ marginTop: '10px', marginBottom: '15px' }}>
+                                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#444', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available Offers</div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {publicPromos.map(p => (
+                                                <div key={p.id} style={{ 
+                                                    border: '1px dashed #d1d5db', 
+                                                    borderRadius: '6px', 
+                                                    padding: '10px', 
+                                                    background: '#fafafa',
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center'
+                                                }}>
+                                                    <div>
+                                                        <span style={{ fontFamily: 'monospace', fontWeight: 700, background: '#e5e7eb', padding: '2px 6px', borderRadius: '4px', fontSize: '0.8rem' }}>{p.code}</span>
+                                                        <div style={{ fontSize: '0.7rem', color: '#666', marginTop: '4px' }}>
+                                                            {p.discountType === 'percentage' ? `${p.discountValue}% OFF` : `₹${p.discountValue} OFF`}
+                                                            {p.minOrderAmount > 0 ? ` on orders above ₹${p.minOrderAmount}` : ''}
+                                                        </div>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setPromo(p.code);
+                                                            applyPromo(p.code);
+                                                        }}
+                                                        style={{
+                                                            background: 'none', border: '1px solid #000', borderRadius: '4px', padding: '4px 10px', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        USE
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 {appliedPromo && appliedPromo.description && (
                                     <div style={{
                                         fontSize: '0.72rem',

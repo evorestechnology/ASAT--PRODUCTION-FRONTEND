@@ -49,6 +49,7 @@ export default function MasterPromoCodes() {
   const [hasExpiry, setHasExpiry] = useState(false);
   const [formExpiryDate, setFormExpiryDate] = useState('');
   const [formIsActive, setFormIsActive] = useState(true);
+  const [formType, setFormType] = useState('public');
 
   const showToast = useCallback((msg, type = 'success') => {
     const id = Date.now() + Math.random();
@@ -89,6 +90,7 @@ export default function MasterPromoCodes() {
     setHasExpiry(false);
     setFormExpiryDate('');
     setFormIsActive(true);
+    setFormType('public');
     setIsModalOpen(true);
   };
 
@@ -110,6 +112,7 @@ export default function MasterPromoCodes() {
       setFormExpiryDate('');
     }
     setFormIsActive(Boolean(promo.isActive));
+    setFormType(promo.type || 'public');
     setIsModalOpen(true);
   };
 
@@ -149,7 +152,8 @@ export default function MasterPromoCodes() {
       discountValue: val,
       minOrderAmount: parseFloat(formMinOrder) || 0,
       expiresAt,
-      isActive: formIsActive
+      isActive: formIsActive,
+      type: formType
     };
 
     setSaving(true);
@@ -437,19 +441,24 @@ export default function MasterPromoCodes() {
 
                       {/* Status */}
                       <td style={{ padding: '16px 20px' }}>
-                        {isInactive ? (
-                          <span style={{ background: '#F3F4F6', color: '#6B7280', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
-                            Inactive
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+                          {isInactive ? (
+                            <span style={{ background: '#F3F4F6', color: '#6B7280', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
+                              Inactive
+                            </span>
+                          ) : isExpired ? (
+                            <span style={{ background: '#FEE2E2', color: '#DC2626', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
+                              Expired
+                            </span>
+                          ) : (
+                            <span style={{ background: '#D1FAE5', color: '#059669', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
+                              Active
+                            </span>
+                          )}
+                          <span style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase' }}>
+                            {promo.type === 'private' ? '🔒 Private' : '🌐 Public'}
                           </span>
-                        ) : isExpired ? (
-                          <span style={{ background: '#FEE2E2', color: '#DC2626', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
-                            Expired
-                          </span>
-                        ) : (
-                          <span style={{ background: '#D1FAE5', color: '#059669', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
-                            Active
-                          </span>
-                        )}
+                        </div>
                       </td>
 
                       {/* Actions */}
@@ -594,7 +603,30 @@ export default function MasterPromoCodes() {
               </div>
 
               {/* Discount Type & Value Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: '#444', marginBottom: 6 }}>
+                    Promo Type
+                  </label>
+                  <select
+                    value={formType}
+                    onChange={(e) => setFormType(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      border: '1.5px solid #D1D5DB',
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      background: '#fff',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                  </select>
+                </div>
+
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: '#444', marginBottom: 6 }}>
                     Discount Type
@@ -614,7 +646,7 @@ export default function MasterPromoCodes() {
                     }}
                   >
                     <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount (₹)</option>
+                    <option value="fixed">Fixed (₹)</option>
                   </select>
                 </div>
 

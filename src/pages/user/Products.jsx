@@ -542,12 +542,13 @@ function SkeletonCard() {
 ═══════════════════════════════════════════════════════════ */
 function Products() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { currency, rates, formatPrice, globalCurrencies, applyMarkup } = useCurrency();
   const curSymbol = ((globalCurrencies && globalCurrencies[currency]) || SUPPORTED_CURRENCIES[currency] || SUPPORTED_CURRENCIES['INR'] || { symbol: '₹' }).symbol?.trim() || '₹';
 
   /* ── Supabase Data ── */
   const [allProducts, setAllProducts] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   /* ── Collections (derived from data) ── */
@@ -559,7 +560,10 @@ function Products() {
   const initialSearch = searchParams.get('search') || '';
 
   const initialSort = searchParams.get('sort') || '';
-  const [activeCategory, setActiveCategory] = useState('All Drops');
+  const [activeCategory, setActiveCategory] = useState(() => {
+    const cat = searchParams.get('category');
+    return cat ? decodeURIComponent(cat).trim() : 'All Drops';
+  });
   const [activeCollection, setActiveCollection] = useState('All');
   const [activeGender, setActiveGender] = useState('All');
   const [sortBy, setSortBy] = useState(
@@ -634,7 +638,7 @@ function Products() {
     };
   }, []);
 
-  // Sync URL search and sort params to state
+  // Sync URL search, sort, and gender params to state
   useEffect(() => {
     setSearchTerm(searchParams.get('search') || '');
     const s = searchParams.get('sort');
@@ -644,6 +648,14 @@ function Products() {
       setSortBy('latest');
     } else if (!s) {
       setSortBy('latest');
+    }
+
+    const g = searchParams.get('gender');
+    if (g) {
+      const match = ['Male', 'Female', 'Unisex'].find(
+        (val) => val.toLowerCase() === g.toLowerCase()
+      );
+      if (match) setActiveGender(match);
     }
   }, [searchParams]);
 
@@ -663,6 +675,8 @@ function Products() {
           apiFetch('/api/designs?limit=120'),
           apiFetch('/api/categories'),
         ]);
+
+        setDbCategories(categoriesData || []);
 
         // Build a set of blocked designer IDs
         const blockedDesignerIds = new Set(
@@ -702,7 +716,12 @@ function Products() {
             })(),
             category: (() => {
               const catVal = d.products?.category || d.catalogue?.category || d.category || '';
-              const match = (categoriesData || []).find(c => c.slug === catVal || c.name === catVal);
+              const match = (categoriesData || []).find(
+                (c) =>
+                  c.slug === catVal ||
+                  c.name?.toLowerCase() === catVal?.toLowerCase() ||
+                  c.id === catVal
+              );
               return match ? match.name : (catVal || 'Other');
             })(),
             name: d.title || 'Designer Creation',
@@ -740,48 +759,57 @@ function Products() {
     fetchAll();
   }, []);
 
-  /* ── Derive unique categories from data + standard wardrobe drops ── */
-  const normalizeCatName = (name) => {
-    const raw = (name || '').trim();
-    if (!raw) return '';
-    const norm = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (norm.includes('tshirt') || norm.includes('tee') || norm === 'shirt') return 'T-Shirt';
-    if (norm.includes('hoodie')) return 'Hoodies';
-    if (norm.includes('sweatshirt') || norm.includes('sweater')) return 'Sweatshirts';
-    if (norm.includes('pant') || norm.includes('trouser') || norm.includes('bottom')) return 'Pants';
-    if (norm.includes('cap') || norm.includes('hat')) return 'Caps';
-    return raw.charAt(0).toUpperCase() + raw.slice(1);
-  };
-
+  /* ── Derive unique categories from active database categories + actual products ── */
   const categories = useMemo(() => {
-    const base = ['All Drops', 'T-Shirt', 'Hoodies', 'Sweatshirts', 'Pants', 'Caps'];
-    const fromProducts = (allProducts || [])
-      .map((p) => normalizeCatName(p.category || p.type || p.productType || ''))
-      .filter(Boolean);
+    const list = ['All Drops'];
+    const seen = new Set(['all drops', 'all']);
 
-    const result = [...base];
-    for (const cat of fromProducts) {
-      if (!result.some(existing => existing.toLowerCase() === cat.toLowerCase())) {
-        result.push(cat);
+    // 1. From database categories (active categories configured in the store)
+    (dbCategories || [])
+      .filter((c) => c.active !== false && c.name)
+      .sort((a, b) => (a.order ?? 99) - (b.order ?? 99))
+      .forEach((c) => {
+        const name = c.name.trim();
+        const lower = name.toLowerCase();
+        if (!seen.has(lower)) {
+          seen.add(lower);
+          list.push(name);
+        }
+      });
+
+    // 2. From actual products (so existing products always have their category available)
+    (allProducts || []).forEach((p) => {
+      const cat = (p.category || p.type || p.productType || '').trim();
+      const lower = cat.toLowerCase();
+      if (cat && !seen.has(lower) && lower !== 'other') {
+        seen.add(lower);
+        list.push(cat);
       }
-    }
-    return result;
-  }, [allProducts]);
+    });
+
+    return list;
+  }, [dbCategories, allProducts]);
 
   /* ── Apply URL param filters once data loads or searchParams change ── */
   useEffect(() => {
-    if (!loading) {
-      const catParam = searchParams.get('category');
-      if (catParam) {
-        const match = categories.find(
-          (c) => c.toLowerCase() === catParam.toLowerCase()
-        );
-        if (match) setActiveCategory(match);
+    const catParam = searchParams.get('category');
+    if (catParam) {
+      const decodedParam = decodeURIComponent(catParam).trim();
+      const match = categories.find(
+        (c) =>
+          c.toLowerCase() === decodedParam.toLowerCase() ||
+          c.toLowerCase().replace(/[^a-z0-9]/g, '') ===
+            decodedParam.toLowerCase().replace(/[^a-z0-9]/g, '')
+      );
+      if (match) {
+        setActiveCategory(match);
       } else {
-        setActiveCategory('All Drops');
+        setActiveCategory(decodedParam);
       }
+    } else {
+      setActiveCategory('All Drops');
     }
-  }, [loading, searchParams, categories]);
+  }, [searchParams, categories]);
 
   /* ── Page launch animation ── */
   useEffect(() => {
@@ -849,25 +877,28 @@ function Products() {
 
     // Category
     if (activeCategory && activeCategory !== 'All' && activeCategory !== 'All Drops') {
-      const normTarget = activeCategory.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const targetLower = activeCategory.toLowerCase().trim();
+      const normTarget = targetLower.replace(/[^a-z0-9]/g, '');
       items = items.filter((p) => {
-        const cat = (p.category || p.type || p.productType || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        if (normTarget.includes('tshirt') || normTarget.includes('tee')) {
-          return cat.includes('tshirt') || cat.includes('tee') || cat.includes('shirt');
+        const catName = (p.category || '').toLowerCase().trim();
+        const catType = (p.type || '').toLowerCase().trim();
+        const catProdType = (p.productType || '').toLowerCase().trim();
+
+        if (catName === targetLower || catType === targetLower || catProdType === targetLower) {
+          return true;
         }
-        if (normTarget.includes('hoodie')) {
-          return cat.includes('hoodie');
+
+        const normCat = catName.replace(/[^a-z0-9]/g, '');
+        if (normCat && normTarget && (normCat === normTarget || normCat.includes(normTarget) || normTarget.includes(normCat))) {
+          return true;
         }
-        if (normTarget.includes('sweatshirt')) {
-          return cat.includes('sweatshirt') || cat.includes('sweater');
+
+        const rawCat = (p.products?.category || p.catalogue?.category || '').toLowerCase().trim();
+        if (rawCat && (rawCat === targetLower || rawCat.replace(/[^a-z0-9]/g, '') === normTarget)) {
+          return true;
         }
-        if (normTarget.includes('pant')) {
-          return cat.includes('pant') || cat.includes('trouser') || cat.includes('bottom');
-        }
-        if (normTarget.includes('cap')) {
-          return cat.includes('cap') || cat.includes('hat');
-        }
-        return cat.includes(normTarget) || normTarget.includes(cat);
+
+        return false;
       });
     }
 
@@ -876,21 +907,21 @@ function Products() {
       items = items.filter((p) => p.collection === activeCollection);
     }
 
-    // Gender — exact match for target gender
+    // Gender — include unisex dress in male and female filters as well
     if (activeGender !== 'All') {
-      const targetGender = activeGender.toLowerCase();
+      const targetGender = activeGender.toLowerCase().trim();
       items = items.filter((p) => {
-        const prodGender = (p.gender || 'Unisex').toLowerCase();
+        const prodGender = (p.gender || 'Unisex').toLowerCase().trim();
         if (targetGender === 'male') {
-          return prodGender === 'male' || prodGender === 'men';
+          return prodGender === 'male' || prodGender === 'men' || prodGender === 'unisex';
         }
         if (targetGender === 'female') {
-          return prodGender === 'female' || prodGender === 'women';
+          return prodGender === 'female' || prodGender === 'women' || prodGender === 'unisex';
         }
         if (targetGender === 'unisex') {
           return prodGender === 'unisex';
         }
-        return prodGender === targetGender;
+        return prodGender === targetGender || prodGender === 'unisex';
       });
     }
 
@@ -948,7 +979,8 @@ function Products() {
     setPriceMin('');
     setPriceMax('');
     setSearchTerm('');
-  }, []);
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
 
   const hasFilters =
     (activeCategory !== 'All' && activeCategory !== 'All Drops') ||
@@ -1127,6 +1159,15 @@ function Products() {
                           e.stopPropagation();
                           setActiveCategory(cat);
                           setCategoryOpen(false);
+                          setSearchParams((prev) => {
+                            const next = new URLSearchParams(prev);
+                            if (cat === 'All Drops' || cat === 'All') {
+                              next.delete('category');
+                            } else {
+                              next.set('category', cat);
+                            }
+                            return next;
+                          }, { replace: true });
                         }}
                       >
                         {cat}

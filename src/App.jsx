@@ -36,6 +36,7 @@ import Wishlist               from './pages/user/Wishlist';
 import DesignerPublicProfile  from './pages/user/DesignerPublicProfile';
 import DesignerRankings       from './pages/user/DesignerRankings';
 import UserReports            from './pages/user/UserReports';
+import AuthCallback           from './pages/user/AuthCallback';
 
 // Designer pages
 import DesignerIndex    from './pages/designer/DesignerIndex';
@@ -133,6 +134,7 @@ function App() {
           {/* Auth pages — redirect to home if already logged in */}
           <Route path="/login"    element={<GuestRoute><UserLogin /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><UserRegister /></GuestRoute>} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Protected user pages — require 'user' role */}
           <Route path="/profile"  element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><UserProfile /></ProtectedRoute>} />
