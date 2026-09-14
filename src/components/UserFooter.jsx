@@ -68,6 +68,7 @@ function UserFooter() {
                     align-items: center;
                     justify-content: flex-end;
                     gap: 32px;
+                    grid-column: 4;
                 }
 
                 .blu-footer-card__script-logo {
@@ -235,7 +236,7 @@ function UserFooter() {
                     </div>
 
                     {/* Column 3: We at Designer Paradise */}
-                    <div className={`blu-footer-card__col${openCol === 2 ? ' open' : ''}`}>
+                    {/* <div className={`blu-footer-card__col${openCol === 2 ? ' open' : ''}`}>
                         <span className="blu-footer-card__col-title" onClick={() => toggleCol(2)}>
                             We at Designer Paradise
                             <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
@@ -244,18 +245,18 @@ function UserFooter() {
                             <li><Link to="/rankings" className="blu-footer-card__link">Our story</Link></li>
                             <li><a href="/designer/register" className="blu-footer-card__link">Collaborations</a></li>
                         </ul>
-                    </div>
+                    </div> */}
 
                     {/* Column 4: Side-by-Side Logos */}
                     <div className="blu-footer-card__brand-showcase">
-                        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="Designer Paradise">
+                        {/* <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="Designer Paradise">
                             <img 
                                 src="/logo.png" 
                                 alt="ASAT DESIGNER PARADISE" 
                                 className="blu-footer-card__dp-logo"
                                 style={{ height: '36px', width: 'auto', objectFit: 'contain' }} 
                             />
-                        </Link>
+                        </Link> */}
                         <Link to="/" style={{ display: 'inline-flex', alignItems: 'center' }} title="ASAT">
                             <img 
                                 src="/dp-logo.png" 

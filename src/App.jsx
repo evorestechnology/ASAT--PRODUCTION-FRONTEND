@@ -35,6 +35,7 @@ import Cart                   from './pages/user/Cart';
 import Wishlist               from './pages/user/Wishlist';
 import DesignerPublicProfile  from './pages/user/DesignerPublicProfile';
 import DesignerRankings       from './pages/user/DesignerRankings';
+import UserReports            from './pages/user/UserReports';
 
 // Designer pages
 import DesignerIndex    from './pages/designer/DesignerIndex';
@@ -54,6 +55,10 @@ import DesignerBaseProducts from './pages/designer/DesignerBaseProducts';
 import DesignerProductDetail from './pages/designer/DesignerProductDetail';
 import DesignerDesignDetail from './pages/designer/DesignerDesignDetail';
 import DesignerTutorials from './pages/designer/DesignerTutorials';
+import DesignerReports          from './pages/designer/DesignerReports';
+import DesignerReportEarnings   from './pages/designer/DesignerReportEarnings';
+import DesignerReportDesigns    from './pages/designer/DesignerReportDesigns';
+import DesignerReportCustomers  from './pages/designer/DesignerReportCustomers';
 
 
 // Master pages
@@ -78,6 +83,18 @@ import MasterWithdrawals  from './pages/master/MasterWithdrawals';
 import MasterTutorials    from './pages/master/MasterTutorials';
 import MasterProfile      from './pages/master/MasterProfile';
 import MasterGSTReport    from './pages/master/MasterGSTReport';
+import MasterPromoCodes   from './pages/master/MasterPromoCodes';
+import MasterUserSearch   from './pages/master/MasterUserSearch';
+import MasterReports      from './pages/master/MasterReports';
+import MasterReportRevenue       from './pages/master/MasterReportRevenue';
+import MasterReportOrders        from './pages/master/MasterReportOrders';
+import MasterReportDesigners     from './pages/master/MasterReportDesigners';
+import MasterReportManufacturers from './pages/master/MasterReportManufacturers';
+import MasterReportProducts      from './pages/master/MasterReportProducts';
+import MasterReportCustomers     from './pages/master/MasterReportCustomers';
+import MasterReportPromos        from './pages/master/MasterReportPromos';
+import MasterReportSupport       from './pages/master/MasterReportSupport';
+import MasterReportInventory     from './pages/master/MasterReportInventory';
 
 // Mfg pages
 import MfgIndex        from './pages/mfg/MfgIndex';
@@ -90,6 +107,10 @@ import MfgProducts     from './pages/mfg/MfgProducts';
 import MfgPrintStyles  from './pages/mfg/MfgPrintStyles';
 import MfgDesignDetail from './pages/mfg/MfgDesignDetail';
 import MfgSupport      from './pages/mfg/MfgSupport';
+import MfgReports          from './pages/mfg/MfgReports';
+import MfgReportEarnings   from './pages/mfg/MfgReportEarnings';
+import MfgReportOrders     from './pages/mfg/MfgReportOrders';
+import MfgReportProducts   from './pages/mfg/MfgReportProducts';
 
 
 function App() {
@@ -121,6 +142,7 @@ function App() {
           <Route path="/cart"     element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><Cart /></ProtectedRoute>} />
           <Route path="/wishlist" element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><Wishlist /></ProtectedRoute>} />
           <Route path="/support"  element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><UserSupport /></ProtectedRoute>} />
+          <Route path="/reports"  element={<ProtectedRoute allowedRoles={['user']} redirectTo="/login"><UserReports /></ProtectedRoute>} />
         </Route>
 
         {/* ─── Designer Auth (standalone — no header) ─── */}
@@ -149,6 +171,12 @@ function App() {
           <Route path="base-products" element={<DesignerBaseProducts />} />
           <Route path="base-products/:id" element={<DesignerProductDetail />} />
           <Route path="tutorials" element={<DesignerTutorials />} />
+
+          {/* ── Designer Reports ── */}
+          <Route path="reports"                  element={<DesignerReports />} />
+          <Route path="reports/earnings"         element={<DesignerReportEarnings />} />
+          <Route path="reports/designs"          element={<DesignerReportDesigns />} />
+          <Route path="reports/customers"        element={<DesignerReportCustomers />} />
         </Route>
 
         {/* ─── Master Auth (standalone — no header) ─── */}
@@ -180,6 +208,23 @@ function App() {
           <Route path="tutorials"  element={<MasterTutorials />} />
           <Route path="profile"    element={<MasterProfile />} />
           <Route path="gst-report" element={<MasterGSTReport />} />
+          <Route path="promocodes" element={<MasterPromoCodes />} />
+          <Route path="coupons"    element={<MasterPromoCodes />} />
+
+          {/* ── User Management ── */}
+          <Route path="users"      element={<MasterUserSearch />} />
+
+          {/* ── Reports ── */}
+          <Route path="reports"                     element={<MasterReports />} />
+          <Route path="reports/revenue"             element={<MasterReportRevenue />} />
+          <Route path="reports/orders"              element={<MasterReportOrders />} />
+          <Route path="reports/designers"           element={<MasterReportDesigners />} />
+          <Route path="reports/manufacturers"       element={<MasterReportManufacturers />} />
+          <Route path="reports/products"            element={<MasterReportProducts />} />
+          <Route path="reports/customers"           element={<MasterReportCustomers />} />
+          <Route path="reports/promos"              element={<MasterReportPromos />} />
+          <Route path="reports/support"             element={<MasterReportSupport />} />
+          <Route path="reports/inventory"           element={<MasterReportInventory />} />
         </Route>
 
         {/* ─── Mfg Auth (standalone — no header) ─── */}
@@ -201,6 +246,12 @@ function App() {
           <Route path="profile"  element={<MfgProfile />} />
           <Route path="designs/:id" element={<MfgDesignDetail />} />
           <Route path="support"  element={<MfgSupport />} />
+
+          {/* ── Mfg Reports ── */}
+          <Route path="reports"           element={<MfgReports />} />
+          <Route path="reports/earnings"  element={<MfgReportEarnings />} />
+          <Route path="reports/orders"    element={<MfgReportOrders />} />
+          <Route path="reports/products"  element={<MfgReportProducts />} />
         </Route>
 
       </Routes>

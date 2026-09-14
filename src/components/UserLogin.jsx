@@ -4,9 +4,8 @@ import { supabase } from '../supabase';
 import { apiFetch, setAuthToken } from '../api';
 
 const authImages = [
-    '/images/fashion1.png',
-    '/images/fashion2.png',
-    '/images/fashion3.png',
+    'public/images/banner_images/4.png',
+    'public/images/banner_images/3.png',
 ];
 
 const styles = `
@@ -648,11 +647,17 @@ function UserLogin() {
     const navigate = useNavigate();
     const location = useLocation();
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [email, setEmail] = useState('');
+    const [rememberMe, setRememberMe] = useState(() => {
+        return localStorage.getItem('asat_remember_me') === 'true';
+    });
+    const [email, setEmail] = useState(() => {
+        return localStorage.getItem('asat_remember_me') === 'true'
+            ? (localStorage.getItem('asat_remembered_email') || '')
+            : '';
+    });
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showForgotPanel, setShowForgotPanel] = useState(false);
 
@@ -712,6 +717,14 @@ function UserLogin() {
                 } catch (e) {
                     console.error('Error merging pending cart item:', e);
                 }
+            }
+
+            if (rememberMe) {
+                localStorage.setItem('asat_remembered_email', email.trim());
+                localStorage.setItem('asat_remember_me', 'true');
+            } else {
+                localStorage.removeItem('asat_remembered_email');
+                localStorage.removeItem('asat_remember_me');
             }
 
             const from = location.state?.from;

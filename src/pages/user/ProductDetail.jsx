@@ -31,6 +31,42 @@ const styles = `
     .pdp-breadcrumb a:hover { color: #000000; }
     .pdp-breadcrumb span { color: #000000; font-weight: 600; }
 
+    .pdp-discover-link {
+        color: #111111;
+        background: linear-gradient(180deg, #ffffff 0%, #f5f5f3 100%);
+        border: 1px solid #d9d9d6;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        opacity: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+    }
+    .pdp-discover-link:hover {
+        background: #111111;
+        border-color: #111111;
+        color: #ffffff;
+        box-shadow: 0 8px 18px rgba(17, 17, 17, 0.14);
+        transform: translateY(-1px);
+    }
+    .pdp-discover-link:active {
+        transform: translateY(0);
+        box-shadow: 0 4px 10px rgba(17, 17, 17, 0.12);
+    }
+    .pdp-discover-link:focus-visible {
+        outline: 2px solid #111111;
+        outline-offset: 2px;
+    }
+
     /* ─── 3-COLUMN PDP LAYOUT (BLUORNG EXACT) ─── */
     .pdp-split-3col {
         display: grid;
@@ -2203,9 +2239,27 @@ function ProductDetail() {
                 {/* ── Recommended Products: "YOU MAY ALSO LIKE" ── */}
                 {recommendedProducts && recommendedProducts.length > 0 && (
                     <div className="pdp-recommended-section">
-                        <div className="blu-section__head" style={{ marginBottom: '24px' }}>
-                            <h2 className="blu-section__title" style={{ fontSize: '1.25rem' }}>YOU MAY ALSO LIKE</h2>
-                            <Link to="/products" className="blu-section__link">Discover more</Link>
+                        <div className="blu-section__head" style={{ marginBottom: '24px', alignItems: 'center' }}>
+                            <h2 className="blu-section__title" style={{ fontSize: '1.25rem', margin: 0 }}>YOU MAY ALSO LIKE</h2>
+                            <Link
+                                to="/products"
+                                className="blu-section__link"
+                                style={{
+                                    color: '#1a1a1a',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 600,
+                                    letterSpacing: '0.12em',
+                                    textTransform: 'uppercase',
+                                    textDecoration: 'none',
+                                    transition: 'opacity 0.2s ease',
+                                    opacity: 1,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                }}
+                            >
+                                Discover more
+                            </Link>
                         </div>
                         <div className="blu-products-grid">
                             {recommendedProducts.map((p) => {

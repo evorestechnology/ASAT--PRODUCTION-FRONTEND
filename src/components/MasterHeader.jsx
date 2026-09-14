@@ -49,6 +49,31 @@ const NAV_GROUPS = [
             { to: '/master/withdrawals', label: 'Withdrawals', icon: 'fas fa-hand-holding-usd', desc: 'Pending payout requests' },
             { to: '/master/finance', label: 'Finance & Analytics', icon: 'fas fa-chart-line', desc: 'Margins & cost breakdown' },
             { to: '/master/gst-report', label: 'GST Statutory Report', icon: 'fas fa-file-invoice-dollar', desc: 'Tax filings & invoices' },
+            { to: '/master/promocodes', label: 'Promo Codes & Discounts', icon: 'fas fa-ticket-alt', desc: 'Manage coupons & expiry' },
+        ]
+    },
+    {
+        id: 'users',
+        label: 'Users',
+        icon: 'fas fa-users',
+        children: [
+            { to: '/master/users', label: 'User Management', icon: 'fas fa-user-circle', desc: 'Search & inspect customer accounts' },
+        ]
+    },
+    {
+        id: 'reports',
+        label: 'Reports',
+        icon: 'fas fa-chart-bar',
+        children: [
+            { to: '/master/reports', label: 'Reports Hub', icon: 'fas fa-th-large', desc: 'All business reports' },
+            { to: '/master/reports/revenue', label: 'Revenue Summary', icon: 'fas fa-chart-line', desc: 'Gross revenue & earnings' },
+            { to: '/master/reports/orders', label: 'Orders Analysis', icon: 'fas fa-receipt', desc: 'Volume & status breakdown' },
+            { to: '/master/reports/designers', label: 'Top Designers', icon: 'fas fa-paint-brush', desc: 'Designer performance' },
+            { to: '/master/reports/manufacturers', label: 'Mfg Performance', icon: 'fas fa-industry', desc: 'Manufacturing metrics' },
+            { to: '/master/reports/customers', label: 'Customer Analytics', icon: 'fas fa-user-friends', desc: 'Buyer behaviour & LTV' },
+            { to: '/master/reports/promos', label: 'Promo Performance', icon: 'fas fa-ticket-alt', desc: 'Coupon usage & savings' },
+            { to: '/master/reports/support', label: 'Support Report', icon: 'fas fa-headset', desc: 'Ticket volume & resolution' },
+            { to: '/master/reports/inventory', label: 'Inventory Health', icon: 'fas fa-boxes', desc: 'Design status & slow movers' },
         ]
     },
     {

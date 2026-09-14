@@ -225,7 +225,7 @@ export const generateInvoice = (order) => {
     // --- GST TAX & STATUTORY COMPUTATION ---
     const gstInfo = detectStateAndGst(address, country);
     const maxUnitPrice = items.reduce((max, it) => Math.max(max, it.unitPrice), 0);
-    const defaultTaxRate = maxUnitPrice > 2500 ? 18 : 5; // Standard Indian Apparel GST Slabs (5% for <= 2500, 18% for > 2500)
+    const defaultTaxRate = maxUnitPrice > 1000 ? 18 : 5; // Standard Indian Apparel GST Slabs (5% for <= 1000, 18% for > 1000)
 
     let taxableValue = 0;
     let totalTax = 0;

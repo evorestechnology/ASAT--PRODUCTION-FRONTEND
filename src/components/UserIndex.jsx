@@ -259,7 +259,7 @@ function Section({ id, label, title, dark, children, discoverLink = '/products' 
       <div className="blu-section__head" data-animate="heading">
         <h2 className="blu-section__title">{title || label}</h2>
         <button className="blu-section__discover-btn" onClick={() => navigate(discoverLink)}>
-          Discover more
+          DISCOVER MORE
         </button>
       </div>
       {children}
@@ -718,8 +718,8 @@ export default function UserIndex() {
         </div>
       </Section>
 
-      {/* â”â”â” 6 Â· BESTSELLERS â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
-      <Section id="bestsellers" label="Most Loved" title="Best Sellers" dark>
+      {/* â” â” â”  6 Â· BESTSELLERS â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â” â”  */}
+      <Section id="bestsellers" label="Most Loved" title="Best Sellers" dark discoverLink="/products?sort=best-sellers">
         <ScrollRow
           items={bestsellers}
           loading={loadingBestsellers}

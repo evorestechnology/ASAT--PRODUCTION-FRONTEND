@@ -63,7 +63,7 @@ export default function MasterFinance() {
   const [packingCost, setPackingCost] = useState(50);      // ₹ per piece
   const [operatingCost, setOperatingCost] = useState(100); // ₹ per piece
   const [taxRules, setTaxRules] = useState({
-    india: { high_threshold: 2500, high_rate: 18, low_rate: 5 },
+    india: { high_threshold: 1000, high_rate: 18, low_rate: 5 },
     usa_rate: 25, row_rate: 0, country_overrides: []
   });
   const [shippingRules, setShippingRules] = useState({
@@ -184,7 +184,7 @@ export default function MasterFinance() {
     let taxRate = 0, taxLabel = 'No Tax';
     const region = calc.region;
     if (region === 'mumbai' || region === 'india') {
-      const threshold = taxRules.india?.high_threshold ?? 2500;
+      const threshold = taxRules.india?.high_threshold ?? 1000;
       const high      = taxRules.india?.high_rate ?? 18;
       const low       = taxRules.india?.low_rate ?? 5;
       taxRate  = pricePerPiece > threshold ? high : low;
@@ -319,7 +319,7 @@ export default function MasterFinance() {
             <div className="fin-row-3">
               <Field label="GST Threshold" hint="₹ price/piece">
                 <input type="number" className="fin-input" min="0"
-                  value={taxRules.india?.high_threshold ?? 2500}
+                  value={taxRules.india?.high_threshold ?? 1000}
                   onChange={e => setTaxRules(p => ({ ...p, india: { ...p.india, high_threshold: e.target.value } }))} />
               </Field>
               <Field label="GST if Above" hint="%">

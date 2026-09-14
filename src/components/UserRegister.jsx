@@ -6,9 +6,8 @@ import TermsModal from './TermsModal';
 import CustomDatePicker from './CustomDatePicker';
 
 const authImages = [
-    '/images/fashion1.png',
-    '/images/fashion2.png',
-    '/images/fashion3.png',
+    'public/images/banner_images/4.png',
+    'public/images/banner_images/3.png',
 ];
 
 const styles = `

@@ -341,7 +341,14 @@ function DesignerLogin() {
     const location = useLocation();
     const successMsg = location.state?.successMessage;
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [email, setEmail] = useState('');
+    const [rememberMe, setRememberMe] = useState(() => {
+        return localStorage.getItem('asat_designer_remember_me') === 'true';
+    });
+    const [email, setEmail] = useState(() => {
+        return localStorage.getItem('asat_designer_remember_me') === 'true'
+            ? (localStorage.getItem('asat_designer_remembered_email') || '')
+            : '';
+    });
     const [password, setPassword] = useState('');
     const [showForgotPanel, setShowForgotPanel] = useState(false);
 
@@ -432,6 +439,13 @@ function DesignerLogin() {
                 password,
             });
             if (signInError) throw signInError;
+            if (rememberMe) {
+                localStorage.setItem('asat_designer_remembered_email', email.trim());
+                localStorage.setItem('asat_designer_remember_me', 'true');
+            } else {
+                localStorage.removeItem('asat_designer_remembered_email');
+                localStorage.removeItem('asat_designer_remember_me');
+            }
             // Note: we do NOT set the auth token here; AuthContext will handle it via onAuthStateChange
             setJustLoggedIn(true);
         } catch (err) {
@@ -557,7 +571,7 @@ function DesignerLogin() {
 
                         <div className="auth-options">
                             <label className="auth-checkbox-label">
-                                <input type="checkbox" /> Remember me
+                                <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} /> Remember me
                             </label>
                             <button
                                 type="button"

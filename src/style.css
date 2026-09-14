@@ -1075,21 +1075,24 @@ footer {
 
 .blu-section__discover-btn {
     background: transparent;
-    border: 1px solid #E2E2E2;
+    border: none;
     color: #000000;
-    border-radius: 20px;
-    padding: 6px 18px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    padding: 6px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Montserrat', sans-serif;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease;
+    display: inline-flex;
+    align-items: center;
 }
 
 .blu-section__discover-btn:hover {
-    background: #000000;
-    color: #FFFFFF;
-    border-color: #000000;
+    opacity: 0.6;
+    background: transparent;
+    color: #000000;
 }
 
 /* ─── BLUORNG Card Template (Exact Match + Inline Transitions) ─── */

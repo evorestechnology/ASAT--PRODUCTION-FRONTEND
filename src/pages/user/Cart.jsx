@@ -804,7 +804,9 @@ function Cart() {
     const { formatPrice, currency } = useCurrency();
     const [cart, setCart] = useState([]);
     const [promo, setPromo] = useState('');
-    const [promoApplied, setPromoApplied] = useState(false);
+    const [appliedPromo, setAppliedPromo] = useState(null);
+    const [validatingPromo, setValidatingPromo] = useState(false);
+    const promoApplied = !!appliedPromo;
 
     // Finance rules from backend
     const [financeRules, setFinanceRules] = useState(null);
@@ -1069,7 +1071,14 @@ function Cart() {
     const priceBreakdown = useMemo(() => {
         const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
         const totalQty = cart.reduce((s, i) => s + (Number(i.qty) || 1), 0);
-        const discount = promoApplied ? Math.round(subtotal * 0.15) : 0;
+        let discount = 0;
+        if (appliedPromo) {
+            if (appliedPromo.discountType === 'fixed') {
+                discount = Math.min(subtotal, Number(appliedPromo.discountValue) || 0);
+            } else {
+                discount = Math.round(subtotal * ((Number(appliedPromo.discountValue) || 0) / 100));
+            }
+        }
         const afterDiscount = subtotal - discount;
 
         // Cost rules
@@ -1097,20 +1106,38 @@ function Cart() {
             zone = zoneVal;
 
             if (addrCountry === 'India') {
-                const threshold = Number(taxRules?.india?.high_threshold ?? 2500);
-                const highRate  = Number(taxRules?.india?.high_rate ?? 18);
-                const lowRate   = Number(taxRules?.india?.low_rate ?? 5);
-                taxRate  = pricePerPiece > threshold ? highRate : lowRate;
-                taxLabel = `GST ${taxRate}%`;
-            } else if (addrCountry === 'United States') {
-                taxRate  = Number(taxRules?.usa_rate ?? 25);
-                taxLabel = `Import Duty ${taxRate}%`;
+                // GST logic: If particular item cost greater than 1000 only 18% else 5%
+                const discountRatio = subtotal > 0 ? (afterDiscount / subtotal) : 1;
+                let calculatedTax = 0;
+                let hasHigh = false;
+                let hasLow = false;
+
+                cart.forEach((item) => {
+                    const itemCost = Number(item.price) || 0;
+                    const itemQty = Number(item.qty) || 1;
+                    const rate = itemCost > 1000 ? 18 : 5;
+                    if (rate === 18) hasHigh = true;
+                    if (rate === 5) hasLow = true;
+                    const itemTaxable = (itemCost * itemQty) * discountRatio;
+                    calculatedTax += (itemTaxable * rate) / 100;
+                });
+
+                taxAmount = Math.round(calculatedTax);
+                if (hasHigh && !hasLow) {
+                    taxRate = 18;
+                    taxLabel = 'GST 18%';
+                } else if (hasLow && !hasHigh) {
+                    taxRate = 5;
+                    taxLabel = 'GST 5%';
+                } else {
+                    taxRate = 18;
+                    taxLabel = 'GST';
+                }
             } else {
-                const ovr = (taxRules?.country_overrides || []).find(o => o.country === addrCountry);
-                taxRate  = ovr ? Number(ovr.rate) : Number(taxRules?.row_rate ?? 0);
-                taxLabel = taxRate === 0 ? 'Tax (None)' : `Tax ${taxRate}%`;
+                taxRate = 0;
+                taxLabel = 'IGST';
+                taxAmount = 0;
             }
-            taxAmount = Math.round((taxableAmount * taxRate) / 100);
 
             // Shipping
             if (zone === 'mumbai') {
@@ -1147,17 +1174,51 @@ function Cart() {
             total, zone, totalQty,
             packingPerPiece, operatingPerPiece
         };
-    }, [cart, promoApplied, financeRules, addrCountry, addrCity, selectedAddressId]);
+    }, [cart, appliedPromo, financeRules, addrCountry, addrCity, selectedAddressId]);
 
     const { subtotal, discount, afterDiscount, packingTotal, operatingTotal, taxableAmount, taxRate, taxLabel, taxAmount, shippingAmt, shippingLabel, total } = priceBreakdown;
 
-    const applyPromo = () => {
-        if (promo.trim().toUpperCase() === 'ASAT15') {
-            setPromoApplied(true);
-            showToast('ASAT15 promo code applied! 15% discount has been credited.', 'success');
-        } else {
-            showToast('Invalid promo code', 'error');
+    const applyPromo = async () => {
+        const trimmed = (promo || '').trim().toUpperCase();
+        if (!trimmed) {
+            showToast('Please enter a promo code', 'error');
+            return;
         }
+        const currentSubtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        if (currentSubtotal <= 0) {
+            showToast('Add items to cart before applying promo code', 'error');
+            return;
+        }
+
+        try {
+            setValidatingPromo(true);
+            const res = await apiFetch('/api/promos/validate', {
+                method: 'POST',
+                body: JSON.stringify({
+                    code: trimmed,
+                    subtotal: currentSubtotal
+                })
+            });
+
+            if (res && res.valid) {
+                setAppliedPromo(res);
+                setPromo(res.code);
+                showToast(res.message || `${res.code} promo applied successfully!`, 'success');
+            } else {
+                showToast(res?.error || res?.message || 'Invalid promo code', 'error');
+            }
+        } catch (err) {
+            const errorMsg = err?.data?.error || err?.data?.message || err?.message || 'Failed to apply promo code';
+            showToast(errorMsg, 'error');
+        } finally {
+            setValidatingPromo(false);
+        }
+    };
+
+    const removePromo = () => {
+        setAppliedPromo(null);
+        setPromo('');
+        showToast('Promo code removed', 'info');
     };
 
     const handleCheckoutClick = () => {
@@ -1272,8 +1333,10 @@ function Cart() {
                 customer_name: addrName,
                 items: formattedItems,
                 total_amount: Number(priceBreakdown.total) || 0,
-            tax_amount: Number(priceBreakdown.taxAmount) || 0,
-            shipping_amount: Number(priceBreakdown.shippingAmt) || 0,
+                tax_amount: Number(priceBreakdown.taxAmount) || 0,
+                shipping_amount: Number(priceBreakdown.shippingAmt) || 0,
+                discount_amount: Number(priceBreakdown.discount) || 0,
+                promo_code: appliedPromo?.code || null,
                 designer_earnings: dEarnings,
                 mfg_earnings: mEarnings,
                 designer_id: desId,
@@ -1839,34 +1902,43 @@ function Cart() {
                                     <span>{formatPrice(subtotal)}</span>
                                 </div>
                                 {discount > 0 && (
-                                    <div className="cart-summary-row" style={{ color: '#2e7d32' }}>
-                                        <span>Discount (ASAT15)</span>
-                                        <span style={{ color: '#2e7d32' }}>−{formatPrice(discount)}</span>
-                                    </div>
-                                )}
-
-                                {selectedAddressId && (
-                                    <div className="cart-summary-row" style={{ color: '#555', fontSize: '0.82rem' }}>
-                                        <span>Taxable Value</span>
-                                        <span>{formatPrice(taxableAmount)}</span>
+                                    <div className="cart-summary-row" style={{ color: '#15803d' }}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <span>Discount ({appliedPromo?.code || 'PROMO'})</span>
+                                            <button
+                                                type="button"
+                                                onClick={removePromo}
+                                                style={{
+                                                    background: 'rgba(239, 68, 68, 0.1)',
+                                                    border: 'none',
+                                                    color: '#dc2626',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.68rem',
+                                                    fontWeight: '700',
+                                                    borderRadius: '4px',
+                                                    padding: '2px 5px',
+                                                    lineHeight: 1
+                                                }}
+                                                title="Remove promo code"
+                                                aria-label="Remove promo code"
+                                            >
+                                                ✕
+                                            </button>
+                                        </span>
+                                        <span style={{ color: '#15803d', fontWeight: '700' }}>−{formatPrice(discount)}</span>
                                     </div>
                                 )}
 
                                 <div className="cart-summary-row" style={{ color: '#b45309', fontWeight: 600 }}>
                                     <span>
-                                        {taxLabel}
-                                        {selectedAddressId && taxRate > 0 && addrCountry === 'India' && (
-                                            <span style={{ fontSize: '0.68rem', fontWeight: 400, color: '#888', display: 'block' }}>
-                                                CGST {taxRate / 2}% + SGST {taxRate / 2}%
-                                            </span>
-                                        )}
-                                        {!selectedAddressId && (
-                                            <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#888' }}> (based on delivery address)</span>
-                                        )}
+                                        {selectedAddressId
+                                            ? taxLabel
+                                            : <span>GST / Tax <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#888' }}>(based on delivery address)</span></span>
+                                        }
                                     </span>
                                     <span>
                                         {selectedAddressId
-                                            ? (taxRate === 0 ? <span style={{ color: '#2e7d32', fontWeight: 600 }}>Exempt / Zero Rated</span> : `+ ${formatPrice(taxAmount)}`)
+                                            ? (taxAmount > 0 ? `+ ${formatPrice(taxAmount)}` : formatPrice(0))
                                             : '—'}
                                     </span>
                                 </div>
@@ -1885,11 +1957,44 @@ function Cart() {
                                         type="text"
                                         placeholder="Promo code"
                                         value={promo}
-                                        onChange={e => setPromo(e.target.value)}
-                                        onKeyDown={e => { if (e.key === 'Enter') applyPromo(); }}
+                                        disabled={!!appliedPromo || validatingPromo}
+                                        onChange={e => setPromo(e.target.value.toUpperCase())}
+                                        onKeyDown={e => { if (e.key === 'Enter' && !appliedPromo && !validatingPromo) applyPromo(); }}
+                                        style={appliedPromo ? { background: '#f0fdf4', borderColor: '#86efac', fontWeight: '700', color: '#166534' } : {}}
                                     />
-                                    <button onClick={applyPromo}>Apply</button>
+                                    {appliedPromo ? (
+                                        <button
+                                            type="button"
+                                            onClick={removePromo}
+                                            style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontWeight: '600' }}
+                                        >
+                                            Remove
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={applyPromo}
+                                            disabled={validatingPromo}
+                                            style={{ opacity: validatingPromo ? 0.7 : 1 }}
+                                        >
+                                            {validatingPromo ? 'Checking...' : 'Apply'}
+                                        </button>
+                                    )}
                                 </div>
+                                {appliedPromo && appliedPromo.description && (
+                                    <div style={{
+                                        fontSize: '0.72rem',
+                                        color: '#15803d',
+                                        marginTop: '-6px',
+                                        marginBottom: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}>
+                                        <i className="fas fa-check-circle"></i>
+                                        <span>{appliedPromo.description}</span>
+                                    </div>
+                                )}
                                 <div className="cart-summary-divider" />
                                 <div className="cart-summary-total">
                                     <span>{selectedAddressId ? 'Grand Total (incl. GST)' : 'Subtotal (excl. GST)'}</span>

@@ -36,6 +36,17 @@ const MFG_NAV_GROUPS = [
         exact: true
     },
     {
+        id: 'reports',
+        label: 'Reports',
+        icon: 'fas fa-chart-bar',
+        children: [
+            { to: '/mfg/reports', label: 'Reports Hub', icon: 'fas fa-th-large', desc: 'All production reports' },
+            { to: '/mfg/reports/earnings', label: 'Earnings Report', icon: 'fas fa-coins', desc: 'Revenue & payment history' },
+            { to: '/mfg/reports/orders', label: 'Order Performance', icon: 'fas fa-boxes', desc: 'Orders handled & fulfilment' },
+            { to: '/mfg/reports/products', label: 'Product Demand', icon: 'fas fa-tshirt', desc: 'Most ordered base products' },
+        ]
+    },
+    {
         id: 'support',
         label: 'Support',
         icon: 'fas fa-headset',

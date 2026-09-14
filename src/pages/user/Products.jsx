@@ -573,34 +573,49 @@ function Products() {
   const gridRef = useRef(null);
 
   // Dropdown open states and refs
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const [genderOpen, setGenderOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [priceOpen, setPriceOpen] = useState(false);
+  const categoryDropdownRef = useRef(null);
   const genderDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
   const priceDropdownRef = useRef(null);
 
+  const toggleCategory = (e) => {
+    e?.stopPropagation?.();
+    setCategoryOpen(prev => !prev);
+    setGenderOpen(false);
+    setSortOpen(false);
+    setPriceOpen(false);
+  };
   const toggleGender = (e) => {
     e?.stopPropagation?.();
     setGenderOpen(prev => !prev);
+    setCategoryOpen(false);
     setSortOpen(false);
     setPriceOpen(false);
   };
   const toggleSort = (e) => {
     e?.stopPropagation?.();
     setSortOpen(prev => !prev);
+    setCategoryOpen(false);
     setGenderOpen(false);
     setPriceOpen(false);
   };
   const togglePrice = (e) => {
     e?.stopPropagation?.();
     setPriceOpen(prev => !prev);
+    setCategoryOpen(false);
     setGenderOpen(false);
     setSortOpen(false);
   };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target)) {
+        setCategoryOpen(false);
+      }
       if (genderDropdownRef.current && !genderDropdownRef.current.contains(e.target)) {
         setGenderOpen(false);
       }
@@ -626,6 +641,8 @@ function Products() {
     if (s === 'bestsellers' || s === 'best-sellers') {
       setSortBy('best-sellers');
     } else if (s === 'newest' || s === 'latest') {
+      setSortBy('latest');
+    } else if (!s) {
       setSortBy('latest');
     }
   }, [searchParams]);
@@ -724,33 +741,47 @@ function Products() {
   }, []);
 
   /* ── Derive unique categories from data + standard wardrobe drops ── */
+  const normalizeCatName = (name) => {
+    const raw = (name || '').trim();
+    if (!raw) return '';
+    const norm = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (norm.includes('tshirt') || norm.includes('tee') || norm === 'shirt') return 'T-Shirt';
+    if (norm.includes('hoodie')) return 'Hoodies';
+    if (norm.includes('sweatshirt') || norm.includes('sweater')) return 'Sweatshirts';
+    if (norm.includes('pant') || norm.includes('trouser') || norm.includes('bottom')) return 'Pants';
+    if (norm.includes('cap') || norm.includes('hat')) return 'Caps';
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  };
+
   const categories = useMemo(() => {
     const base = ['All Drops', 'T-Shirt', 'Hoodies', 'Sweatshirts', 'Pants', 'Caps'];
     const fromProducts = (allProducts || [])
-      .map((p) => p.category || p.type || p.productType || '')
+      .map((p) => normalizeCatName(p.category || p.type || p.productType || ''))
       .filter(Boolean);
 
     const result = [...base];
     for (const cat of fromProducts) {
-      const trimmed = cat.trim();
-      if (!result.some(existing => existing.toLowerCase() === trimmed.toLowerCase())) {
-        result.push(trimmed);
+      if (!result.some(existing => existing.toLowerCase() === cat.toLowerCase())) {
+        result.push(cat);
       }
     }
     return result;
   }, [allProducts]);
 
-  /* ── Apply URL param filters once data loads ── */
+  /* ── Apply URL param filters once data loads or searchParams change ── */
   useEffect(() => {
     if (!loading) {
-      if (initialCategory) {
+      const catParam = searchParams.get('category');
+      if (catParam) {
         const match = categories.find(
-          (c) => c.toLowerCase() === initialCategory.toLowerCase()
+          (c) => c.toLowerCase() === catParam.toLowerCase()
         );
         if (match) setActiveCategory(match);
+      } else {
+        setActiveCategory('All Drops');
       }
     }
-  }, [loading, initialCategory, categories]);
+  }, [loading, searchParams, categories]);
 
   /* ── Page launch animation ── */
   useEffect(() => {
@@ -1054,32 +1085,56 @@ function Products() {
         <div className="pcol-filter-bar" style={{ background: '#FFFFFF', borderBottom: '1px solid #EBEBEB', padding: '12px 0' }}>
           <div className="pcol-filter-bar__inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
 
-            {/* Filter 1: Category / All Drops */}
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px', alignItems: 'center', maxWidth: '100%' }}>
-              {categories.map((cat) => {
-                const isSelected = activeCategory === cat || (cat === 'All Drops' && (activeCategory === 'All' || activeCategory === 'All Drops'));
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    style={{
-                      background: isSelected ? '#000000' : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : '#000000',
-                      border: '1px solid ' + (isSelected ? '#000000' : '#E5E5E5'),
-                      borderRadius: '24px',
-                      padding: '8px 18px',
-                      fontSize: '12px',
-                      fontWeight: '700',
-                      textTransform: 'uppercase',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
+            {/* Filter 1: Category / All Drops Dropdown */}
+            <div className="pcol-sort-dropdown-wrap" ref={categoryDropdownRef}>
+              <button
+                type="button"
+                className="pcol-sort-btn"
+                onClick={toggleCategory}
+                aria-label="Filter by drops"
+                style={{
+                  background: '#000000',
+                  color: '#FFFFFF',
+                  borderColor: '#000000',
+                  borderRadius: '24px',
+                  padding: '8px 18px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span>
+                  {activeCategory === 'All' || activeCategory === 'All Drops'
+                    ? 'All Drops'
+                    : `All Drops: ${activeCategory}`}
+                </span>
+                <i className={`fas fa-chevron-down${categoryOpen ? ' open' : ''}`} style={{ marginLeft: '4px' }}></i>
+              </button>
+              {categoryOpen && (
+                <div className="pcol-sort-popover pcol-sort-popover--left" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {categories.map((cat) => {
+                    const isSelected = activeCategory === cat || (cat === 'All Drops' && (activeCategory === 'All' || activeCategory === 'All Drops'));
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        className={`pcol-sort-popover-item${isSelected ? ' active' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveCategory(cat);
+                          setCategoryOpen(false);
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Right Controls: Filter 2 (Gender), Filter 3 (Latest / Best Sellers), Filter 4 (Price) */}

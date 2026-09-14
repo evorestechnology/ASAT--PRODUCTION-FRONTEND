@@ -48,7 +48,7 @@ function computeGstBreakdown(order) {
     const address = order.address || "";
     const isIndia = !country || country.trim().toLowerCase() === "india";
     const maxUnitPrice = items.reduce((max, it) => Math.max(max, Number(it.price ?? it.user_price ?? it.unit_price ?? 0)), 0);
-    const defaultTaxRate = maxUnitPrice > 2500 ? 18 : 5;
+    const defaultTaxRate = maxUnitPrice > 1000 ? 18 : 5;
 
     let taxableValue = 0;
     let totalTax = 0;
