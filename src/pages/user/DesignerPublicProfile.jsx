@@ -734,10 +734,10 @@ function DesignerPublicProfile() {
               email: data.email,
               username: data.username,
               avatar: data.avatar_url,
-              bio: data.description || data.bio || 'Luxury streetwear creator & fashion artist at Designer Paradise.',
+              bio: data.description || data.bio ,
               instagram: data.instagram || data.username || '',
               linkedin: data.linkedin || '',
-              speciality: data.speciality || 'Streetwear & Haute Couture',
+              speciality: data.speciality,
               country: data.country || 'India',
               location: data.address || data.country || 'India',
               status: data.status,
@@ -938,13 +938,13 @@ function DesignerPublicProfile() {
                 <h1 className="dpp-hero__name">{designer.fullName || designer.username}</h1>
                 
                 <p className="dpp-hero__bio">
-                  {designer.bio || 'Luxury streetwear creator & fashion artist at Designer Paradise.'}
+                  {designer.bio}
                 </p>
 
                 <div className="dpp-hero__tags">
                   <span className="dpp-hero__tag">
                     <i className="fa-solid fa-sparkles" style={{ marginRight: '6px' }} />
-                    {designer.speciality || 'Streetwear & Haute Couture'}
+                    {designer.speciality}
                   </span>
                   {(designer.country || designer.location) && (
                     <span className="dpp-hero__tag">
@@ -953,7 +953,7 @@ function DesignerPublicProfile() {
                     </span>
                   )}
                   <span className="dpp-hero__tag" style={{ borderColor: 'rgba(40,200,100,0.4)', color: '#2ecc71', background: 'rgba(46,204,113,0.1)' }}>
-                    ● Verified Atelier Creator
+                    ● Verified Designer
                   </span>
                 </div>
 
