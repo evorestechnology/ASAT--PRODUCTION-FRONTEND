@@ -214,7 +214,7 @@ function DesignerFooter() {
                             <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
                         </span>
                         <ul className="blu-footer-card__list">
-                            <li><a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">Instagram</a></li>
+                            <li><a href="https://www.instagram.com/designer_paradise_official/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">Instagram</a></li>
                             <li><a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">YouTube</a></li>
                             <li><a href="/designer/login" className="blu-footer-card__link">Design Sign In</a></li>
                             <li><a href="/designer/register" className="blu-footer-card__link">Join as a Designer</a></li>
