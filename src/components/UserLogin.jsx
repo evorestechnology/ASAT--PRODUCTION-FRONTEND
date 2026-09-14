@@ -4,8 +4,8 @@ import { supabase } from '../supabase';
 import { apiFetch, setAuthToken } from '../api';
 
 const authImages = [
-    'public/images/banner_images/4.png',
-    'public/images/banner_images/3.png',
+    'images/banner_images/4.png',
+    'images/banner_images/3.png',
 ];
 
 const styles = `
