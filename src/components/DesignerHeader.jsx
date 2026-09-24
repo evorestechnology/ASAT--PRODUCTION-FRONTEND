@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../api';
+import AnnouncementHistory from './AnnouncementHistory';
 
 function DesignerHeader() {
     const navigate = useNavigate();
     const { user, profile, logout } = useAuth();
     const [profileOpen, setProfileOpen] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [designerName, setDesignerName] = useState('');
     const profileRef = useRef(null);
 
@@ -86,6 +88,17 @@ function DesignerHeader() {
 
                 {/* Right Profile Pill */}
                 <div className="dsn-header__right">
+                    <div className="relative mr-4 flex items-center">
+                        <button 
+                            className="text-asat-gray hover:text-asat-gold transition text-xl p-2 relative"
+                            onClick={() => setNotificationsOpen(!notificationsOpen)}
+                        >
+                            <i className="fas fa-bell"></i>
+                            {/* We can add a red dot here if unread notifications exist, but for now we just show the dropdown */}
+                        </button>
+                        <AnnouncementHistory isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+                    </div>
+
                     <div className="dsn-header__profile" ref={profileRef}>
                         <button 
                             className={`dsn-header__profile-pill ${profileOpen ? 'dsn-header__profile-pill--active' : ''}`} 

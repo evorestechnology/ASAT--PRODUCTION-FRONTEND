@@ -83,6 +83,7 @@ const NAV_GROUPS = [
         children: [
             { to: '/master/tickets', label: 'Support Tickets', icon: 'fas fa-headset', desc: 'Customer & partner issues' },
             { to: '/master/tutorials', label: 'Tutorials & Guides', icon: 'fas fa-graduation-cap', desc: 'Documentation & videos' },
+            { to: '/master/announcements', label: 'Announcements', icon: 'fas fa-bullhorn', desc: 'Global & targeted alerts' },
         ]
     }
 ];

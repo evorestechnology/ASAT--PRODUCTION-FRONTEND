@@ -4,9 +4,8 @@ import { supabase } from '../../supabase';
 import { apiFetch, setAuthToken, uploadFile } from '../../api';
 
 const authImages = [
-    '/images/fashion1.png',
-    '/images/fashion2.png',
-    '/images/fashion3.png',
+    '/images/banner_images/4.png',
+    '/images/banner_images/1.png'
 ];
 
 const COUNTRY_CODES = ['+91 India','+1 USA','+44 UK','+971 UAE','+61 Australia','+81 Japan','+49 Germany','+33 France','+86 China','+55 Brazil','+27 South Africa','+82 South Korea'];
@@ -17,15 +16,18 @@ const COUNTRIES = ['India','United States','United Kingdom','United Arab Emirate
 const styles = `
     .auth-split-layout {
         display: flex;
+        height: 100vh;
         min-height: 100vh;
         width: 100%;
+        overflow: hidden;
         background: radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
                     radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.04) 0px, transparent 50%),
                     #FAFAF8;
     }
     .auth-image-side {
-        flex: 1;
+        flex: 1.2;
         position: relative;
+        height: 100vh;
         overflow: hidden;
         display: none;
     }
@@ -68,13 +70,17 @@ const styles = `
         color: rgba(255,255,255,0.9);
     }
     .auth-form-side {
-        flex: 1.2;
+        flex: 1;
+        height: 100vh;
+        min-height: 0;
+        box-sizing: border-box;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         padding: 40px;
         position: relative;
         overflow-y: auto;
+        overflow-x: hidden;
     }
     .auth-form-container {
         width: 100%;

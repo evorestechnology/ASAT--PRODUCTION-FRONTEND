@@ -3,6 +3,7 @@ import { apiFetch } from "../../api";
 import "../../styles/admin.css";
 import BackButton from "../../components/BackButton";
 import { useToast, ToastContainer, TOAST_CSS } from "../../components/useToast";
+import { useAuth } from "../../context/AuthContext";
 
 const styles = `
     .bp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
@@ -48,10 +49,12 @@ export default function MasterProducts() {
     const [filterCategory, setFilterCategory] = useState("all");
     const [selected, setSelected] = useState(null);
 
+    const { idToken } = useAuth();
+
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const data = await apiFetch("/api/products");
+            const data = await apiFetch("/api/products/all");
             setProducts(data || []);
         } catch (err) {
             setError("Failed to load base products.");

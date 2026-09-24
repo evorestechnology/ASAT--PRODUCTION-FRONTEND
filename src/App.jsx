@@ -95,6 +95,7 @@ import MasterReportCustomers     from './pages/master/MasterReportCustomers';
 import MasterReportPromos        from './pages/master/MasterReportPromos';
 import MasterReportSupport       from './pages/master/MasterReportSupport';
 import MasterReportInventory     from './pages/master/MasterReportInventory';
+import MasterAnnouncements       from './pages/master/MasterAnnouncements';
 
 // Mfg pages
 import MfgIndex        from './pages/mfg/MfgIndex';
@@ -210,6 +211,7 @@ function App() {
           <Route path="gst-report" element={<MasterGSTReport />} />
           <Route path="promocodes" element={<MasterPromoCodes />} />
           <Route path="coupons"    element={<MasterPromoCodes />} />
+          <Route path="announcements" element={<MasterAnnouncements />} />
 
           {/* ── User Management ── */}
           <Route path="users"      element={<MasterUserSearch />} />
