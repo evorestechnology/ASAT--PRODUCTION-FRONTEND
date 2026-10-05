@@ -153,7 +153,7 @@ function MfgIndex() {
 
         const newInstances = [];
 
-        if (catalogueRef.current) {
+        if (catalogueRef.current && typeof catalogueRef.current.getContext === 'function') {
             newInstances.push(new window.Chart(catalogueRef.current.getContext('2d'), {
                 type: 'bar',
                 data: {
@@ -175,7 +175,7 @@ function MfgIndex() {
             }));
         }
 
-        if (regionRef.current) {
+        if (regionRef.current && typeof regionRef.current.getContext === 'function') {
             newInstances.push(new window.Chart(regionRef.current.getContext('2d'), {
                 type: 'doughnut',
                 data: {
@@ -194,7 +194,7 @@ function MfgIndex() {
             }));
         }
 
-        if (statesRef.current) {
+        if (statesRef.current && typeof statesRef.current.getContext === 'function') {
             newInstances.push(new window.Chart(statesRef.current.getContext('2d'), {
                 type: 'doughnut',
                 data: {

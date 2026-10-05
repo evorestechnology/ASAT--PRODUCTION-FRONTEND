@@ -138,7 +138,7 @@ function DesignerAnalytics() {
 
         if (window.Chart && reachLabels.length > 0) {
             const ctxReach = document.getElementById('reachChart');
-            if (ctxReach) {
+            if (ctxReach && typeof ctxReach.getContext === 'function') {
                 reachChartInstance.current = new window.Chart(ctxReach.getContext('2d'), {
                     type: 'bar',
                     data: {
@@ -180,7 +180,7 @@ function DesignerAnalytics() {
 
         if (window.Chart && catLabels.length > 0) {
             const ctxDevice = document.getElementById('deviceChart');
-            if (ctxDevice) {
+            if (ctxDevice && typeof ctxDevice.getContext === 'function') {
                 deviceChartInstance.current = new window.Chart(ctxDevice.getContext('2d'), {
                     type: 'doughnut',
                     data: {

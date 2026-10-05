@@ -170,32 +170,40 @@ function DesignerIndex() {
 
     // Render Chart.js
     useEffect(() => {
-        if (!window.Chart || !revenueRef.current) return;
+        if (!window.Chart) return;
         chartInstances.current.forEach(c => c.destroy());
         chartInstances.current = [];
 
-        const c1 = new window.Chart(revenueRef.current.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: revenueData.labels,
-                datasets: [{ label: 'Royalties (₹)', data: revenueData.data, borderColor: '#C5A059', backgroundColor: 'rgba(197,160,89,0.08)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#C5A059', pointRadius: 4, pointHoverRadius: 6 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '₹' + v.toLocaleString() } } } }
-        });
+        const newInstances = [];
 
-        const c2 = new window.Chart(pieDesignRef.current.getContext('2d'), {
-            type: 'doughnut',
-            data: { labels: designSales.labels, datasets: [{ data: designSales.data, backgroundColor: ['#C5A059','#121212','#2D2D2D','#8B7355','#D4C5A0'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', size: 11 }, padding: 12 } } } }
-        });
+        if (revenueRef.current && typeof revenueRef.current.getContext === 'function') {
+            newInstances.push(new window.Chart(revenueRef.current.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: revenueData.labels,
+                    datasets: [{ label: 'Royalties (₹)', data: revenueData.data, borderColor: '#C5A059', backgroundColor: 'rgba(197,160,89,0.08)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#C5A059', pointRadius: 4, pointHoverRadius: 6 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '₹' + v.toLocaleString() } } } }
+            }));
+        }
 
-        const c3 = new window.Chart(pieCountryRef.current.getContext('2d'), {
-            type: 'doughnut',
-            data: { labels: customerGeo.labels, datasets: [{ data: customerGeo.data, backgroundColor: ['#C5A059','#121212','#2D2D2D','#8B7355','#D4C5A0','#A89060'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', size: 11 }, padding: 12 } } } }
-        });
+        if (pieDesignRef.current && typeof pieDesignRef.current.getContext === 'function') {
+            newInstances.push(new window.Chart(pieDesignRef.current.getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: designSales.labels, datasets: [{ data: designSales.data, backgroundColor: ['#C5A059','#121212','#2D2D2D','#8B7355','#D4C5A0'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', size: 11 }, padding: 12 } } } }
+            }));
+        }
 
-        chartInstances.current = [c1, c2, c3];
+        if (pieCountryRef.current && typeof pieCountryRef.current.getContext === 'function') {
+            newInstances.push(new window.Chart(pieCountryRef.current.getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: customerGeo.labels, datasets: [{ data: customerGeo.data, backgroundColor: ['#C5A059','#121212','#2D2D2D','#8B7355','#D4C5A0','#A89060'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', size: 11 }, padding: 12 } } } }
+            }));
+        }
+
+        chartInstances.current = newInstances;
         return () => chartInstances.current.forEach(c => c.destroy());
     }, [revenueData, designSales, customerGeo]);
 

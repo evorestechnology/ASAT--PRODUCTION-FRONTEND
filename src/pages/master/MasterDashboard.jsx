@@ -450,7 +450,7 @@ function MasterDashboard() {
 
         // Line chart — earnings by time
         const ctx1 = document.getElementById('admChartLine');
-        if (ctx1) {
+        if (ctx1 && typeof ctx1.getContext === 'function') {
             instances.push(new window.Chart(ctx1.getContext('2d'), {
                 type: 'line',
                 data: {
@@ -485,7 +485,7 @@ function MasterDashboard() {
 
         // Doughnut — by country
         const ctx2 = document.getElementById('admChartCountry');
-        if (ctx2) {
+        if (ctx2 && typeof ctx2.getContext === 'function') {
             instances.push(new window.Chart(ctx2.getContext('2d'), {
                 type: 'doughnut',
                 data: {
@@ -521,7 +521,7 @@ function MasterDashboard() {
 
         // Doughnut — domestic vs global
         const ctx3 = document.getElementById('admChartDomestic');
-        if (ctx3) {
+        if (ctx3 && typeof ctx3.getContext === 'function') {
             instances.push(new window.Chart(ctx3.getContext('2d'), {
                 type: 'doughnut',
                 data: {
@@ -557,7 +557,7 @@ function MasterDashboard() {
 
         // Bar Chart — earnings by Indian state
         const ctx4 = document.getElementById('admChartStates');
-        if (ctx4) {
+        if (ctx4 && typeof ctx4.getContext === 'function') {
             instances.push(new window.Chart(ctx4.getContext('2d'), {
                 type: 'bar',
                 data: {
