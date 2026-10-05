@@ -560,6 +560,9 @@ function Navbar() {
                             <Link to="/rankings" className="blu-header__nav-link">
                                 Designer Rankings
                             </Link>
+                            <Link to="/announcements" className="blu-header__nav-link">
+                                Announcements
+                            </Link>
                         </div>
                     </div>
 
@@ -790,6 +793,7 @@ function Navbar() {
                             <Link to="/products?sort=best-sellers" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Best Sellers</Link>
                             <Link to="/products" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Explore Collections</Link>
                             <Link to="/rankings" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Designer Rankings</Link>
+                            <Link to="/announcements" className="blu-drawer__item" onClick={() => setMobileOpen(false)}>Announcements</Link>
                             <div className="blu-drawer__sep" />
                             <Link to="/wishlist" className="blu-drawer__item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setMobileOpen(false)}>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>

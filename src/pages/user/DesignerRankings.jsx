@@ -431,7 +431,6 @@ function DesignerRankings() {
                                                     <img className="rnk-avatar" src={p.avatar} alt={p.fullName} />
                                                 </div>
                                                 <h3 className="rnk-podium-name">{p.fullName}</h3>
-                                                <span className="rnk-podium-handle">@{p.username}</span>
                                                 
                                                 <span className="rnk-podium-score-label">Points</span>
                                                 <span className="rnk-podium-score">{p.score.toLocaleString()} pts</span>

@@ -67,8 +67,8 @@ function DesignerIndex() {
             .slice(0, 5);
 
         setDesignSales({
-            labels: topDesigns.length ? topDesigns.map(d => d[0]) : ['No Sales'],
-            data: topDesigns.length ? topDesigns.map(d => d[1]) : [1]
+            labels: topDesigns.length ? topDesigns.map(d => d[0]) : [],
+            data: topDesigns.length ? topDesigns.map(d => d[1]) : []
         });
 
         // B. Customer Geo chart
@@ -83,8 +83,8 @@ function DesignerIndex() {
             .slice(0, 6);
 
         setCustomerGeo({
-            labels: topGeo.length ? topGeo.map(g => g[0]) : ['No Data'],
-            data: topGeo.length ? topGeo.map(g => g[1]) : [1]
+            labels: topGeo.length ? topGeo.map(g => g[0]) : [],
+            data: topGeo.length ? topGeo.map(g => g[1]) : []
         });
 
         // C. Revenue Overview Time Series Chart
@@ -250,11 +250,27 @@ function DesignerIndex() {
             <div className="dsn-dash__pies">
                 <section className="dsn-dash__chart-section dsn-dash__chart-section--half">
                     <h3 className="dsn-dash__chart-title">Best Selling Designs</h3>
-                    <div className="dsn-dash__chart-wrap dsn-dash__chart-wrap--pie"><canvas ref={pieDesignRef}></canvas></div>
+                    {designSales.data && designSales.data.length > 0 ? (
+                        <div className="dsn-dash__chart-wrap dsn-dash__chart-wrap--pie"><canvas ref={pieDesignRef}></canvas></div>
+                    ) : (
+                        <div style={{ padding: '40px 20px', textAlign: 'center', color: '#888', fontFamily: 'Montserrat, sans-serif' }}>
+                            <i className="fas fa-chart-pie" style={{ fontSize: '2.2rem', color: 'rgba(197,160,89,0.3)', marginBottom: '10px', display: 'block' }}></i>
+                            <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#555', margin: '0 0 4px' }}>No Sales Recorded Yet</p>
+                            <span style={{ fontSize: '0.75rem', color: '#888' }}>Analytics will appear here once orders are placed for your designs.</span>
+                        </div>
+                    )}
                 </section>
                 <section className="dsn-dash__chart-section dsn-dash__chart-section--half">
                     <h3 className="dsn-dash__chart-title">Customers Globally</h3>
-                    <div className="dsn-dash__chart-wrap dsn-dash__chart-wrap--pie"><canvas ref={pieCountryRef}></canvas></div>
+                    {customerGeo.data && customerGeo.data.length > 0 ? (
+                        <div className="dsn-dash__chart-wrap dsn-dash__chart-wrap--pie"><canvas ref={pieCountryRef}></canvas></div>
+                    ) : (
+                        <div style={{ padding: '40px 20px', textAlign: 'center', color: '#888', fontFamily: 'Montserrat, sans-serif' }}>
+                            <i className="fas fa-globe-americas" style={{ fontSize: '2.2rem', color: 'rgba(197,160,89,0.3)', marginBottom: '10px', display: 'block' }}></i>
+                            <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#555', margin: '0 0 4px' }}>No Customer Data Yet</p>
+                            <span style={{ fontSize: '0.75rem', color: '#888' }}>Geographic breakdown will populate as orders are received.</span>
+                        </div>
+                    )}
                 </section>
             </div>
         </main>

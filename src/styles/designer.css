@@ -209,10 +209,10 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background: #000000;
-    color: white;
+    background: linear-gradient(135deg, #E8C97A 0%, #C5A059 100%);
+    color: #000000;
     border: none;
-    padding: 15px 32px;
+    padding: 14px 28px;
     cursor: pointer;
     letter-spacing: 2px;
     font-weight: 700;
@@ -221,11 +221,13 @@
     border-radius: 8px;
     transition: all 0.25s ease;
     text-transform: uppercase;
+    box-shadow: 0 4px 14px rgba(197, 160, 89, 0.25);
 }
 .dsn-auth__btn:hover {
-    background: #222222;
+    background: linear-gradient(135deg, #f3d789 0%, #d4ae63 100%);
+    color: #000000;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.35);
 }
 .dsn-auth__btn:active {
     transform: translateY(0);
@@ -241,16 +243,19 @@
 }
 .dsn-auth__btn--danger {
     background: #E53935;
+    color: #ffffff;
 }
 .dsn-auth__btn--danger:hover {
     background: #d32f2f;
+    color: #ffffff;
 }
 .dsn-auth__btn--submit {
-    background: #000000;
-    color: white;
+    background: linear-gradient(135deg, #E8C97A 0%, #C5A059 100%);
+    color: #000000;
 }
 .dsn-auth__btn--submit:hover {
-    background: #222222;
+    background: linear-gradient(135deg, #f3d789 0%, #d4ae63 100%);
+    color: #000000;
 }
 .dsn-auth__submit-row {
     grid-column: 1 / -1;

@@ -6,9 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import ForgotPasswordModal from '../../components/ForgotPasswordModal';
 
 const authImages = [
-    '/images/fashion1.png',
-    '/images/fashion2.png',
-    '/images/fashion3.png',
+    '/images/banner_images/4.png',
+    '/images/banner_images/3.png',
 ];
 
 const styles = `

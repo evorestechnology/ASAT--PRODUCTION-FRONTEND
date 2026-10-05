@@ -810,7 +810,6 @@ export default function UserIndex() {
                 <span className="blu-designer-card__rank-badge">#{i + 1}</span>
               </div>
               <span className="blu-designer-card__name">{d.fullName}</span>
-              <span className="blu-designer-card__handle">@{d.username || 'creator'}</span>
               <span className="blu-designer-card__stats">{d.designsCount || 0} DROPS</span>
               <span className="blu-designer-card__btn">VIEW DESIGNS</span>
             </div>

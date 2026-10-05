@@ -389,9 +389,9 @@ function UserRegister() {
                 ))}
                 <div className="auth-image-overlay">
                     <h1 className="auth-brand-name">
-                        A<span style={{ display: 'inline-block', transform: 'scaleX(-1)', transformOrigin: 'center' }}>S</span>AT
+                        Designer Paradise
                     </h1>
-                    <p className="auth-brand-tagline">THE INDEPENDENT DESIGNER ATELIER</p>
+                    <p className="auth-brand-tagline">World’s First Marketplace for Fashion Designers and Enthusiast</p>
                 </div>
             </div>
 

@@ -4,9 +4,11 @@ import { supabase } from '../../supabase';
 import { apiFetch, setAuthToken, uploadFile } from '../../api';
 
 const authImages = [
-    '/images/fashion1.png',
-    '/images/fashion2.png',
-    '/images/fashion3.png',
+    // Keep the designer registration carousel aligned with the user-side carousel.
+    '/images/banner_images/4.png',
+    '/images/banner_images/3.png',
+    '/images/banner_images/1.png',
+    '/images/banner_images/2.png',
 ];
 
 const COUNTRY_CODES = ['+91 India','+1 USA','+44 UK','+971 UAE','+61 Australia','+81 Japan','+49 Germany','+33 France','+86 China','+55 Brazil','+27 South Africa','+82 South Korea'];
@@ -24,68 +26,156 @@ const styles = `
                     #FAFAF8;
     }
     .auth-image-side {
-        flex: 1;
-        position: relative;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: clamp(380px, 42vw, 680px);
+        height: 100vh;
+        max-height: 100vh;
         overflow: hidden;
-        display: none;
-    }
-    @media (min-width: 900px) {
-        .auth-image-side { display: block; }
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        isolation: isolate;
+        background: #0a0a0a;
+        z-index: 50;
     }
     .auth-slide {
         position: absolute;
         inset: 0;
-        background-size: cover;
-        background-position: center;
         opacity: 0;
-        transition: opacity 1.5s ease-in-out, transform 10s linear;
-        transform: scale(1.05);
+        transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background-image: var(--auth-image);
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
     }
-    .auth-slide.active { opacity: 1; transform: scale(1); }
+    .auth-slide.active {
+        opacity: 1;
+    }
     .auth-image-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 100%);
+        background: linear-gradient(
+            180deg, 
+            rgba(10, 10, 10, 0.72) 0%, 
+            rgba(10, 10, 10, 0.2) 45%, 
+            rgba(10, 10, 10, 0.88) 100%
+        );
         z-index: 10;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        padding: 60px;
+        justify-content: space-between;
+        padding: clamp(28px, 4vw, 56px);
         color: white;
+        box-sizing: border-box;
+    }
+    .auth-side-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        align-self: flex-start;
+        padding: 6px 14px;
+        background: rgba(197, 160, 89, 0.15);
+        border: 1px solid rgba(197, 160, 89, 0.4);
+        border-radius: 30px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #E8C97A;
+        text-transform: uppercase;
+    }
+    .auth-brand-content {
+        margin-top: auto;
+        margin-bottom: 24px;
     }
     .auth-brand-name {
         font-family: 'Cinzel', serif;
-        font-size: 3rem;
-        letter-spacing: 4px;
+        font-size: clamp(2.2rem, 3.8vw, 3.8rem);
+        line-height: 1.1;
+        letter-spacing: clamp(1px, 0.3vw, 4px);
         font-weight: 700;
-        margin-bottom: 15px;
-        text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        max-width: 520px;
+        margin: 0 0 12px;
+        background: linear-gradient(135deg, #FFFFFF 30%, #E8C97A 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
     .auth-brand-tagline {
         font-family: 'Montserrat', sans-serif;
-        font-size: 1rem;
-        letter-spacing: 2px;
-        color: rgba(255,255,255,0.9);
+        font-size: clamp(0.8rem, 1vw, 0.95rem);
+        letter-spacing: 1.5px;
+        color: rgba(255,255,255,0.85);
+        max-width: 420px;
+        line-height: 1.6;
+        margin: 0 0 18px;
     }
-    .auth-form-side {
-        flex: 1.2;
+    .auth-features-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .auth-feature-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 20px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    .auth-carousel-indicators {
         display: flex;
         align-items: center;
-        justify-content: center;
-        padding: 40px;
+        gap: 8px;
+    }
+    .auth-indicator-dot {
+        height: 4px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.35);
+        transition: all 0.4s ease;
+        cursor: pointer;
+        border: none;
+        padding: 0;
+        width: 14px;
+    }
+    .auth-indicator-dot.active {
+        width: 32px;
+        background: #C5A059;
+        box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+    }
+    .auth-form-side {
+        margin-left: clamp(380px, 42vw, 680px);
+        flex: 1 1 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 40px 24px;
         position: relative;
-        overflow-y: auto;
     }
     .auth-form-container {
         width: 100%;
-        max-width: 480px;
-        background: rgba(255, 255, 255, 0.72);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        max-width: 560px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 16px;
         padding: 40px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        position: relative;
     }
     .auth-title {
         font-family: 'Cinzel', serif;
@@ -254,10 +344,10 @@ const styles = `
     }
     .auth-switch-link:hover { color: #555555; }
     .auth-back-home {
-        position: absolute;
-        top: 30px;
-        right: 40px;
-        color: #000000;
+        width: 100%;
+        max-width: 560px;
+        margin: 0 auto 16px;
+        color: #555555;
         text-decoration: none;
         font-family: 'Montserrat', sans-serif;
         font-size: 0.8rem;
@@ -265,6 +355,7 @@ const styles = `
         font-weight: 600;
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 8px;
         transition: color 0.3s;
     }
@@ -276,7 +367,36 @@ const styles = `
         margin-top: 4px;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 900px) {
+        .auth-split-layout {
+            flex-direction: column;
+        }
+        .auth-image-side {
+            position: relative;
+            top: auto;
+            left: auto;
+            width: 100%;
+            height: clamp(240px, 32vh, 360px);
+        }
+        .auth-form-side {
+            margin-left: 0;
+            padding: 24px 16px;
+        }
+        .auth-side-badge {
+            font-size: 0.62rem;
+            padding: 4px 10px;
+        }
+        .auth-brand-name {
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            margin-bottom: 6px;
+        }
+        .auth-brand-tagline {
+            font-size: 0.78rem;
+            margin-bottom: 8px;
+        }
+        .auth-features-pills {
+            display: none;
+        }
         .auth-row {
             flex-direction: column;
             gap: 0;
@@ -331,18 +451,19 @@ const styles = `
         font-family: 'Montserrat', sans-serif;
     }
     .ppt-container {
-        width: 100%;
-        max-width: 720px;
+        width: 94%;
+        max-width: 780px;
+        max-height: 90vh;
         background: #121212;
-        border: 1px solid rgba(197, 160, 89, 0.25);
-        border-radius: 12px;
-        padding: 45px;
+        border: 1px solid rgba(197, 160, 89, 0.35);
+        border-radius: 14px;
+        padding: clamp(20px, 3vw, 32px);
         position: relative;
-        box-shadow: 0 30px 70px rgba(0,0,0,0.8), 0 0 50px rgba(197,160,89,0.06);
+        box-shadow: 0 30px 70px rgba(0,0,0,0.9), 0 0 50px rgba(197,160,89,0.08);
         display: flex;
         flex-direction: column;
-        min-height: 520px;
         justify-content: space-between;
+        overflow-y: auto;
     }
     .ppt-header {
         display: flex;
@@ -447,42 +568,58 @@ const styles = `
         gap: 12px;
     }
     .ppt-btn {
-        padding: 12px 24px;
-        font-family: 'Cinzel', serif;
-        font-size: 0.8rem;
-        letter-spacing: 2px;
+        padding: 12px 28px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.85rem;
+        letter-spacing: 1.5px;
         font-weight: 700;
         border: none;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.25s ease;
         text-transform: uppercase;
-        border-radius: 2px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
     .ppt-btn--prev {
-        background: transparent;
-        color: rgba(255,255,255,0.65);
-        border: 1px solid rgba(255,255,255,0.15);
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        border: 1px solid #E8C97A !important;
+        box-shadow: 0 2px 10px rgba(255, 255, 255, 0.25) !important;
+        opacity: 1 !important;
+        font-weight: 700 !important;
     }
     .ppt-btn--prev:hover {
-        color: white;
-        border-color: rgba(255,255,255,0.45);
-        background: rgba(255,255,255,0.02);
+        background: #F0F0F0 !important;
+        color: #000000 !important;
+        border-color: #C5A059 !important;
+        box-shadow: 0 4px 15px rgba(232, 201, 122, 0.45) !important;
+        transform: translateY(-1px);
     }
     .ppt-btn--next {
-        background: var(--gold);
-        color: #0c0c0c;
-        box-shadow: 0 4px 15px rgba(197,160,89,0.25);
+        background: linear-gradient(135deg, #E8C97A 0%, #C5A059 100%) !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
+        border: 1px solid #E8C97A !important;
+        box-shadow: 0 4px 15px rgba(197, 160, 89, 0.35) !important;
+        opacity: 1 !important;
     }
-    .ppt-btn--next:hover {
-        background: #e8c97a;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(197,160,89,0.35);
+    .ppt-btn--next:hover:not(:disabled) {
+        background: linear-gradient(135deg, #F5DC92 0%, #D4AF67 100%) !important;
+        color: #000000 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(197, 160, 89, 0.55) !important;
     }
-    .ppt-btn:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-        transform: none !important;
+    .ppt-btn--next:disabled {
+        background: #E8C97A !important;
+        color: #000000 !important;
+        border: 1px solid #C5A059 !important;
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
         box-shadow: none !important;
+        transform: none !important;
     }
     .ppt-terms-checkbox {
         display: flex;
@@ -917,9 +1054,11 @@ function DesignerRegister() {
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % authImages.length);
-        }, 5000);
+        }, 4500);
         return () => clearInterval(timer);
     }, []);
+
+
 
     const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -1071,19 +1210,11 @@ function DesignerRegister() {
                         console.error('Avatar upload failed:', uploadErr);
                     }
                 }
-                
-                // Sign out to keep the session clean since they are redirected to the login page
-                await supabase.auth.signOut();
-                setAuthToken(null);
             }
             setOtpStep(false);
             setShowPpt(false);
             sessionStorage.removeItem('asat_designer_registration');
-            navigate('/designer/login', { 
-                state: { 
-                    successMessage: `Welcome to the Paradise, ${computedFullName || 'Designer'}! Your email was verified and your designer registration was completed successfully. Please sign in below.` 
-                } 
-            });
+            navigate('/designer', { replace: true });
             
         } catch (err) {
             console.error('Verification/Registration failed:', err);
@@ -1098,18 +1229,42 @@ function DesignerRegister() {
         <div className="auth-split-layout">
             <style>{styles}</style>
 
-            {/* Left Side: Image Slideshow */}
+            {/* Left Side: Image Slideshow Panel (Fixed Position) */}
             <div className="auth-image-side">
                 {authImages.map((image, index) => (
                     <div
                         key={index}
                         className={`auth-slide ${index === currentSlide ? 'active' : ''}`}
-                        style={{ backgroundImage: `url('${image}')` }}
+                        style={{ '--auth-image': `url('${image}')` }}
                     />
                 ))}
                 <div className="auth-image-overlay">
-                    <h1 className="auth-brand-name">Designer Paradise</h1>
-                    <p className="auth-brand-tagline">A Creative Haven for Designers</p>
+                    <div className="auth-side-badge">
+                        <span>✦</span> ASAT CREATOR ATELIER
+                    </div>
+
+                    <div className="auth-brand-content">
+                        <h1 className="auth-brand-name">Designer Paradise</h1>
+                        <p className="auth-brand-tagline">Monetize your artwork. Expand your reach. Keep 100% ownership.</p>
+                        
+                        <div className="auth-features-pills">
+                            <span className="auth-feature-pill">✦ 0% Upfront Cost</span>
+                            <span className="auth-feature-pill">✦ Global Fulfillment</span>
+                            <span className="auth-feature-pill">✦ Instant Royalties</span>
+                        </div>
+                    </div>
+
+                    <div className="auth-carousel-indicators">
+                        {authImages.map((_, index) => (
+                            <button
+                                key={index}
+                                type="button"
+                                className={`auth-indicator-dot ${index === currentSlide ? 'active' : ''}`}
+                                onClick={() => setCurrentSlide(index)}
+                                aria-label={`Go to slide ${index + 1}`}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -1152,9 +1307,8 @@ function DesignerRegister() {
                                         position: 'absolute', 
                                         bottom: '0', 
                                         right: '0', 
-                                        background: 'var(--dark)', 
-                                        border: '1px solid var(--gold)',
-                                        color: 'var(--gold)',
+                                        background: '#000000', 
+                                        border: '2px solid #ffffff',
                                         width: '32px', 
                                         height: '32px', 
                                         borderRadius: '50%', 
@@ -1162,19 +1316,16 @@ function DesignerRegister() {
                                         alignItems: 'center', 
                                         justifyContent: 'center', 
                                         cursor: 'pointer',
-                                        transition: 'all 0.3s ease',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                                        zIndex: 2
                                     }}
-                                    onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'var(--gold)';
-                                        e.currentTarget.style.color = 'var(--dark)';
-                                    }}
-                                    onMouseLeave={e => {
-                                        e.currentTarget.style.background = 'var(--dark)';
-                                        e.currentTarget.style.color = 'var(--gold)';
-                                    }}
+                                    title="Upload Profile Photo"
                                 >
-                                    <i className="fas fa-camera" style={{ fontSize: '0.8rem' }}></i>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
                                     <input 
                                         type="file" 
                                         accept="image/*" 
@@ -1453,8 +1604,8 @@ function DesignerRegister() {
             {/* ─── Media Onboarding Modal Overlay ─── */}
             {showPpt && (
                 <div className="ppt-overlay">
-                    <div className="ppt-container" style={{ maxWidth: '800px', minHeight: 'auto' }}>
-                        <div className="ppt-header">
+                    <div className="ppt-container" style={{ maxWidth: '760px', maxHeight: '88vh', padding: '20px 24px' }}>
+                        <div className="ppt-header" style={{ paddingBottom: '12px', marginBottom: '16px' }}>
                             <div className="ppt-logo">
                                 ASAT <span>STUDIO</span>
                             </div>
@@ -1463,9 +1614,9 @@ function DesignerRegister() {
                             </div>
                         </div>
 
-                        <div className="ppt-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                        <div className="ppt-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
                             {videoLoading ? (
-                                <div style={{ color: '#aaa', padding: '40px 0', textAlign: 'center' }}>
+                                <div style={{ color: '#aaa', padding: '30px 0', textAlign: 'center' }}>
                                     <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: 'var(--gold)', marginBottom: '10px' }}></i>
                                     <p style={{ fontFamily: 'Montserrat, sans-serif' }}>Loading onboarding training...</p>
                                 </div>
@@ -1475,35 +1626,35 @@ function DesignerRegister() {
                                         <video 
                                             src={onboardingMedia.urls[0]} 
                                             controls 
-                                            style={{ width: '100%', display: 'block', maxHeight: '420px' }}
+                                            style={{ width: '100%', display: 'block', maxHeight: 'clamp(180px, 32vh, 320px)' }}
                                             autoPlay
                                         />
                                     ) : onboardingMedia.type === 'document' ? (
                                         <iframe 
                                             src={onboardingMedia.urls[0]} 
-                                            style={{ width: '100%', height: '500px', border: 'none', display: 'block' }}
+                                            style={{ width: '100%', height: '380px', border: 'none', display: 'block' }}
                                             title="Onboarding Document"
                                         />
                                     ) : (
-                                        <div style={{ position: 'relative', width: '100%', height: '450px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div style={{ position: 'relative', width: '100%', maxHeight: 'clamp(160px, 26vh, 260px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050505' }}>
                                             <img 
                                                 src={onboardingMedia.urls[currentImageSlide]} 
                                                 alt={`Slide ${currentImageSlide + 1}`} 
-                                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                                style={{ maxWidth: '100%', maxHeight: 'clamp(160px, 26vh, 260px)', objectFit: 'contain' }}
                                             />
                                             {onboardingMedia.urls.length > 1 && (
                                                 <>
                                                     <button 
                                                         onClick={() => setCurrentImageSlide(p => Math.max(0, p - 1))}
                                                         disabled={currentImageSlide === 0}
-                                                        style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: currentImageSlide === 0 ? 'not-allowed' : 'pointer', fontSize: '1.2rem', opacity: currentImageSlide === 0 ? 0.3 : 1 }}
+                                                        style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: currentImageSlide === 0 ? 'not-allowed' : 'pointer', fontSize: '1rem', opacity: currentImageSlide === 0 ? 0.3 : 1 }}
                                                     >❮</button>
                                                     <button 
                                                         onClick={() => setCurrentImageSlide(p => Math.min(onboardingMedia.urls.length - 1, p + 1))}
                                                         disabled={currentImageSlide === onboardingMedia.urls.length - 1}
-                                                        style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: currentImageSlide === onboardingMedia.urls.length - 1 ? 'not-allowed' : 'pointer', fontSize: '1.2rem', opacity: currentImageSlide === onboardingMedia.urls.length - 1 ? 0.3 : 1 }}
+                                                        style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: currentImageSlide === onboardingMedia.urls.length - 1 ? 'not-allowed' : 'pointer', fontSize: '1rem', opacity: currentImageSlide === onboardingMedia.urls.length - 1 ? 0.3 : 1 }}
                                                     >❯</button>
-                                                    <div style={{ position: 'absolute', bottom: '15px', background: 'rgba(0,0,0,0.7)', padding: '5px 15px', borderRadius: '20px', fontSize: '0.8rem', fontFamily: 'Montserrat' }}>
+                                                    <div style={{ position: 'absolute', bottom: '10px', background: 'rgba(0,0,0,0.7)', padding: '3px 12px', borderRadius: '20px', fontSize: '0.75rem', fontFamily: 'Montserrat' }}>
                                                         {currentImageSlide + 1} / {onboardingMedia.urls.length}
                                                     </div>
                                                 </>
@@ -1512,49 +1663,50 @@ function DesignerRegister() {
                                     )}
                                 </div>
                             ) : (
-                                <div style={{ color: '#aaa', padding: '40px 0', textAlign: 'center' }}>
+                                <div style={{ color: '#aaa', padding: '30px 0', textAlign: 'center' }}>
                                     <i className="fas fa-eye-slash" style={{ fontSize: '2rem', color: '#666', marginBottom: '10px' }}></i>
                                     <p style={{ fontFamily: 'Montserrat, sans-serif' }}>No onboarding training configured. Please contact support.</p>
                                 </div>
                             )}
 
                             {/* Terms & Conditions acceptance row */}
-                            <div style={{ width: '100%', marginTop: '22px' }}>
+                            <div style={{ width: '100%', marginTop: '10px' }}>
                                 {termsAccepted ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 18px', background: 'rgba(40,167,69,0.08)', border: '1px solid rgba(40,167,69,0.35)', borderRadius: '8px', marginBottom: '10px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'rgba(40,167,69,0.08)', border: '1px solid rgba(40,167,69,0.35)', borderRadius: '8px', marginBottom: '10px' }}>
                                         <i className="fas fa-check-circle" style={{ color: '#4caf50', fontSize: '1.1rem' }}></i>
                                         <span style={{ fontFamily: 'Montserrat,sans-serif', fontSize: '0.83rem', color: 'rgba(255,255,255,0.85)' }}>Terms &amp; Conditions accepted ✓</span>
-                                        <button type="button" onClick={() => { setShowTermsModal(true); setTermsScrolledToBottom(false); setTermsCheckboxTicked(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(197,160,89,0.7)', fontSize: '0.72rem', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Montserrat,sans-serif', letterSpacing: '0.5px' }}>Review</button>
+                                        <button type="button" onClick={() => { setShowTermsModal(true); setTermsScrolledToBottom(false); setTermsCheckboxTicked(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#E8C97A', fontSize: '0.72rem', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Montserrat,sans-serif', letterSpacing: '0.5px' }}>Review</button>
                                     </div>
                                 ) : (
-                                    <button type="button" onClick={() => { setShowTermsModal(true); setTermsScrolledToBottom(false); setTermsCheckboxTicked(false); }} style={{ width: '100%', padding: '14px 18px', background: 'rgba(197,160,89,0.06)', border: '1px solid rgba(197,160,89,0.25)', borderRadius: '8px', color: 'rgba(255,255,255,0.85)', fontFamily: 'Montserrat,sans-serif', fontSize: '0.83rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.3s', marginBottom: '10px' }}
-                                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(197,160,89,0.5)'; e.currentTarget.style.background = 'rgba(197,160,89,0.1)'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(197,160,89,0.25)'; e.currentTarget.style.background = 'rgba(197,160,89,0.06)'; }}
+                                    <button type="button" onClick={() => { setShowTermsModal(true); setTermsScrolledToBottom(false); setTermsCheckboxTicked(false); }} style={{ width: '100%', padding: '12px 16px', background: 'rgba(197,160,89,0.08)', border: '1px solid rgba(197,160,89,0.35)', borderRadius: '8px', color: '#ffffff', fontFamily: 'Montserrat,sans-serif', fontSize: '0.83rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.3s', marginBottom: '10px' }}
+                                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#E8C97A'; e.currentTarget.style.background = 'rgba(197,160,89,0.15)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(197,160,89,0.35)'; e.currentTarget.style.background = 'rgba(197,160,89,0.08)'; }}
                                     >
-                                        <i className="fas fa-file-contract" style={{ color: 'var(--gold)', fontSize: '1rem' }}></i>
-                                        <span>Read &amp; Accept Designer Terms &amp; Conditions <span style={{ color: 'rgba(229,57,53,0.9)', marginLeft: '4px' }}>*</span></span>
-                                        <i className="fas fa-chevron-right" style={{ marginLeft: 'auto', color: 'rgba(197,160,89,0.5)', fontSize: '0.75rem' }}></i>
+                                        <i className="fas fa-file-contract" style={{ color: '#E8C97A', fontSize: '1rem' }}></i>
+                                        <span style={{ fontWeight: 600 }}>Read &amp; Accept Designer Terms &amp; Conditions <span style={{ color: '#ff5252', marginLeft: '4px' }}>*</span></span>
+                                        <i className="fas fa-chevron-right" style={{ marginLeft: 'auto', color: '#E8C97A', fontSize: '0.75rem' }}></i>
                                     </button>
                                 )}
-                                <div className="ppt-terms-checkbox" style={{ width: '100%', boxSizing: 'border-box', opacity: termsAccepted ? 1 : 0.4, cursor: termsAccepted ? 'pointer' : 'not-allowed' }} onClick={() => { if (termsAccepted) setAgreedToTerms(prev => !prev); }}>
+                                <div className="ppt-terms-checkbox" style={{ width: '100%', boxSizing: 'border-box', background: agreedToTerms ? 'rgba(197, 160, 89, 0.15)' : 'rgba(255, 255, 255, 0.05)', border: '1px solid ' + (agreedToTerms ? '#C5A059' : 'rgba(255, 255, 255, 0.2)'), opacity: termsAccepted ? 1 : 0.6, cursor: termsAccepted ? 'pointer' : 'not-allowed', padding: '12px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px', marginTop: 0 }} onClick={() => { if (termsAccepted) setAgreedToTerms(prev => !prev); }}>
                                     <input 
                                         type="checkbox" 
                                         checked={agreedToTerms} 
                                         disabled={!termsAccepted}
                                         onChange={(e) => e.stopPropagation()} 
+                                        style={{ accentColor: '#C5A059', width: '18px', height: '18px', cursor: 'pointer' }}
                                     />
-                                    <span>I have completed the onboarding training and fully accept the ASAT Designer Terms &amp; Conditions.</span>
+                                    <span style={{ color: '#ffffff', fontSize: '0.82rem', lineHeight: '1.4', fontFamily: 'Montserrat, sans-serif' }}>I have completed the onboarding training and fully accept the ASAT Designer Terms &amp; Conditions.</span>
                                 </div>
                             </div>
                         </div>
 
                         {registerError && (
-                            <div className="ppt-err" style={{ marginTop: '15px', marginBottom: 0 }}>
+                            <div className="ppt-err" style={{ marginTop: '10px', marginBottom: 0 }}>
                                 {registerError}
                             </div>
                         )}
 
-                        <div className="ppt-footer" style={{ marginTop: '20px' }}>
+                        <div className="ppt-footer" style={{ marginTop: '14px', paddingTop: '16px' }}>
                             <button 
                                 type="button" 
                                 className="ppt-btn ppt-btn--prev"

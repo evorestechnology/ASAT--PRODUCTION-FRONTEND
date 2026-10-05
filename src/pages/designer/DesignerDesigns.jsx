@@ -249,22 +249,23 @@ function DesignerDesigns() {
                             onChange={e => setSearchTerm(e.target.value)}
                             style={{
                                 padding: '10px 35px 10px 15px',
-                                background: '#1c1c1c',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '4px',
-                                color: 'white',
+                                background: '#ffffff',
+                                border: '1px solid rgba(197, 160, 89, 0.4)',
+                                borderRadius: '6px',
+                                color: '#1e293b',
                                 fontFamily: "'Montserrat', sans-serif",
                                 fontSize: '0.82rem',
                                 width: '100%',
                                 maxWidth: '280px',
                                 boxSizing: 'border-box',
                                 outline: 'none',
-                                transition: 'border-color 0.2s'
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                transition: 'border-color 0.2s, box-shadow 0.2s'
                             }}
-                            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
-                            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                            onFocus={e => { e.target.style.borderColor = 'var(--gold)'; e.target.style.boxShadow = '0 0 0 3px rgba(212,175,55,0.15)'; }}
+                            onBlur={e => { e.target.style.borderColor = 'rgba(197, 160, 89, 0.4)'; e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
                         />
-                        <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}></i>
+                        <i className="fas fa-search" style={{ position: 'absolute', right: 12, color: 'var(--gold)', fontSize: '0.85rem' }}></i>
                     </div>
                 </div>
             )}
@@ -342,7 +343,14 @@ function DesignerDesigns() {
                                     <button
                                         className="dsn-design-card__action"
                                         onClick={() => navigate('/designer/designs/' + d.id)}
-                                        style={{ width: '100%', background: 'linear-gradient(135deg,#1a1a0a,#2a2500)', color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.3)' }}
+                                        style={{ 
+                                            width: '100%', 
+                                            background: 'linear-gradient(135deg, #E8C97A 0%, #C5A059 100%)', 
+                                            color: '#000000', 
+                                            border: 'none',
+                                            fontWeight: 700,
+                                            boxShadow: '0 2px 8px rgba(197, 160, 89, 0.25)' 
+                                        }}
                                     >
                                         <i className="fas fa-expand-alt"></i> View Details
                                     </button>

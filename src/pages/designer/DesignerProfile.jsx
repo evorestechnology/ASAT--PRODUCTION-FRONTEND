@@ -170,7 +170,7 @@ function DesignerProfile() {
                     </label>
                 </div>
                 <div className="dsn-profile__header-info">
-                    <h2>{username ? `@${username}` : 'Set your username'}</h2>
+                    <h2>{form.fullName || 'Designer Profile'}</h2>
                     <div className="dsn-profile__meta">
                         {joinDate && <span><i className="far fa-calendar-alt"></i> Joined {joinDate}</span>}
                         {form.country && <span><i className="fas fa-globe-americas"></i> {form.country}</span>}
@@ -182,13 +182,6 @@ function DesignerProfile() {
             <form className="dsn-profile__form" onSubmit={handleSave}>
                 <h3 className="dsn-profile__section-title">Account Details</h3>
                 <div className="dsn-profile__grid">
-                    <div className="dsn-profile__group">
-                        <label>Username</label>
-                        <div className="dsn-auth__field"><i className="fas fa-at"></i>
-                            <input type="text" value={username} onChange={e => !usernameLocked && setUsername(e.target.value)} disabled={usernameLocked} placeholder="Choose a username" />
-                        </div>
-                        {usernameLocked && <span className="dsn-profile__lock"><i className="fas fa-lock"></i> Locked. Change available in {daysUntilUnlock()} days</span>}
-                    </div>
                     <div className="dsn-profile__group">
                         <label>Full Name</label>
                         <div className="dsn-auth__field"><i className="far fa-user"></i>

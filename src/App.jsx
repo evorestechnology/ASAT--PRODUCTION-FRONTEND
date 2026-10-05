@@ -36,6 +36,7 @@ import Wishlist               from './pages/user/Wishlist';
 import DesignerPublicProfile  from './pages/user/DesignerPublicProfile';
 import DesignerRankings       from './pages/user/DesignerRankings';
 import UserReports            from './pages/user/UserReports';
+import UserAnnouncements     from './pages/user/UserAnnouncements';
 
 // Designer pages
 import DesignerIndex    from './pages/designer/DesignerIndex';
@@ -59,6 +60,7 @@ import DesignerReports          from './pages/designer/DesignerReports';
 import DesignerReportEarnings   from './pages/designer/DesignerReportEarnings';
 import DesignerReportDesigns    from './pages/designer/DesignerReportDesigns';
 import DesignerReportCustomers  from './pages/designer/DesignerReportCustomers';
+import DesignerAnnouncements    from './pages/designer/DesignerAnnouncements';
 
 
 // Master pages
@@ -81,6 +83,7 @@ import MasterFinance      from './pages/master/MasterFinance';
 import MasterDelivery     from './pages/master/MasterDelivery';
 import MasterWithdrawals  from './pages/master/MasterWithdrawals';
 import MasterTutorials    from './pages/master/MasterTutorials';
+import MasterAnnouncements from './pages/master/MasterAnnouncements';
 import MasterProfile      from './pages/master/MasterProfile';
 import MasterGSTReport    from './pages/master/MasterGSTReport';
 import MasterPromoCodes   from './pages/master/MasterPromoCodes';
@@ -129,6 +132,7 @@ function App() {
           <Route path="/designers/:designerId" element={<DesignerPublicProfile />} />
           <Route path="/rankings" element={<DesignerRankings />} />
           <Route path="/terms"    element={<UserTerms />} />
+          <Route path="/announcements" element={<UserAnnouncements />} />
 
           {/* Auth pages — redirect to home if already logged in */}
           <Route path="/login"    element={<GuestRoute><UserLogin /></GuestRoute>} />
@@ -171,6 +175,7 @@ function App() {
           <Route path="base-products" element={<DesignerBaseProducts />} />
           <Route path="base-products/:id" element={<DesignerProductDetail />} />
           <Route path="tutorials" element={<DesignerTutorials />} />
+          <Route path="announcements" element={<DesignerAnnouncements />} />
 
           {/* ── Designer Reports ── */}
           <Route path="reports"                  element={<DesignerReports />} />
@@ -206,6 +211,7 @@ function App() {
           <Route path="delivery"  element={<MasterDelivery />} />
           <Route path="withdrawals" element={<MasterWithdrawals />} />
           <Route path="tutorials"  element={<MasterTutorials />} />
+          <Route path="announcements" element={<MasterAnnouncements />} />
           <Route path="profile"    element={<MasterProfile />} />
           <Route path="gst-report" element={<MasterGSTReport />} />
           <Route path="promocodes" element={<MasterPromoCodes />} />

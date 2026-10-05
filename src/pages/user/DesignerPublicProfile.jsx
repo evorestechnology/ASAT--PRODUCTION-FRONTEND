@@ -942,10 +942,12 @@ function DesignerPublicProfile() {
                 </p>
 
                 <div className="dpp-hero__tags">
-                  <span className="dpp-hero__tag">
-                    <i className="fa-solid fa-sparkles" style={{ marginRight: '6px' }} />
-                    {designer.speciality}
-                  </span>
+                  {designer.speciality && (
+                    <span className="dpp-hero__tag">
+                      <i className="fa-solid fa-sparkles" style={{ marginRight: '6px' }} />
+                      {designer.speciality}
+                    </span>
+                  )}
                   {(designer.country || designer.location) && (
                     <span className="dpp-hero__tag">
                       <i className="fa-solid fa-location-dot" style={{ marginRight: '6px' }} />

@@ -206,16 +206,38 @@ function DropZone({ label, preview, onFile, onRemove, accept = '.png, .jpg, .jpe
                         transition: isHovered ? 'background-size 0.2s ease' : 'all 0.3s ease'
                     }}
                 >
-                    <div style={{ display: 'flex', gap: 6, position: 'absolute', bottom: 6, right: 6, zIndex: 10 }}>
-                        <span className="dsn-upload__drop-change" onClick={e => { e.stopPropagation(); fileInputRef.current.click(); }}>Change</span>
+                    <div style={{ display: 'flex', gap: 10, position: 'absolute', bottom: 10, right: 10, zIndex: 10 }}>
+                        <button
+                            type="button"
+                            className="dsn-upload__drop-change"
+                            onClick={e => { e.stopPropagation(); fileInputRef.current.click(); }}
+                            style={{ padding: '8px 16px', fontSize: '0.82rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', border: 'none', background: 'rgba(0,0,0,0.75)', color: '#fff' }}
+                        >
+                            Change
+                        </button>
                         {onRemove && (
-                            <span
-                                className="dsn-upload__drop-change"
+                            <button
+                                type="button"
+                                className="dsn-upload__drop-delete"
                                 onClick={e => { e.stopPropagation(); onRemove(); }}
-                                style={{ background: '#dc2626', color: '#ffffff' }}
+                                style={{
+                                    padding: '10px 22px',
+                                    fontSize: '0.92rem',
+                                    fontWeight: 700,
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    border: 'none',
+                                    background: '#dc2626',
+                                    color: '#ffffff',
+                                    boxShadow: '0 4px 14px rgba(220, 38, 38, 0.5)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s ease'
+                                }}
                             >
-                                <i className="fas fa-trash-alt" style={{ fontSize: '0.65rem', marginRight: 3 }} /> Delete
-                            </span>
+                                <i className="fas fa-trash-alt" style={{ fontSize: '0.9rem' }} /> Delete
+                            </button>
                         )}
                     </div>
                 </div>
@@ -277,10 +299,25 @@ function DesignerUpload() {
     const [designTitle, setDesignTitle] = useState('');
     const [designerCost, setDesignerCost] = useState('');
     const [designerNote, setDesignerNote] = useState('');
-    const [designCategory, setDesignCategory] = useState('Aesthetic');
+    const [designCategory, setDesignCategory] = useState('');
+    const [masterCategories, setMasterCategories] = useState([]);
     const [designTags, setDesignTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
     const [showTagInfo, setShowTagInfo] = useState(false);
+
+    useEffect(() => {
+        apiFetch('/api/categories')
+            .then(data => {
+                if (Array.isArray(data)) {
+                    const names = data.map(c => typeof c === 'string' ? c : (c.name || c.title)).filter(Boolean);
+                    setMasterCategories(names);
+                    if (names.length > 0) {
+                        setDesignCategory(names[0]);
+                    }
+                }
+            })
+            .catch(err => console.error('Error fetching master categories:', err));
+    }, []);
 
     /* â”€â”€ Products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     const [dbProducts, setDbProducts] = useState([]);
@@ -1609,18 +1646,26 @@ function DesignerUpload() {
                     <div className="dsn-profile__group" style={{ marginTop: 16 }}>
                         <label>Select Category *</label>
                         <select className="dsn-upload__input" value={designCategory} onChange={e => setDesignCategory(e.target.value)} style={{ width: '100%', cursor: 'pointer' }}>
-                            <option value="Aesthetic">Aesthetic</option>
-                            <option value="Nature">Nature</option>
-                            <option value="Bold">Bold</option>
-                            <option value="Minimal">Minimal</option>
-                            <option value="Vintage">Vintage</option>
-                            <option value="Graphic">Graphic</option>
-                            <option value="Typography">Typography</option>
-                            <option value="Abstract">Abstract</option>
-                            <option value="Streetwear">Streetwear</option>
-                            <option value="Anime">Anime</option>
-                            <option value="Sports">Sports</option>
-                            <option value="Y2K">Y2K</option>
+                            {masterCategories.length > 0 ? (
+                                masterCategories.map((catName, idx) => (
+                                    <option key={idx} value={catName}>{catName}</option>
+                                ))
+                            ) : (
+                                <>
+                                    <option value="Aesthetic">Aesthetic</option>
+                                    <option value="Nature">Nature</option>
+                                    <option value="Bold">Bold</option>
+                                    <option value="Minimal">Minimal</option>
+                                    <option value="Vintage">Vintage</option>
+                                    <option value="Graphic">Graphic</option>
+                                    <option value="Typography">Typography</option>
+                                    <option value="Abstract">Abstract</option>
+                                    <option value="Streetwear">Streetwear</option>
+                                    <option value="Anime">Anime</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Y2K">Y2K</option>
+                                </>
+                            )}
                         </select>
                     </div>
 
@@ -1684,8 +1729,14 @@ function DesignerUpload() {
                                     }
                                 }}
                                 style={{
-                                    padding: '8px 16px', background: designTags.length >= 5 ? '#ccc' : 'var(--gold)',
-                                    color: '#ffffff', border: 'none', borderRadius: 4, fontWeight: 700, cursor: designTags.length >= 5 ? 'not-allowed' : 'pointer'
+                                    padding: '8px 18px',
+                                    background: designTags.length >= 5 ? '#e2e8f0' : 'linear-gradient(135deg, #E8C97A 0%, #C5A059 100%)',
+                                    color: designTags.length >= 5 ? '#94a3b8' : '#000000',
+                                    border: 'none',
+                                    borderRadius: 6,
+                                    fontWeight: 700,
+                                    cursor: designTags.length >= 5 ? 'not-allowed' : 'pointer',
+                                    boxShadow: designTags.length >= 5 ? 'none' : '0 2px 8px rgba(197, 160, 89, 0.3)'
                                 }}
                             >
                                 Add

@@ -41,6 +41,7 @@ function DesignerHeader() {
         { to: '/designer/base-products', label: 'Base Products', icon: 'fas fa-tshirt' },
         { to: '/designer/reports', label: 'Reports', icon: 'fas fa-chart-bar' },
         { to: '/designer/tutorials', label: 'Tutorials', icon: 'fas fa-play-circle' },
+        { to: '/designer/announcements', label: 'Announcements', icon: 'fas fa-bullhorn' },
         { to: '/designer/ranking', label: 'Ranking', icon: 'fas fa-trophy' },
     ];
 
@@ -56,14 +57,6 @@ function DesignerHeader() {
                         alt="ASAT Designer Paradise" 
                         className="dsn-header__logo-img"
                     />
-                    {designerName && (
-                        <div className="dsn-header__identity-badge">
-                            <span className="dsn-header__identity-tag">DESIGNER</span>
-                            <span className="dsn-header__identity-name" title={designerName}>
-                                {designerName}
-                            </span>
-                        </div>
-                    )}
                 </div>
 
                 {/* Capsule Nav */}

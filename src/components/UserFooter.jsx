@@ -63,6 +63,25 @@ function UserFooter() {
                     color: #000000;
                 }
 
+                .blu-footer-card__social-list {
+                    flex-direction: row;
+                    align-items: center;
+                    gap: 14px;
+                    flex-wrap: wrap;
+                }
+
+                .blu-footer-card__social-list li:nth-child(n + 3) {
+                    width: 100%;
+                }
+
+                .blu-footer-card__social-list li:nth-child(n + 3) .blu-footer-card__link {
+                    display: block;
+                }
+
+                .blu-footer-card__social-link {
+                    font-size: 18px;
+                }
+
                 .blu-footer-card__brand-showcase {
                     display: flex;
                     align-items: center;
@@ -215,10 +234,10 @@ function UserFooter() {
                             Connect with us
                             <i className="fas fa-chevron-down blu-footer-card__col-chevron"></i>
                         </span>
-                        <ul className="blu-footer-card__list">
-                            <li><a href="https://www.instagram.com/designer_paradise_official/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">Instagram</a></li>
-                            <li><a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link">YouTube</a></li>
-                            <li><a href="/designer/login" className="blu-footer-card__link">Design Sign In</a></li>
+                        <ul className="blu-footer-card__list blu-footer-card__social-list">
+                            <li><a href="https://www.instagram.com/designer_paradise_official/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link blu-footer-card__social-link" aria-label="Instagram"><i className="fab fa-instagram"></i></a></li>
+                            <li><a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="blu-footer-card__link blu-footer-card__social-link" aria-label="YouTube"><i className="fab fa-youtube"></i></a></li>
+                            <li><a href="/designer/login" className="blu-footer-card__link">Designer Sign In</a></li>
                             <li><a href="/designer/register" className="blu-footer-card__link">Join as a Designer</a></li>
                         </ul>
                     </div>
